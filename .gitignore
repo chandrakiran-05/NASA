@@ -3,7 +3,6 @@
 __pycache__/
 *.pyc
 /data/
-tests/fixtures/recorded/
 .pytest_cache/
 .DS_Store
 node_modules/
