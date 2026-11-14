@@ -142,3 +142,6 @@ class ActiveTrendsRequest(BaseModel):
     options: dict = Field(default_factory=dict, description="passed to the connectors (site_id, station_id, feature_id ...)")
     alpha: float = Field(0.05, gt=0, lt=0.5)
     ai_review: bool = True
+    research: bool = Field(True, description="search recent literature (arXiv, OpenAlex, Springer) for every "
+                                             "verified/probable trend and choose the best-supported one")
+    region_name: str | None = Field(None, description="place name used in the literature search")

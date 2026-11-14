@@ -520,7 +520,8 @@ async def active_trends(request: Request, body: ActiveTrendsRequest):
     async def job(progress):
         try:
             out = await active.run(st, log, progress, items=items, region=region, start=start, end=end,
-                                   alpha=body.alpha, ai_review=body.ai_review, options=body.options)
+                                   alpha=body.alpha, ai_review=body.ai_review, options=body.options,
+                                   research=body.research, region_name=body.region_name)
         except Exception as exc:
             await log.emit("error", message=getattr(exc, "message", str(exc)))
             raise
@@ -614,3 +615,22 @@ async def ai_hardware(request: Request):
     prof.pop("disk_path", None)                   # keep local folder names out of the profile block
     return {"profile": prof, "recommendation": rec,
             "live": await st.llm.status(), "deep": await st.deep.status()}
+
+
+# ===================================================================== research evidence (live literature)
+@router.post("/research/evidence", tags=["research"])
+async def research_evidence_endpoint(request: Request, body: dict):
+    """Search recent literature (arXiv, OpenAlex, Springer Nature) for a variable/region/direction and report
+    whether published studies agree. AI readings of abstracts are kept only if their quote is verbatim."""
+    from ..research.evidence import research_evidence
+    st = S(request)
+    vid = body.get("variable_id")
+    direction = body.get("direction")
+    if not vid or direction not in ("rising", "falling"):
+        raise InvalidRequest("variable_id and direction ('rising' or 'falling') are required")
+    v = st.catalog.get(vid)
+    return _clean(await research_evidence(
+        st.http, st.llm, variable_id=vid, variable_name=v.get("name"), region_name=body.get("region_name"),
+        direction=direction, max_age_years=int(body.get("max_age_years") or st.settings.research_max_age_years),
+        per_source=st.settings.research_per_source, springer_key=st.settings.springer_api_key,
+                    semantic_key=st.settings.semantic_scholar_api_key, ads_token=st.settings.ads_api_token))

@@ -123,7 +123,7 @@ def _ineligible(v: dict | None, region, start, end, options: dict) -> str | None
 
 # ------------------------------------------------------------------ the job
 async def run(st, log: EventLog, progress, *, items: list[dict], region, start, end, alpha: float,
-              ai_review: bool, options: dict) -> dict:
+              ai_review: bool, options: dict, research: bool = False, region_name: str | None = None) -> dict:
     from ..api import pipeline
     sem = asyncio.Semaphore(FETCH_CONCURRENCY)
     total = max(len(items), 1)
@@ -219,6 +219,28 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
                 tr["ai_review"] = engine.check_llm_note(await review(st.llm, tr))
                 await log.emit("check", variable_id=tr["variable_id"], **tr["ai_review"])
 
+    if research and st.settings.research_enabled and trends:
+        await progress(0.94, "Searching recent research (arXiv, OpenAlex, Springer)")
+        from ..research.evidence import research_evidence
+        place = region_name or (getattr(region, "name", None) if region else None)
+
+        async def lit(tr):
+            try:
+                if tr["verdict"]["label"] == "NOT VERIFIED":
+                    return
+                tr["research"] = await research_evidence(
+                    st.http, st.llm, variable_id=tr["variable_id"], variable_name=tr["name"], region_name=place,
+                    direction=tr["detect"].get("direction", "flat"), max_age_years=st.settings.research_max_age_years,
+                    per_source=st.settings.research_per_source, springer_key=st.settings.springer_api_key,
+                    semantic_key=st.settings.semantic_scholar_api_key, ads_token=st.settings.ads_api_token)
+                await log.emit("research", variable_id=tr["variable_id"],
+                               agreement=tr["research"]["agreement"]["label"],
+                               plain_language=tr["research"]["plain_language"])
+            except Exception as exc:  # noqa: BLE001 - literature is context; never sinks the scan
+                tr["research"] = {"status": "unavailable", "reason": type(exc).__name__,
+                                  "agreement": {"label": "no_literature"}}
+        await asyncio.gather(*(lit(tr) for tr in trends))
+
     order = {"VERIFIED": 0, "PROBABLE": 1, "NOT VERIFIED": 2}
     trends.sort(key=lambda r: (order[r["verdict"]["label"]], -(r["detect"].get("effect_sd_per_decade") or 0)))
     not_active = [{"variable_id": k, "name": st.catalog.variables.get(k, {}).get("name") or k, "series_id": sids.get(k),
@@ -235,6 +257,9 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
            "limits": [engine.LIMIT,
                       "Active means 'detectable in the recent window'; a trend can exist and still be too weak to detect.",
                       "Physics and second-opinion checks compare signs only; they are 'consistent with', never a cause."]}
+    from ..research.evidence import choose_best
+    out["best_trend"] = choose_best(trends)
+    await log.emit("best_trend", **{k: out["best_trend"].get(k) for k in ("best", "plain_language")})
     await log.emit("done", summary=out["summary"], plain_language=out["plain_language"])
     return out
 
