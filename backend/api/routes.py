@@ -629,8 +629,11 @@ async def research_evidence_endpoint(request: Request, body: dict):
     if not vid or direction not in ("rising", "falling"):
         raise InvalidRequest("variable_id and direction ('rising' or 'falling') are required")
     v = st.catalog.get(vid)
+    age = body.get("max_age_years") or st.settings.research_max_age_years
+    if not isinstance(age, int) or not 1 <= age <= 50:
+        raise InvalidRequest("max_age_years must be a whole number from 1 to 50")
     return _clean(await research_evidence(
         st.http, st.llm, variable_id=vid, variable_name=v.get("name"), region_name=body.get("region_name"),
-        direction=direction, max_age_years=int(body.get("max_age_years") or st.settings.research_max_age_years),
+        direction=direction, max_age_years=age,
         per_source=st.settings.research_per_source, springer_key=st.settings.springer_api_key,
                     semantic_key=st.settings.semantic_scholar_api_key, ads_token=st.settings.ads_api_token))

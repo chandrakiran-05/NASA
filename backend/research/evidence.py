@@ -243,7 +243,7 @@ def _cite(p: dict) -> str:
 def _plain(ag: dict, papers: list[dict], direction: str, var: str, region: str | None, since: int) -> str:
     where = f" for {region}" if region else ""
     if ag["label"] == "no_literature":
-        return f"No recent ({since}+) studies on {var}{where} were found in arXiv/OpenAlex/Springer to compare with."
+        return f"No recent ({since}+) studies on {var}{where} were found in the searched literature sources."
     sup = [p for p in papers if p["stance"] == direction][:3]
     con = [p for p in papers if p["stance"] in ("rising", "falling") and p["stance"] != direction][:2]
     if ag["label"] == "supported":
