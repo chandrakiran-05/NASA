@@ -133,15 +133,39 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
     async def novelty(kind, sid, fn, params):
         return await pipeline.cached_novelty(st, kind, sid, fn, {"alpha": alpha, **params})
 
+    claimed = {i["variable_id"] for i in items if i["variable_id"]}
+
+    async def fetch_with_fallback(it):
+        """Try the planned variable, then the next variables of the same criterion (e.g. a keyless source
+        when a NASA token is missing). Each failure is reported; the first success is used."""
+        crit = {c["id"]: c for c in CRITERIA}
+        alts = [v for c in it.get("criteria", []) for v in crit[c]["variables"]
+                if v not in claimed and v in st.catalog.variables
+                and not _ineligible(st.catalog.variables[v], region, start, end, options)]
+        last = None
+        for vid in [it["variable_id"], *dict.fromkeys(alts)]:
+            if vid != it["variable_id"]:
+                if vid in claimed:
+                    continue
+                claimed.add(vid)
+                await log.emit("fallback", variable_id=vid, instead_of=it["variable_id"], reason=str(last)[:200])
+            try:
+                async with sem:
+                    await log.emit("fetching", variable_id=vid)
+                    return vid, await st.ts.build_series(vid, region, start, end, options=options)
+            except Exception as exc:  # noqa: BLE001 - try the next variable of the criterion
+                last = getattr(exc, "message", str(exc))
+                failed[vid] = last
+                await log.emit("failed", variable_id=vid, message=last)
+        raise RuntimeError(last or "no variable could be fetched")
+
     async def one(it):
         nonlocal finished
         key = it["variable_id"] or it["series_id"]
         try:
             sid = it.get("series_id")
             if sid is None:
-                async with sem:
-                    await log.emit("fetching", variable_id=key)
-                    info = await st.ts.build_series(key, region, start, end, options=options)
+                key, info = await fetch_with_fallback(it)
                 sid = info["series_id"]
                 await log.emit("fetched", variable_id=key, series_id=sid, cached=info.get("cached"),
                                completeness=info.get("completeness"))
@@ -241,6 +265,12 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
                                   "agreement": {"label": "no_literature"}}
         await asyncio.gather(*(lit(tr) for tr in trends))
 
+    from .view import build_view
+    for tr in trends:                      # chart-ready view: data, trend lines, BEAST + PELT markers, AI text
+        tr["view"] = await build_view(st, tr["series_id"], alpha=alpha, detect=tr["detect"], verdict=tr["verdict"],
+                                      explain=ai_review)
+        await log.emit("view", variable_id=tr["variable_id"], caption=tr["view"]["caption"],
+                       explanation=(tr["view"].get("explanation") or {}).get("text"))
     order = {"VERIFIED": 0, "PROBABLE": 1, "NOT VERIFIED": 2}
     trends.sort(key=lambda r: (order[r["verdict"]["label"]], -(r["detect"].get("effect_sd_per_decade") or 0)))
     not_active = [{"variable_id": k, "name": st.catalog.variables.get(k, {}).get("name") or k, "series_id": sids.get(k),

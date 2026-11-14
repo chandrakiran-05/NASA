@@ -172,7 +172,9 @@ async def nasa_ads(http, query: str, since_year: int, n: int, token: str) -> lis
 
 
 def _key(p: dict) -> str:
-    return (p.get("doi") or "").lower() or re.sub(r"[^a-z0-9]", "", (p.get("title") or "").lower())[:80]
+    """Title first: a preprint and its journal version have different DOIs but the same title."""
+    t = re.sub(r"[^a-z0-9]", "", (p.get("title") or "").lower())[:80]
+    return t if len(t) >= 20 else (p.get("doi") or "").lower() or t
 
 
 async def search(http, *, query: str, terms: list[str], since_year: int, per_source: int = 15,
@@ -201,9 +203,15 @@ async def search(http, *, query: str, terms: list[str], since_year: int, per_sou
         sources.append({"source": name, "status": "ok", "n": len(res)})
         for p in res:
             k = _key(p)
-            if k and k not in seen and p.get("abstract"):
-                seen.add(k)
-                papers.append(p)
+            if not k or not p.get("abstract"):
+                continue
+            if k in seen:                  # keep the peer-reviewed copy of a duplicate
+                i = next(j for j, q in enumerate(papers) if _key(q) == k)
+                if p.get("peer_reviewed") and not papers[i].get("peer_reviewed"):
+                    papers[i] = p
+                continue
+            seen.add(k)
+            papers.append(p)
     if not springer_key:
         sources.append({"source": "Springer Nature", "status": "not_configured",
                         "reason": "set SPRINGER_API_KEY (free) to include Springer journals"})

@@ -80,7 +80,7 @@
    "dataset": {
     "short_name": "M2IMNXASM",
     "version": "5.12.4",
-    "concept_id": null,
+    "concept_id": "C1276812823-GES_DISC",
     "variable": "QV2M"
    },
    "fallback": {
@@ -473,7 +473,7 @@
    "dataset": {
     "short_name": "AIRS3STD",
     "version": "006",
-    "concept_id": null,
+    "concept_id": "C1238517289-GES_DISC",
     "variable": "SurfAirTemp_A"
    },
    "fallback": null,
@@ -1006,16 +1006,22 @@
    ],
    "source": "giovanni",
    "verified": true,
-   "verified_note": "verified live against https://api.giovanni.earthdata.nasa.gov/configured-variables/ on 2026-11-14",
+   "verified_note": "verified live against https://api.giovanni.earthdata.nasa.gov/configured-variables/ on 2026-11-14; CMR concept ids (M2SDNXSLV C1276812843, monthly M2SMNXSLV C1276812828 with T2MMAX in K) verified 2026-11-15",
    "giovanni_id": "M2SDNXSLV_5_12_4_T2MMAX",
    "harmony_variable": "M2SDNXSLV_5_12_4_T2MMAX",
    "dataset": {
     "short_name": "M2SDNXSLV",
     "version": "5.12.4",
-    "concept_id": null,
+    "concept_id": "C1276812843-GES_DISC",
     "variable": "T2MMAX"
    },
-   "fallback": null,
+   "fallback": {
+    "short_name": "M2SMNXSLV",
+    "version": "5.12.4",
+    "concept_id": "C1276812828-GES_DISC",
+    "variable": "T2MMAX",
+    "resolution": "monthly"
+   },
    "native_resolution": "daily",
    "units": "K",
    "units_source": "seed",
@@ -1034,10 +1040,10 @@
   },
   {
    "id": "grace_groundwater",
-   "name": "Groundwater storage (GRACE data assimilation)",
+   "name": "Groundwater storage percentile (GRACE data assimilation)",
    "domain": "hydrology",
    "family": "groundwater",
-   "short_definition": "How much water is stored underground, from the GRACE gravity satellites blended into a land model (weekly).",
+   "short_definition": "How full underground water storage is compared with its long-term history (0-100 percentile), from the GRACE gravity satellites blended into a land model (weekly).",
    "definition": "GRACE satellites measure tiny changes in Earth's gravity caused by water moving. Assimilated into a land model they give groundwater storage, which reveals depletion from pumping, for example in North India.",
    "keywords": [
     "groundwater",
@@ -1051,19 +1057,19 @@
    ],
    "source": "giovanni",
    "verified": true,
-   "verified_note": "verified live against https://api.giovanni.earthdata.nasa.gov/configured-variables/ on 2026-11-14",
+   "verified_note": "verified live against https://api.giovanni.earthdata.nasa.gov/configured-variables/ on 2026-11-14; CMR concept id C2283200566-GES_DISC verified 2026-11-15 (gws_inst is a percentile in %, per CMR UMM-Var). No monthly collection exists, so there is no OPeNDAP fallback.",
    "giovanni_id": "GRACEDADM_CLSM025GL_7D_3_0_gws_inst",
    "harmony_variable": "GRACEDADM_CLSM025GL_7D_3_0_gws_inst",
    "dataset": {
     "short_name": "GRACEDADM_CLSM025GL_7D",
     "version": "3.0",
-    "concept_id": null,
+    "concept_id": "C2283200566-GES_DISC",
     "variable": "gws_inst"
    },
    "fallback": null,
    "native_resolution": "8-day",
-   "units": "mm",
-   "units_source": "seed",
+   "units": "%",
+   "units_source": "cmr",
    "coverage_start": "2003-02",
    "coverage_source": "seed",
    "spatial_modes": [
@@ -1092,20 +1098,27 @@
    ],
    "source": "giovanni",
    "verified": true,
-   "verified_note": "verified live against https://api.giovanni.earthdata.nasa.gov/configured-variables/ on 2026-11-14",
-   "giovanni_id": "NOBM_DAY_R2017_chl",
-   "harmony_variable": "NOBM_DAY_R2017_chl",
+   "verified_note": "verified live against https://api.giovanni.earthdata.nasa.gov/configured-variables/ on 2026-11-14. 2026-11-15: switched from 'chl' (chlorophytes, one phytoplankton group) to 'tot' (total chlorophyll) per CMR UMM-Var; CMR concept ids NOBM_DAY C1404080675 and monthly NOBM_MON C1404080681 verified; the model record ends 2015-12.",
+   "giovanni_id": "NOBM_DAY_R2017_tot",
+   "harmony_variable": "NOBM_DAY_R2017_tot",
    "dataset": {
     "short_name": "NOBM_DAY",
     "version": "R2017",
-    "concept_id": null,
-    "variable": "chl"
+    "concept_id": "C1404080675-GES_DISC",
+    "variable": "tot"
    },
-   "fallback": null,
+   "fallback": {
+    "short_name": "NOBM_MON",
+    "version": "R2017",
+    "concept_id": "C1404080681-GES_DISC",
+    "variable": "tot",
+    "resolution": "monthly"
+   },
    "native_resolution": "daily",
    "units": "mg m-3",
    "units_source": "seed",
    "coverage_start": "1998-01",
+   "coverage_end": "2015-12",
    "coverage_source": "seed",
    "spatial_modes": [
     "point",
@@ -1137,7 +1150,7 @@
    "dataset": {
     "short_name": "OCO2_GEOS_L3CO2_DAY",
     "version": "10r",
-    "concept_id": null,
+    "concept_id": "C2240248762-GES_DISC",
     "variable": "XCO2"
    },
    "fallback": null,
@@ -1150,6 +1163,7 @@
     "units": "ppm"
    },
    "coverage_start": "2015-01",
+   "coverage_end": "2022-02",
    "coverage_source": "seed",
    "spatial_modes": [
     "point",

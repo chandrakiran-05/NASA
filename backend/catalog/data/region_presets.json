@@ -1,5 +1,5 @@
 {
- "_comment": "Editorial, APPROXIMATE bounding boxes [west, south, east, north] for regions the offline gazetteer lacks (sub-national units, basins, deserts). Shown to users as approximate; they can adjust the box on the map.",
+ "_comment": "Editorial, APPROXIMATE bounding boxes [west, south, east, north] for regions the offline gazetteer lacks (sub-national units, oceans, seas, gulfs, bays, polar regions, river basins, lakes, deserts, mountain ranges, deltas, reefs). All are shown to users as approximate; they can adjust the box on the map. kind: ocean | lake | river | ice (polar, mostly ice-covered) | land (default land). note: why a box is only representative or very large. Boxes are kept near or under 400 square degrees (AppEEARS limit) where the feature allows.",
  "regions": [
   {
    "name": "Tamil Nadu",
@@ -405,19 +405,24 @@
     59.0,
     -11.0,
     84.0
-   ]
+   ],
+   "kind": "ice"
   },
   {
    "name": "Arctic (north of 66.5°N)",
    "aliases": [
-    "arctic circle"
+    "arctic",
+    "arctic circle",
+    "arctic ocean"
    ],
    "bbox": [
     -180.0,
     66.5,
     180.0,
     90.0
-   ]
+   ],
+   "kind": "ice",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
   },
   {
    "name": "Murray-Darling Basin",
@@ -441,7 +446,8 @@
     12.0,
     15.5,
     14.5
-   ]
+   ],
+   "kind": "lake"
   },
   {
    "name": "Aral Sea region",
@@ -453,7 +459,8 @@
     43.5,
     62.0,
     46.8
-   ]
+   ],
+   "kind": "lake"
   },
   {
    "name": "Pantanal",
@@ -518,7 +525,9 @@
     -90.0,
     180.0,
     -60.0
-   ]
+   ],
+   "kind": "ice",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
   },
   {
    "name": "Bay of Bengal",
@@ -528,7 +537,8 @@
     5.0,
     95.0,
     22.5
-   ]
+   ],
+   "kind": "ocean"
   },
   {
    "name": "Arabian Sea",
@@ -538,7 +548,8 @@
     5.0,
     77.0,
     25.0
-   ]
+   ],
+   "kind": "ocean"
   },
   {
    "name": "Gulf of Mexico",
@@ -548,7 +559,8 @@
     18.0,
     -80.5,
     31.0
-   ]
+   ],
+   "kind": "ocean"
   },
   {
    "name": "Mississippi River plume (SeaWiFS paper region)",
@@ -561,7 +573,2203 @@
     28.0,
     -88.0,
     30.0
-   ]
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "North Atlantic Ocean",
+   "aliases": [
+    "north atlantic"
+   ],
+   "bbox": [
+    -45.0,
+    35.0,
+    -25.0,
+    55.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "South Atlantic Ocean",
+   "aliases": [
+    "south atlantic"
+   ],
+   "bbox": [
+    -30.0,
+    -35.0,
+    -10.0,
+    -15.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "Atlantic Ocean (tropical)",
+   "aliases": [
+    "atlantic ocean",
+    "atlantic",
+    "tropical atlantic"
+   ],
+   "bbox": [
+    -40.0,
+    -5.0,
+    -20.0,
+    15.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "North Pacific Ocean",
+   "aliases": [
+    "north pacific"
+   ],
+   "bbox": [
+    -170.0,
+    30.0,
+    -150.0,
+    50.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "South Pacific Ocean",
+   "aliases": [
+    "south pacific"
+   ],
+   "bbox": [
+    -140.0,
+    -35.0,
+    -120.0,
+    -15.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "Equatorial Pacific (Nino 3.4)",
+   "aliases": [
+    "equatorial pacific",
+    "pacific ocean",
+    "pacific",
+    "nino 3 4",
+    "nino34",
+    "el nino region"
+   ],
+   "bbox": [
+    -170.0,
+    -5.0,
+    -120.0,
+    5.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "Indian Ocean",
+   "aliases": [
+    "indian ocean"
+   ],
+   "bbox": [
+    65.0,
+    -20.0,
+    85.0,
+    0.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "Southern Ocean",
+   "aliases": [
+    "southern ocean",
+    "antarctic ocean"
+   ],
+   "bbox": [
+    0.0,
+    -65.0,
+    20.0,
+    -50.0
+   ],
+   "kind": "ocean",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "Gulf Stream",
+   "aliases": [
+    "gulf stream"
+   ],
+   "bbox": [
+    -80.0,
+    30.0,
+    -60.0,
+    42.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Mediterranean Sea",
+   "aliases": [
+    "mediterranean sea"
+   ],
+   "bbox": [
+    -6.0,
+    30.0,
+    36.0,
+    46.0
+   ],
+   "kind": "ocean",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "North Sea",
+   "aliases": [],
+   "bbox": [
+    -4.0,
+    51.0,
+    9.0,
+    61.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Baltic Sea",
+   "aliases": [
+    "baltic"
+   ],
+   "bbox": [
+    9.5,
+    53.5,
+    30.5,
+    66.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Black Sea",
+   "aliases": [],
+   "bbox": [
+    27.5,
+    40.8,
+    41.8,
+    46.8
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Caspian Sea",
+   "aliases": [
+    "caspian"
+   ],
+   "bbox": [
+    46.5,
+    36.5,
+    54.8,
+    47.2
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Red Sea",
+   "aliases": [],
+   "bbox": [
+    32.5,
+    12.5,
+    43.5,
+    30.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Caribbean Sea",
+   "aliases": [
+    "caribbean"
+   ],
+   "bbox": [
+    -88.0,
+    9.0,
+    -60.0,
+    22.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Sargasso Sea",
+   "aliases": [],
+   "bbox": [
+    -70.0,
+    22.0,
+    -45.0,
+    35.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "South China Sea",
+   "aliases": [],
+   "bbox": [
+    105.0,
+    3.0,
+    121.0,
+    23.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "East China Sea",
+   "aliases": [],
+   "bbox": [
+    119.0,
+    25.0,
+    131.0,
+    33.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Yellow Sea",
+   "aliases": [],
+   "bbox": [
+    119.0,
+    33.0,
+    127.0,
+    41.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Sea of Japan",
+   "aliases": [
+    "east sea",
+    "japan sea"
+   ],
+   "bbox": [
+    128.0,
+    34.0,
+    142.0,
+    52.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Sea of Okhotsk",
+   "aliases": [
+    "okhotsk"
+   ],
+   "bbox": [
+    135.0,
+    44.0,
+    160.0,
+    62.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Bering Sea (eastern part)",
+   "aliases": [
+    "bering sea",
+    "bering"
+   ],
+   "bbox": [
+    -178.0,
+    54.0,
+    -160.0,
+    64.0
+   ],
+   "kind": "ocean",
+   "note": "box cannot cross the date line; eastern part only"
+  },
+  {
+   "name": "Barents Sea",
+   "aliases": [
+    "barents"
+   ],
+   "bbox": [
+    20.0,
+    68.0,
+    60.0,
+    80.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Kara Sea",
+   "aliases": [],
+   "bbox": [
+    55.0,
+    68.0,
+    100.0,
+    81.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Beaufort Sea",
+   "aliases": [
+    "beaufort"
+   ],
+   "bbox": [
+    -160.0,
+    69.0,
+    -120.0,
+    76.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Chukchi Sea",
+   "aliases": [],
+   "bbox": [
+    -180.0,
+    66.0,
+    -157.0,
+    75.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Greenland Sea",
+   "aliases": [],
+   "bbox": [
+    -20.0,
+    70.0,
+    10.0,
+    80.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Norwegian Sea",
+   "aliases": [],
+   "bbox": [
+    -5.0,
+    62.0,
+    15.0,
+    72.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Labrador Sea",
+   "aliases": [],
+   "bbox": [
+    -64.0,
+    52.0,
+    -44.0,
+    66.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Weddell Sea",
+   "aliases": [
+    "weddell"
+   ],
+   "bbox": [
+    -60.0,
+    -78.0,
+    -15.0,
+    -60.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Ross Sea (eastern part)",
+   "aliases": [
+    "ross sea"
+   ],
+   "bbox": [
+    -180.0,
+    -78.0,
+    -155.0,
+    -70.0
+   ],
+   "kind": "ice",
+   "note": "box cannot cross the date line; eastern part only"
+  },
+  {
+   "name": "Amundsen Sea",
+   "aliases": [],
+   "bbox": [
+    -130.0,
+    -75.0,
+    -100.0,
+    -70.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Bellingshausen Sea",
+   "aliases": [],
+   "bbox": [
+    -100.0,
+    -73.0,
+    -70.0,
+    -65.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Andaman Sea",
+   "aliases": [],
+   "bbox": [
+    92.0,
+    5.0,
+    98.5,
+    16.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Coral Sea",
+   "aliases": [],
+   "bbox": [
+    145.0,
+    -25.0,
+    165.0,
+    -10.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Tasman Sea",
+   "aliases": [],
+   "bbox": [
+    150.0,
+    -45.0,
+    170.0,
+    -30.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Adriatic Sea",
+   "aliases": [
+    "adriatic"
+   ],
+   "bbox": [
+    12.0,
+    40.0,
+    20.0,
+    46.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Aegean Sea",
+   "aliases": [
+    "aegean"
+   ],
+   "bbox": [
+    22.0,
+    35.0,
+    28.5,
+    41.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Persian Gulf",
+   "aliases": [
+    "arabian gulf"
+   ],
+   "bbox": [
+    47.5,
+    23.5,
+    57.0,
+    30.5
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of Guinea",
+   "aliases": [],
+   "bbox": [
+    -5.0,
+    -5.0,
+    10.0,
+    6.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of Alaska",
+   "aliases": [],
+   "bbox": [
+    -155.0,
+    54.0,
+    -135.0,
+    61.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of California",
+   "aliases": [
+    "sea of cortez"
+   ],
+   "bbox": [
+    -115.0,
+    22.5,
+    -106.0,
+    32.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of Aden",
+   "aliases": [],
+   "bbox": [
+    43.0,
+    10.5,
+    51.5,
+    15.5
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of Thailand",
+   "aliases": [],
+   "bbox": [
+    99.0,
+    6.0,
+    105.0,
+    13.5
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of Maine",
+   "aliases": [],
+   "bbox": [
+    -71.0,
+    41.0,
+    -65.0,
+    45.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of St. Lawrence",
+   "aliases": [
+    "gulf of st lawrence",
+    "gulf of saint lawrence"
+   ],
+   "bbox": [
+    -66.0,
+    45.5,
+    -58.0,
+    51.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Gulf of Bothnia",
+   "aliases": [],
+   "bbox": [
+    17.0,
+    60.0,
+    25.5,
+    66.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Hudson Bay",
+   "aliases": [],
+   "bbox": [
+    -95.0,
+    51.0,
+    -77.0,
+    64.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Chesapeake Bay",
+   "aliases": [
+    "chesapeake"
+   ],
+   "bbox": [
+    -77.5,
+    36.8,
+    -75.8,
+    39.6
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "San Francisco Bay",
+   "aliases": [],
+   "bbox": [
+    -122.6,
+    37.4,
+    -121.9,
+    38.2
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Bay of Biscay",
+   "aliases": [
+    "biscay"
+   ],
+   "bbox": [
+    -10.0,
+    43.0,
+    -1.0,
+    48.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Strait of Malacca",
+   "aliases": [
+    "malacca strait",
+    "straits of malacca"
+   ],
+   "bbox": [
+    97.0,
+    1.0,
+    104.0,
+    6.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Drake Passage",
+   "aliases": [],
+   "bbox": [
+    -70.0,
+    -62.0,
+    -55.0,
+    -55.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Coast of California (ocean)",
+   "aliases": [
+    "coast of california",
+    "california coast",
+    "california current"
+   ],
+   "bbox": [
+    -126.0,
+    32.0,
+    -117.0,
+    42.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Coast of Peru (ocean)",
+   "aliases": [
+    "coast of peru",
+    "peru coast",
+    "peruvian upwelling",
+    "humboldt current"
+   ],
+   "bbox": [
+    -84.0,
+    -18.0,
+    -75.0,
+    -4.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Coast of Bangladesh",
+   "aliases": [
+    "coast of bangladesh",
+    "bangladesh coast",
+    "coastline of bangladesh"
+   ],
+   "bbox": [
+    88.5,
+    21.0,
+    92.5,
+    23.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Great Barrier Reef",
+   "aliases": [
+    "barrier reef",
+    "gbr"
+   ],
+   "bbox": [
+    142.0,
+    -24.5,
+    153.0,
+    -10.0
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Mesoamerican Reef",
+   "aliases": [
+    "belize barrier reef",
+    "mesoamerican barrier reef"
+   ],
+   "bbox": [
+    -88.5,
+    15.8,
+    -86.5,
+    21.5
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Florida Reef",
+   "aliases": [
+    "florida keys"
+   ],
+   "bbox": [
+    -82.0,
+    24.4,
+    -80.0,
+    25.8
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Ningaloo Reef",
+   "aliases": [
+    "ningaloo"
+   ],
+   "bbox": [
+    113.0,
+    -24.0,
+    114.5,
+    -21.5
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Galapagos Islands",
+   "aliases": [
+    "galapagos"
+   ],
+   "bbox": [
+    -92.5,
+    -1.6,
+    -88.8,
+    0.8
+   ],
+   "kind": "ocean"
+  },
+  {
+   "name": "Svalbard",
+   "aliases": [
+    "spitsbergen"
+   ],
+   "bbox": [
+    10.0,
+    76.0,
+    34.0,
+    81.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Antarctic Peninsula",
+   "aliases": [],
+   "bbox": [
+    -75.0,
+    -75.0,
+    -55.0,
+    -60.0
+   ],
+   "kind": "ice"
+  },
+  {
+   "name": "Tropics",
+   "aliases": [
+    "tropics",
+    "the tropics",
+    "tropical belt"
+   ],
+   "bbox": [
+    -180.0,
+    -23.5,
+    180.0,
+    23.5
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Europe",
+   "aliases": [],
+   "bbox": [
+    -10.0,
+    36.0,
+    40.0,
+    71.0
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Africa",
+   "aliases": [],
+   "bbox": [
+    -18.0,
+    -35.0,
+    52.0,
+    37.0
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "South America",
+   "aliases": [],
+   "bbox": [
+    -82.0,
+    -56.0,
+    -34.0,
+    13.0
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "North America",
+   "aliases": [],
+   "bbox": [
+    -168.0,
+    15.0,
+    -52.0,
+    72.0
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Mississippi River (lower main stem)",
+   "aliases": [
+    "mississippi river"
+   ],
+   "bbox": [
+    -92.0,
+    29.0,
+    -89.0,
+    37.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Mississippi River Basin",
+   "aliases": [
+    "mississippi basin",
+    "mississippi river basin"
+   ],
+   "bbox": [
+    -113.0,
+    29.0,
+    -78.0,
+    49.0
+   ],
+   "kind": "river",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Missouri River",
+   "aliases": [
+    "missouri river",
+    "missouri basin"
+   ],
+   "bbox": [
+    -114.0,
+    37.0,
+    -90.0,
+    49.0
+   ],
+   "kind": "river",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Ohio River",
+   "aliases": [
+    "ohio river",
+    "ohio basin"
+   ],
+   "bbox": [
+    -89.0,
+    36.5,
+    -78.0,
+    42.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Colorado River",
+   "aliases": [
+    "colorado river",
+    "colorado river basin"
+   ],
+   "bbox": [
+    -115.0,
+    32.0,
+    -105.0,
+    42.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Columbia River",
+   "aliases": [
+    "columbia river",
+    "columbia basin"
+   ],
+   "bbox": [
+    -124.0,
+    42.0,
+    -110.0,
+    53.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Rio Grande",
+   "aliases": [
+    "rio grande river",
+    "rio bravo"
+   ],
+   "bbox": [
+    -109.0,
+    25.0,
+    -97.0,
+    38.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Potomac River",
+   "aliases": [
+    "potomac",
+    "potomac basin"
+   ],
+   "bbox": [
+    -80.5,
+    37.8,
+    -76.2,
+    40.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Sacramento River",
+   "aliases": [
+    "sacramento river"
+   ],
+   "bbox": [
+    -123.0,
+    38.0,
+    -120.0,
+    42.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Hudson River",
+   "aliases": [
+    "hudson river"
+   ],
+   "bbox": [
+    -75.0,
+    40.5,
+    -73.5,
+    44.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Delaware River",
+   "aliases": [
+    "delaware river"
+   ],
+   "bbox": [
+    -76.0,
+    38.8,
+    -74.3,
+    42.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "St. Lawrence River",
+   "aliases": [
+    "st lawrence river",
+    "saint lawrence river",
+    "st lawrence"
+   ],
+   "bbox": [
+    -80.0,
+    43.0,
+    -64.0,
+    50.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Mekong River",
+   "aliases": [
+    "mekong",
+    "mekong basin"
+   ],
+   "bbox": [
+    98.0,
+    9.0,
+    107.0,
+    30.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Ganges Basin",
+   "aliases": [
+    "ganges",
+    "ganges river",
+    "ganga",
+    "ganges basin"
+   ],
+   "bbox": [
+    73.0,
+    22.0,
+    89.0,
+    31.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Brahmaputra Basin",
+   "aliases": [
+    "brahmaputra",
+    "brahmaputra river"
+   ],
+   "bbox": [
+    82.0,
+    24.0,
+    97.0,
+    31.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Indus Basin",
+   "aliases": [
+    "indus",
+    "indus river"
+   ],
+   "bbox": [
+    66.0,
+    24.0,
+    82.0,
+    37.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Ganges-Brahmaputra Delta",
+   "aliases": [
+    "ganges delta",
+    "ganges brahmaputra delta",
+    "bengal delta"
+   ],
+   "bbox": [
+    88.0,
+    21.5,
+    91.5,
+    24.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Yangtze River",
+   "aliases": [
+    "yangtze",
+    "chang jiang",
+    "yangtze basin"
+   ],
+   "bbox": [
+    90.0,
+    24.0,
+    122.0,
+    35.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Yellow River",
+   "aliases": [
+    "huang he",
+    "yellow river basin"
+   ],
+   "bbox": [
+    95.0,
+    32.0,
+    119.0,
+    41.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Nile River (Egypt and Sudan)",
+   "aliases": [
+    "nile",
+    "nile river",
+    "river nile"
+   ],
+   "bbox": [
+    29.0,
+    15.0,
+    34.0,
+    31.5
+   ],
+   "kind": "river",
+   "note": "representative sub-area of a very large feature; adjust on the map"
+  },
+  {
+   "name": "Niger River",
+   "aliases": [
+    "niger river",
+    "niger basin"
+   ],
+   "bbox": [
+    -12.0,
+    4.0,
+    15.0,
+    17.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Zambezi River",
+   "aliases": [
+    "zambezi",
+    "zambezi river"
+   ],
+   "bbox": [
+    18.0,
+    -20.0,
+    37.0,
+    -11.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Danube River",
+   "aliases": [
+    "danube",
+    "danube basin"
+   ],
+   "bbox": [
+    8.0,
+    42.0,
+    30.0,
+    50.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Rhine River",
+   "aliases": [
+    "rhine",
+    "rhine basin"
+   ],
+   "bbox": [
+    4.0,
+    46.0,
+    12.0,
+    52.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Volga River",
+   "aliases": [
+    "volga",
+    "volga basin"
+   ],
+   "bbox": [
+    32.0,
+    45.0,
+    60.0,
+    61.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Orinoco River",
+   "aliases": [
+    "orinoco"
+   ],
+   "bbox": [
+    -74.0,
+    1.0,
+    -60.0,
+    10.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Parana River",
+   "aliases": [
+    "parana river",
+    "rio de la plata",
+    "la plata basin"
+   ],
+   "bbox": [
+    -66.0,
+    -35.0,
+    -43.0,
+    -14.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Lena River",
+   "aliases": [
+    "lena river"
+   ],
+   "bbox": [
+    103.0,
+    52.0,
+    135.0,
+    74.0
+   ],
+   "kind": "river",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Niger Delta",
+   "aliases": [],
+   "bbox": [
+    5.0,
+    4.0,
+    7.5,
+    6.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Pearl River Delta",
+   "aliases": [],
+   "bbox": [
+    112.8,
+    21.9,
+    114.5,
+    23.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Indus Delta",
+   "aliases": [],
+   "bbox": [
+    67.0,
+    23.5,
+    68.5,
+    25.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Irrawaddy Delta",
+   "aliases": [
+    "ayeyarwady delta"
+   ],
+   "bbox": [
+    94.5,
+    15.5,
+    96.5,
+    18.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Danube Delta",
+   "aliases": [],
+   "bbox": [
+    28.5,
+    44.7,
+    29.8,
+    45.5
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Volga Delta",
+   "aliases": [],
+   "bbox": [
+    47.0,
+    45.5,
+    49.5,
+    46.8
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Lena Delta",
+   "aliases": [],
+   "bbox": [
+    123.0,
+    71.5,
+    130.0,
+    74.0
+   ],
+   "kind": "river"
+  },
+  {
+   "name": "Everglades",
+   "aliases": [],
+   "bbox": [
+    -81.5,
+    25.0,
+    -80.3,
+    26.8
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Sudd wetland",
+   "aliases": [
+    "sudd"
+   ],
+   "bbox": [
+    29.5,
+    6.0,
+    32.0,
+    9.5
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Great Lakes",
+   "aliases": [],
+   "bbox": [
+    -92.2,
+    41.3,
+    -76.0,
+    49.0
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Superior",
+   "aliases": [],
+   "bbox": [
+    -92.2,
+    46.4,
+    -84.3,
+    49.0
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Michigan",
+   "aliases": [],
+   "bbox": [
+    -88.1,
+    41.6,
+    -84.7,
+    46.1
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Huron",
+   "aliases": [],
+   "bbox": [
+    -84.8,
+    43.0,
+    -79.6,
+    46.4
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Erie",
+   "aliases": [],
+   "bbox": [
+    -83.5,
+    41.3,
+    -78.8,
+    42.9
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Ontario",
+   "aliases": [],
+   "bbox": [
+    -79.9,
+    43.1,
+    -76.0,
+    44.3
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Victoria",
+   "aliases": [],
+   "bbox": [
+    31.5,
+    -3.1,
+    34.9,
+    0.6
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Tanganyika",
+   "aliases": [],
+   "bbox": [
+    29.0,
+    -8.8,
+    31.3,
+    -3.3
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Malawi",
+   "aliases": [
+    "lake nyasa"
+   ],
+   "bbox": [
+    33.8,
+    -14.5,
+    35.4,
+    -9.4
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Turkana",
+   "aliases": [],
+   "bbox": [
+    35.7,
+    2.3,
+    36.7,
+    4.7
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Volta",
+   "aliases": [],
+   "bbox": [
+    -1.0,
+    6.2,
+    0.6,
+    9.2
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Kariba",
+   "aliases": [],
+   "bbox": [
+    26.6,
+    -18.1,
+    29.1,
+    -16.4
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Nasser",
+   "aliases": [
+    "aswan dam",
+    "aswan high dam",
+    "lake nubia"
+   ],
+   "bbox": [
+    31.0,
+    21.0,
+    33.5,
+    24.0
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Baikal",
+   "aliases": [
+    "baikal"
+   ],
+   "bbox": [
+    103.5,
+    51.4,
+    110.0,
+    55.9
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Balkhash",
+   "aliases": [
+    "balkhash"
+   ],
+   "bbox": [
+    73.3,
+    44.9,
+    79.3,
+    47.2
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Titicaca",
+   "aliases": [
+    "titicaca"
+   ],
+   "bbox": [
+    -70.1,
+    -16.6,
+    -68.6,
+    -15.2
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Great Salt Lake",
+   "aliases": [],
+   "bbox": [
+    -113.1,
+    40.6,
+    -111.9,
+    41.7
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Mead",
+   "aliases": [
+    "hoover dam"
+   ],
+   "bbox": [
+    -115.0,
+    35.9,
+    -113.9,
+    36.6
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Powell",
+   "aliases": [
+    "glen canyon dam"
+   ],
+   "bbox": [
+    -111.6,
+    36.9,
+    -110.3,
+    38.0
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Lanier",
+   "aliases": [
+    "lake sidney lanier",
+    "buford dam"
+   ],
+   "bbox": [
+    -84.1,
+    34.15,
+    -83.8,
+    34.45
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Tahoe",
+   "aliases": [],
+   "bbox": [
+    -120.2,
+    38.9,
+    -119.9,
+    39.3
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Okeechobee",
+   "aliases": [],
+   "bbox": [
+    -81.1,
+    26.7,
+    -80.6,
+    27.2
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Winnipeg",
+   "aliases": [],
+   "bbox": [
+    -99.3,
+    50.3,
+    -96.2,
+    54.0
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Ladoga",
+   "aliases": [],
+   "bbox": [
+    29.8,
+    59.9,
+    33.0,
+    61.8
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Lake Geneva",
+   "aliases": [
+    "lac leman"
+   ],
+   "bbox": [
+    6.1,
+    46.2,
+    6.95,
+    46.55
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Dead Sea",
+   "aliases": [],
+   "bbox": [
+    35.3,
+    31.0,
+    35.6,
+    31.8
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Salton Sea",
+   "aliases": [],
+   "bbox": [
+    -116.1,
+    33.1,
+    -115.5,
+    33.55
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Three Gorges Reservoir",
+   "aliases": [
+    "three gorges dam",
+    "three gorges"
+   ],
+   "bbox": [
+    106.5,
+    29.5,
+    111.1,
+    31.1
+   ],
+   "kind": "lake"
+  },
+  {
+   "name": "Gobi Desert",
+   "aliases": [
+    "gobi"
+   ],
+   "bbox": [
+    90.0,
+    38.0,
+    112.0,
+    46.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Atacama Desert",
+   "aliases": [
+    "atacama"
+   ],
+   "bbox": [
+    -71.5,
+    -27.5,
+    -68.0,
+    -18.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Kalahari Desert",
+   "aliases": [
+    "kalahari"
+   ],
+   "bbox": [
+    18.0,
+    -28.0,
+    26.0,
+    -18.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Namib Desert",
+   "aliases": [
+    "namib"
+   ],
+   "bbox": [
+    12.0,
+    -28.0,
+    16.0,
+    -17.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Arabian Desert",
+   "aliases": [
+    "rub al khali",
+    "empty quarter"
+   ],
+   "bbox": [
+    44.0,
+    16.0,
+    56.0,
+    24.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Mojave Desert",
+   "aliases": [
+    "mojave"
+   ],
+   "bbox": [
+    -118.5,
+    34.0,
+    -114.0,
+    37.5
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Sonoran Desert",
+   "aliases": [
+    "sonoran"
+   ],
+   "bbox": [
+    -116.0,
+    26.0,
+    -109.0,
+    34.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Chihuahuan Desert",
+   "aliases": [
+    "chihuahuan"
+   ],
+   "bbox": [
+    -108.0,
+    24.0,
+    -101.0,
+    33.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Taklamakan Desert",
+   "aliases": [
+    "taklamakan",
+    "taklimakan"
+   ],
+   "bbox": [
+    76.0,
+    36.5,
+    90.0,
+    41.5
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Karakum Desert",
+   "aliases": [
+    "karakum",
+    "kara kum"
+   ],
+   "bbox": [
+    52.0,
+    36.0,
+    65.0,
+    43.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Great Victoria Desert",
+   "aliases": [],
+   "bbox": [
+    123.0,
+    -31.0,
+    135.0,
+    -26.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Himalayas",
+   "aliases": [
+    "himalaya",
+    "himalayan",
+    "the himalayas"
+   ],
+   "bbox": [
+    73.0,
+    26.0,
+    97.0,
+    36.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Hindu Kush",
+   "aliases": [],
+   "bbox": [
+    67.0,
+    34.0,
+    74.0,
+    37.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Karakoram",
+   "aliases": [],
+   "bbox": [
+    74.0,
+    34.5,
+    78.0,
+    37.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Tian Shan",
+   "aliases": [
+    "tien shan"
+   ],
+   "bbox": [
+    70.0,
+    39.0,
+    90.0,
+    45.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Rocky Mountains",
+   "aliases": [
+    "rockies",
+    "rocky mountain"
+   ],
+   "bbox": [
+    -116.0,
+    35.0,
+    -104.0,
+    49.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Sierra Nevada (California)",
+   "aliases": [
+    "sierra nevada"
+   ],
+   "bbox": [
+    -121.5,
+    35.5,
+    -117.5,
+    40.5
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Cascade Range",
+   "aliases": [
+    "cascades",
+    "cascade mountains"
+   ],
+   "bbox": [
+    -123.0,
+    42.0,
+    -120.0,
+    49.5
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Appalachian Mountains",
+   "aliases": [
+    "appalachians",
+    "appalachia"
+   ],
+   "bbox": [
+    -85.0,
+    33.0,
+    -70.0,
+    47.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Pyrenees",
+   "aliases": [],
+   "bbox": [
+    -2.0,
+    42.0,
+    3.5,
+    43.4
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Carpathian Mountains",
+   "aliases": [
+    "carpathians"
+   ],
+   "bbox": [
+    17.0,
+    44.0,
+    27.0,
+    50.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Caucasus",
+   "aliases": [
+    "caucasus mountains"
+   ],
+   "bbox": [
+    38.0,
+    40.0,
+    50.0,
+    44.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Ural Mountains",
+   "aliases": [
+    "urals"
+   ],
+   "bbox": [
+    55.0,
+    50.0,
+    62.0,
+    68.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Atlas Mountains",
+   "aliases": [],
+   "bbox": [
+    -10.0,
+    29.0,
+    10.0,
+    37.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Ethiopian Highlands",
+   "aliases": [],
+   "bbox": [
+    35.0,
+    6.0,
+    43.0,
+    15.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Mount Kilimanjaro",
+   "aliases": [
+    "kilimanjaro"
+   ],
+   "bbox": [
+    37.1,
+    -3.3,
+    37.6,
+    -2.9
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Patagonia",
+   "aliases": [],
+   "bbox": [
+    -75.0,
+    -55.0,
+    -63.0,
+    -37.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Black Forest",
+   "aliases": [
+    "schwarzwald"
+   ],
+   "bbox": [
+    7.6,
+    47.6,
+    8.9,
+    49.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Australian wheat belt",
+   "aliases": [
+    "australia wheat belt",
+    "wheat belt",
+    "wheatbelt"
+   ],
+   "bbox": [
+    114.5,
+    -35.0,
+    123.0,
+    -27.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Canadian Prairies",
+   "aliases": [
+    "prairies"
+   ],
+   "bbox": [
+    -114.0,
+    49.0,
+    -96.0,
+    55.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Pampas",
+   "aliases": [],
+   "bbox": [
+    -64.0,
+    -39.0,
+    -57.0,
+    -31.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Cerrado",
+   "aliases": [],
+   "bbox": [
+    -55.0,
+    -20.0,
+    -42.0,
+    -5.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Serengeti",
+   "aliases": [],
+   "bbox": [
+    34.0,
+    -3.5,
+    36.0,
+    -1.5
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Loess Plateau",
+   "aliases": [],
+   "bbox": [
+    104.0,
+    34.0,
+    114.0,
+    39.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "North China Plain",
+   "aliases": [],
+   "bbox": [
+    113.0,
+    32.0,
+    120.0,
+    40.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Horn of Africa",
+   "aliases": [],
+   "bbox": [
+    40.0,
+    -2.0,
+    51.5,
+    12.0
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Iberian Peninsula",
+   "aliases": [
+    "iberia"
+   ],
+   "bbox": [
+    -9.5,
+    36.0,
+    3.3,
+    43.8
+   ],
+   "kind": "land"
+  },
+  {
+   "name": "Arabian Peninsula",
+   "aliases": [],
+   "bbox": [
+    35.0,
+    12.5,
+    60.0,
+    30.0
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
+  },
+  {
+   "name": "Scandinavia",
+   "aliases": [],
+   "bbox": [
+    5.0,
+    55.0,
+    31.0,
+    71.0
+   ],
+   "kind": "land",
+   "note": "very large box (whole feature); fine for area averages, too big for AppEEARS"
   }
  ]
 }

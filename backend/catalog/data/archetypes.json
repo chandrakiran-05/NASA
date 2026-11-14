@@ -415,7 +415,6 @@
   ],
   "heat": [
    "merra2_t2m",
-   "merra2_t2m_daily_max",
    "modis_lst_day",
    "modis_lst_night",
    "station_tavg"
@@ -442,7 +441,7 @@
    "omi_ozone_total"
   ],
   "flood": [
-   "imerg_precip_daily",
+   "imerg_precip_monthly",
    "gldas_runoff"
   ],
   "local validation": [
@@ -458,6 +457,22 @@
   ],
   "carbon": [
    "oco2_xco2"
+  ],
+  "coastal flood": [
+   "tide_gauge_msl",
+   "sea_level_anomaly"
+  ],
+  "coastline": [
+   "tide_gauge_msl",
+   "sea_level_anomaly"
+  ],
+  "sea level": [
+   "tide_gauge_msl",
+   "sea_level_anomaly"
+  ],
+  "heatwave": [
+   "merra2_t2m_daily_max",
+   "merra2_t2m"
   ]
  }
 }

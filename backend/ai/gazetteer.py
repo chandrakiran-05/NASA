@@ -1,8 +1,9 @@
 """Offline place lookup (no network): GeoNames cities >15k population + countries + US states
 (geonamescache package) + the archetype example regions.
 
-Cities become a point plus a default buffer box; countries become an approximate bbox from
-the extent of their cities (users can adjust the box on the map).
+Cities become a point plus a default buffer box; countries and US states become an approximate
+bbox from the extent of their cities (users can adjust the box on the map). Oceans, seas, lakes,
+rivers, deserts, ranges and other large features come from the editorial presets.
 """
 from __future__ import annotations
 
@@ -28,6 +29,12 @@ def _fold(s: str) -> str:
     return re.sub(r"[^a-z0-9 ]", " ", s.lower()).strip()
 
 
+# a name next to one of these words is a water body or landform, not the city/state of that name
+# ("Lake Victoria", "Colorado River", "Gulf of Guinea"); without a preset for it we report no place
+FEATURE_AFTER = set("river rivers basin sea ocean gulf bay lake delta strait straits dam reservoir desert mountains "
+                    "range glacier reef current canal plateau".split())
+FEATURE_BEFORE = set("lake gulf bay sea strait straits river mount".split())
+
 PRESETS = Path(__file__).resolve().parents[1] / "catalog" / "data" / "region_presets.json"
 
 
@@ -39,8 +46,11 @@ def _index() -> dict:
     countries = gc.get_countries()
     idx: dict[str, dict] = {}
     by_cc: dict[str, list[tuple[float, float]]] = {}
+    by_state: dict[str, list[tuple[float, float]]] = {}
     for c in cities.values():
         by_cc.setdefault(c["countrycode"], []).append((c["longitude"], c["latitude"]))
+        if c["countrycode"] == "US":
+            by_state.setdefault(c.get("admin1code"), []).append((c["longitude"], c["latitude"]))
         rec = {"type": "city", "name": c["name"], "lat": c["latitude"], "lon": c["longitude"],
                "country": c["countrycode"], "population": c["population"]}
         k = _fold(c["name"])
@@ -70,10 +80,17 @@ def _index() -> dict:
         idx[_fold(co["name"])] = rec
     for st in gc.get_us_states().values():
         k = _fold(st["name"])
-        idx.setdefault(k, {"type": "us_state", "name": st["name"], "code": st["code"], "population": 10 ** 7})
+        rec = {"type": "us_state", "name": st["name"], "code": st["code"], "population": 10 ** 7}
+        pts = by_state.get(st["code"])
+        if pts:   # approximate box from the extent of the state's cities, like countries
+            lons, lats = [p[0] for p in pts], [p[1] for p in pts]
+            rec.update(bbox=[max(min(lons) - 0.3, -180), min(lats) - 0.3, min(max(lons) + 0.3, 180), max(lats) + 0.3],
+                       approximate=True)
+        idx.setdefault(k, rec)
     # editorial region presets win over everything (states, basins, deserts)
     for r in json.loads(PRESETS.read_text(encoding="utf-8"))["regions"]:
-        rec = {"type": "region", "name": r["name"], "bbox": r["bbox"], "approximate": True, "population": 10 ** 9}
+        rec = {"type": "region", "name": r["name"], "bbox": r["bbox"], "approximate": True, "population": 10 ** 9,
+               "kind": r.get("kind", "land"), **({"note": r["note"]} if r.get("note") else {})}
         for n in [r["name"], *r.get("aliases", [])]:
             kk = _fold(n)
             if len(kk) >= 3:
@@ -88,6 +105,7 @@ def lookup(name: str) -> dict | None:
 def find_places(text: str, max_n: int = 3) -> list[dict]:
     """Find place mentions in free text (longest n-gram first)."""
     idx = _index()
+    text = re.sub(r"['’]s\b", "", text)          # possessive: "Australia's wheat belt"
     raw_tokens = re.findall(r"[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'\-]*", text)
     tokens = [_fold(t) for t in raw_tokens]
     used = [False] * len(tokens)
@@ -106,6 +124,11 @@ def find_places(text: str, max_n: int = 3) -> list[dict]:
             if rec["type"] == "city" and rec.get("alternate") and not capitalised:
                 continue
             if rec["type"] == "city" and not capitalised and rec["population"] < 100_000:
+                continue
+            if rec["type"] != "region" and (
+                    (i + n < len(tokens) and tokens[i + n] in FEATURE_AFTER)
+                    or (i >= 1 and tokens[i - 1] in FEATURE_BEFORE)
+                    or (i >= 2 and tokens[i - 1] == "of" and tokens[i - 2] in FEATURE_BEFORE)):
                 continue
             for j in range(i, i + n):
                 used[j] = True

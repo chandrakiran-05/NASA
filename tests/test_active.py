@@ -185,3 +185,37 @@ def test_deep_review_and_hardware(client, settings):
     assert ev[-1]["type"] == "deep_review"
     hw = client.get("/api/ai/hardware").json()
     assert "live" in hw["recommendation"] and "disk_path" not in hw["profile"]
+
+
+def test_runner_falls_back_to_next_variable_of_the_criterion(client):
+    from backend.core.errors import CredentialsMissing
+    st = client.app.state.etd
+    real = st.ts.build_series
+
+    async def flaky(vid, *a, **k):
+        if vid == "merra2_t2m":
+            raise CredentialsMissing("needs a free NASA Earthdata token")
+        return await real(vid, *a, **k)
+    st.ts.build_series = flaky
+    geom = {"type": "Point", "coordinates": [80.27, 13.08], "name": "Chennai"}
+    jid = client.post("/api/active-trends", json={"geometry": geom, "start": "1995-01", "end": "2024-12",
+                                                  "criteria": ["temperature"], "ai_review": False,
+                                                  "research": False}).json()["job_id"]
+    res = wait_job(client, jid, timeout=120)["result"]
+    used = [t["variable_id"] for t in res["trends"]] + [t["variable_id"] for t in res["not_active"]]
+    assert used and used[0] != "merra2_t2m" and "merra2_t2m" in res["failed"]
+    ev = client.get(f"/api/active-trends/{jid}/events").json()["events"]
+    assert any(e["type"] == "fallback" and e["instead_of"] == "merra2_t2m" for e in ev)
+
+
+def test_view_has_chart_beast_pelt_and_ai_text(client):
+    client.fake.llm_reply = "Temperature here is rising, consistent with the computed trend."
+    sid = _upload(client, series(0.05 * T, seed=1).value, "warming")
+    v = client.get(f"/api/view/{sid}").json()
+    n = len(v["chart"]["time"])
+    assert n == 300 and len(v["chart"]["observed"]) == n and len(v["chart"]["change_probability"]) == n
+    assert v["caption"] and v["explanation"]["text"] and v["explanation"]["source"] in ("local_llm", "deterministic")
+    assert all(m["kind"].startswith(("beast_", "pelt_")) for m in v["markers"])
+    jid = client.post("/api/active-trends", json={"series_ids": [sid], "ai_review": False}).json()["job_id"]
+    tr = wait_job(client, jid, timeout=120)["result"]["trends"][0]
+    assert tr["view"]["chart"]["time"] and tr["view"]["recent_window"]

@@ -34,6 +34,11 @@ _UNIT_SYNONYMS = {"kgm-2s-1": "kgm-2s-1", "kg/m2/s": "kgm-2s-1", "kg/m^2/s": "kg
                   "kg/kg": "kg/kg", "1": "1", "mm/day": "mm/day", "mmday-1": "mm/day", "mmd-1": "mm/day"}
 
 
+POINT_BOX_HALF_DEG = 0.25
+_CRED_HINT = {"earthdata": "needs a free NASA Earthdata token (EARTHDATA_TOKEN in .env)",
+              "appeears": "needs a free NASA Earthdata login (EARTHDATA_USERNAME and EARTHDATA_PASSWORD in .env)"}
+
+
 def norm_units(u: str | None) -> str | None:
     if not u:
         return None
@@ -84,18 +89,37 @@ class TimeSeriesService:
         cs = v.get("coverage_start")
         if cs and parse_date(cs, end=True) > end:
             raise InvalidRequest(f"{v['name']} starts in {cs}; the requested period ends before that")
-        if region.is_point and "point" not in v.get("spatial_modes", ["point"]):
-            raise InvalidRequest(f"{v['name']} is only available for areas")
-        if not region.is_point and "area" not in v.get("spatial_modes", ["area"]):
-            raise InvalidRequest(f"{v['name']} is only available for points")
+        ce = v.get("coverage_end")
+        if ce and parse_date(ce) < start:
+            raise InvalidRequest(f"{v['name']} ends in {ce}; the requested period starts after that")
+        region, _ = self.effective_region(v, region)
         if not region.is_point and region.area_deg2 > 400 and v.get("source") == "appeears":
             raise InvalidRequest("AppEEARS area requests above ~400 square degrees are too large; draw a smaller box")
         return v
 
+    @staticmethod
+    def effective_region(v: dict, region: Region) -> tuple[Region, str | None]:
+        """Point-only variable + area -> area centre; area-only variable + point -> small box around it."""
+        modes = v.get("spatial_modes") or ["point", "area"]
+        if not region.is_point and "area" not in modes:
+            lon, lat = region.centroid
+            return (Region("point", (lon, lat, lon, lat), point=(lon, lat), name=region.name),
+                    f"{v['name']} is only available for points: used the centre point of the drawn area "
+                    f"({lat:.3f}, {lon:.3f})")
+        if region.is_point and "point" not in modes:
+            lon, lat = region.point
+            d = POINT_BOX_HALF_DEG
+            box = (max(lon - d, -180.0), max(lat - d, -90.0), min(lon + d, 180.0), min(lat + d, 90.0))
+            return (Region("bbox", box, name=region.name),
+                    f"{v['name']} is only available for areas: used a small box (+-{d} deg) around the point")
+        return region, None
+
     def request_hash(self, v: dict, region: Region, start: date, end: date, options: dict) -> str:
+        eff, _ = self.effective_region(v, region)
+        rkey = region.key() if eff == region else f"{region.key()}>{eff.key()}"   # unchanged key when no swap
         opts = {k: options[k] for k in sorted(options) if k in ("stations", "max_stations", "min_valid_fraction",
                                                                      "site_id", "station_id", "feature_id")}
-        return hash_request(v["id"], region.key(), start.isoformat(), end.isoformat(), opts)
+        return hash_request(v["id"], rkey, start.isoformat(), end.isoformat(), opts)
 
     async def build_series(self, variable_id: str, region: Region, start: date, end: date, *,
                            options: dict | None = None, progress: ProgressFn = _noop,
@@ -114,7 +138,11 @@ class TimeSeriesService:
             BYPASS_CACHE.set(True)       # contextvar: scoped to this job's task
         cs = v.get("coverage_start")
         eff_start = max(start, parse_date(cs)) if cs else start
+        region_req = region
+        region, geo_note = self.effective_region(v, region)
         routes, notes = plan_routes(v, region, self.catalog)
+        if geo_note:
+            notes.insert(0, geo_note)
         attempts = []
         raw = None
         used = None
@@ -132,9 +160,14 @@ class TimeSeriesService:
                 break
             except (UpstreamUnavailable, UpstreamError, CredentialsMissing) as exc:
                 attempts.append({"route": rt.connector, "status": "failed", "code": exc.code, "error": exc.message})
-                if isinstance(exc, CredentialsMissing) and rt is routes[-1]:
-                    raise
                 continue
+        if raw is None and any(a.get("code") == CredentialsMissing.code for a in attempts):
+            # one plain sentence instead of every connector's internals (those stay in detail.attempts)
+            if v.get("source") == "ncei":     # NOAA token, not Earthdata: the connector message already says so
+                msg = next(a["error"] for a in attempts if a.get("code") == CredentialsMissing.code)
+            else:
+                msg = f"{v['name']} {_CRED_HINT.get(v.get('source'), _CRED_HINT['earthdata'])}"
+            raise CredentialsMissing(msg, detail={"attempts": attempts, "notes": notes})
         if raw is None:
             last = attempts[-1] if attempts else {}
             raise UpstreamUnavailable(
@@ -168,7 +201,7 @@ class TimeSeriesService:
         if ms.n_valid == 0:
             raise InsufficientData("The source returned no valid values after quality control",
                                    detail={"qc": qc_report, "attempts": attempts})
-        self.store.save(ms, series_id=sid, request_hash=rh, region=region.as_dict())
+        self.store.save(ms, series_id=sid, request_hash=rh, region=region_req.as_dict())
         await progress(1.0, "Series ready")
         return {"series_id": sid, "cached": False, "completeness": ms.completeness(),
                 "source_api": ms.provenance.source_api, "qc": qc_report, "attempts": attempts, "notes": notes}

@@ -46,10 +46,15 @@ TERMS = [
     (("xco2", "co2"), ["carbon dioxide", "CO2"]),
 ]
 TREND = re.compile(r"\b(trend\w*|increas\w*|decreas\w*|declin\w*|change\w*|long-term|interannual|decad\w*)\b", re.I)
+# "higher/lower/gain/loss/enhanced/reduced" are left out on purpose: in abstracts they mostly compare
+# products or errors ("TROPOMI higher than OMI", "lower error"), not a change over time
 UP = re.compile(r"\b(increas\w*|ris(?:e|es|ing|en)|rose|greening|wetter|wetting|warming|warmer|upward|"
-                r"intensif\w*|enhanc\w*|positive trend\w*|gain\w*|higher)\b", re.I)
-DOWN = re.compile(r"\b(decreas\w*|declin\w*|drying|drier|browning|cooling|cooler|downward|reduc\w*|negative trend\w*|"
-                  r"loss\w*|deplet\w*|shrink\w*|lower|fell|drop\w*)\b", re.I)
+                r"intensif\w*|positive trend\w*|expan(?:d|ded|ding|sion))\b", re.I)
+DOWN = re.compile(r"\b(decreas\w*|declin\w*|drying|drier|browning|cooling|cooler|downward|negative trend\w*|"
+                  r"deplet\w*|shrink\w*|fell|fallen|drop\w*|thinn\w*|retreat\w*|melt\w*|record low\w*|"
+                  r"all-time low)\b", re.I)
+NEGATED = re.compile(r"\b(not|no longer|never|did not|does not|do not|didn't|doesn't|neither|nor|without|"
+                     r"rather than|instead of)\b", re.I)
 FLAT = re.compile(r"\b(no (?:significant )?(?:trend|change)|not significant|insignificant|non-significant|"
                   r"no clear trend|stable|unchanged)\b", re.I)
 SENT = re.compile(r"(?<=[.!?])\s+")
@@ -61,7 +66,9 @@ def terms_for(variable_id: str, name: str | None) -> list[str]:
     for keys, terms in TERMS:
         if any(k in vid for k in keys):
             return terms
-    return [name or variable_id]
+    words = [w for w in re.findall(r"[A-Za-z][A-Za-z0-9-]{2,}", name or variable_id or "")
+             if w.lower() not in ("the", "and", "from", "with", "model", "satellite", "monthly", "nasa", "noaa")]
+    return [" ".join(words[:3])] + words[:4] if words else [name or variable_id]
 
 
 def _has(text: str, terms: list[str]) -> bool:
@@ -97,8 +104,8 @@ def read_stance(abstract: str, terms: list[str]) -> dict:
     up = down = flat = 0
     best = None
     for sent in SENT.split(abstract or ""):
-        if not _has(sent, terms):
-            continue
+        if not _has(sent, terms) or sent.rstrip().endswith("?") or NEGATED.search(sent):
+            continue                       # negated or question sentences are not evidence of a direction
         f, u, d = bool(FLAT.search(sent)), len(UP.findall(sent)), len(DOWN.findall(sent))
         if f:
             flat += 1
@@ -134,6 +141,10 @@ def verify_ai_reading(abstract: str, reading: dict) -> tuple[bool, str]:
         return False, "unknown stance"
     if len(q) < 20 or _norm(q) not in _norm(abstract):
         return False, "quote is not in the abstract"
+    if st in ("rising", "falling") and NEGATED.search(q):
+        return False, "quote is negated"
+    if st == "mixed" and not (UP.search(q) and DOWN.search(q)):
+        return False, "quote does not describe both directions"
     if st == "rising" and not UP.search(q):
         return False, "quote does not describe an increase"
     if st == "falling" and not DOWN.search(q):
@@ -227,7 +238,9 @@ async def research_evidence(http, llm, *, variable_id: str, variable_name: str |
         "query": query, "since_year": since, "sources": sources,
         "n_relevant": len(papers), "papers": shown, "agreement": ag,
         "ai_readings": {"accepted": n_ai_ok, "rejected_as_unsupported": n_ai_rejected},
-        "plain_language": _plain(ag, papers, direction, variable_name or terms[0], region, since),
+        "plain_language": ("The literature sources could not be reached, so no research comparison was made."
+                           if not any(s["status"] == "ok" for s in sources) else
+                           _plain(ag, papers, direction, variable_name or terms[0], region, since)),
         "limits": ["Papers are matched by keywords and read from abstracts only.",
                    "Research agreement is context: it cannot turn data that failed verification into a trend.",
                    "Studies may use other datasets, periods or region boundaries than this analysis."],

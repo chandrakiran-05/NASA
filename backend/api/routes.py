@@ -637,3 +637,13 @@ async def research_evidence_endpoint(request: Request, body: dict):
         direction=direction, max_age_years=age,
         per_source=st.settings.research_per_source, springer_key=st.settings.springer_api_key,
                     semantic_key=st.settings.semantic_scholar_api_key, ads_token=st.settings.ads_api_token))
+
+
+# ===================================================================== chart-ready view (BEAST + PELT + local AI)
+@router.get("/view/{series_id}", tags=["active"])
+async def series_view(request: Request, series_id: str, alpha: float = Query(0.05, gt=0, lt=0.5),
+                      explain: bool = True):
+    """Everything to draw one series: observed + trend lines, BEAST ribbon and events, PELT breaks, and the
+    local model's fact-checked explanation."""
+    from ..active.view import build_view
+    return _clean(await build_view(S(request), series_id, alpha=alpha, explain=explain))

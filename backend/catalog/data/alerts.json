@@ -1,11 +1,12 @@
 {
-  "_comment": "GES DISC alerts copied from 02-platforms-and-apis.md (verified 2026-11-14). Update when GES DISC posts changes. 'outage_giovanni_prefixes' makes the router skip Giovanni for those variable IDs and use the fallback.",
-  "as_of": "2026-11-14",
-  "source": "https://disc.gsfc.nasa.gov/ (GES DISC alerts, manually transcribed)",
+  "_comment": "GES DISC alerts (checked against https://disc.gsfc.nasa.gov/api/alerts on 2026-11-15). Update when GES DISC posts changes. 'outage_giovanni_prefixes' makes the router skip Giovanni for those variable IDs and use the monthly Cloud OPeNDAP fallback; only list prefixes that HAVE a fallback, otherwise the variable becomes unroutable.",
+  "as_of": "2026-11-15",
+  "source": "https://disc.gsfc.nasa.gov/information/alerts",
   "alerts": [
-    {"id": "gic-outage-2026-11", "severity": "warning",
-     "message": "Outage of some cloud Giovanni variables: AIRS3STD 7.0, GLDAS_NOAH025_3H 2.1, IMERG DE/DL/HHE/HHL, OMI daily products, and others.",
-     "outage_giovanni_prefixes": ["AIRS3STD_7_0_", "GLDAS_NOAH025_3H_2_1_", "GPM_3IMERGDE_", "GPM_3IMERGDL_", "GPM_3IMERGHHE_", "GPM_3IMERGHHL_", "OMNO2d_", "OMTO3d_"]},
+    {"id": "gic-outage-2026-11", "severity": "info",
+     "message": "GES DISC reported a temporary outage of some cloud Giovanni variables (AIRS3STD 7.0, GLDAS_NOAH025_3H 2.1, IMERG DE/DL/HHE/HHL, OMI daily products) from 24 to 30 June 2026; that alert has expired. For the listed hourly/3-hourly/half-hourly collections this tool still uses the monthly Cloud OPeNDAP collection, which needs fewer requests.",
+     "source_alert": {"title": "Temporary Outage of Cloud Giovanni Variables", "start": "2026-06-24", "expires": "2026-06-30"},
+     "outage_giovanni_prefixes": ["AIRS3STD_7_0_", "GLDAS_NOAH025_3H_2_1_", "GPM_3IMERGDE_", "GPM_3IMERGDL_", "GPM_3IMERGHHE_", "GPM_3IMERGHHL_"]},
     {"id": "land-ocean-mask", "severity": "info",
      "message": "Ocean grid cells are masked for land-model variables (GLDAS, NLDAS). Choose land regions for these variables."},
     {"id": "spurious-zeros-fixed", "severity": "info",

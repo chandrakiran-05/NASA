@@ -27,17 +27,17 @@ def plan_routes(v: dict, region: Region, catalog: Catalog) -> tuple[list[Route],
     notes: list[str] = []
     routes: list[Route] = []
     if src == "giovanni":
-        outage = catalog.in_outage(v, point=region.is_point)
-        if outage:
+        has_fallback = bool((v.get("fallback") or {}).get("concept_id"))
+        if catalog.in_outage(v, point=region.is_point) and has_fallback:
             notes.append(f"Giovanni is in a reported outage for {v.get('giovanni_id')}; using the fallback.")
-        elif region.is_point:
-            routes.append(Route("giovanni_point", "Giovanni /timeseries (point)"))
         else:
-            routes.append(Route("harmony_area", "Giovanni Harmony average=area"))
-        if (v.get("fallback") or {}).get("concept_id"):
+            # an outage with no fallback still tries Giovanni: skipping it would leave no route at all
+            if catalog.in_outage(v, point=region.is_point):
+                notes.append(f"Giovanni outage reported for {v.get('giovanni_id')} and no fallback exists; trying it.")
+            routes.append(Route("giovanni_point", "Giovanni /timeseries (point)") if region.is_point
+                          else Route("harmony_area", "Giovanni Harmony average=area"))
+        if has_fallback:
             routes.append(Route("opendap", f"Cloud OPeNDAP monthly fallback ({v['fallback']['short_name']})"))
-        if not routes:
-            notes.append("No fallback collection is configured for this variable during the outage.")
     elif src == "appeears":
         routes.append(Route("appeears", "AppEEARS point task" if region.is_point else "AppEEARS area task"))
     elif src == "ncei":

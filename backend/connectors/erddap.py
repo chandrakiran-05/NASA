@@ -19,7 +19,7 @@ from urllib.parse import quote
 import numpy as np
 import pandas as pd
 
-from ..core.errors import InvalidRequest, UpstreamUnavailable
+from ..core.errors import InvalidRequest, UpstreamError, UpstreamUnavailable
 from ..core.geometry import point_in_polygon
 from ..timeseries.model import Provenance, RawSeries, ValueMeta
 from .base import Connector, FetchRequest, ProgressFn, _noop
@@ -55,9 +55,18 @@ class ERDDAPGrid(Connector):
         v = req.variable
         var = v["erddap_variable"]
         await progress(0.02, "Reading the ERDDAP grid axes")
-        # time axis not cached: new months must show up
-        times = pd.DatetimeIndex(pd.to_datetime(await self._axis(v, "time", use_cache=False), utc=True)
-                                 .tz_convert(None))
+        # time axis not cached: new months must show up. erddap_alt_dataset_ids: identical copies of the grid
+        # on the same server, tried in order when one is offline (upwell's NOAA PSL mirrors come and go)
+        for k, did in enumerate([v["dataset_id"], *v.get("erddap_alt_dataset_ids", [])]):
+            cand = {**v, "dataset_id": did}
+            try:
+                t_axis = await self._axis(cand, "time", use_cache=False)
+                break
+            except UpstreamError:
+                if k == len(v.get("erddap_alt_dataset_ids", [])):
+                    raise
+        v = cand
+        times = pd.DatetimeIndex(pd.to_datetime(t_axis, utc=True).tz_convert(None))
         lat = np.array(await self._axis(v, "latitude"), float)
         lon = np.array(await self._axis(v, "longitude"), float)
         t_idx = np.where((times >= pd.Timestamp(req.start)) & (times < pd.Timestamp(req.end) + pd.Timedelta(days=1)))[0]

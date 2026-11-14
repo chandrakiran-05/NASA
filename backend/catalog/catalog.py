@@ -25,6 +25,10 @@ class Catalog:
         self._ids = list(self.variables)
         self._index = BM25([self._doc(self.variables[i]) for i in self._ids])
         self._arch_index = BM25([" ".join([a["name"], *a["keywords"]]) for a in self.archetypes])
+        # investigation criteria (read-only): their variable lists are the curated "right answer" per quantity
+        self.criteria = [dict(c, variables=[v for v in c["variables"] if v in self.variables])
+                         for c in json.loads((DATA / "criteria.json").read_text(encoding="utf-8"))["criteria"]]
+        self._crit_index = BM25([self._crit_doc(c) for c in self.criteria])
 
     @staticmethod
     def _doc(v: dict) -> str:
@@ -33,6 +37,11 @@ class Catalog:
                  (v.get("dataset") or {}).get("short_name") or "", (v.get("dataset") or {}).get("variable") or ""]
         # the name counts three times and keywords twice: they are the curated vocabulary
         return " ".join(parts) + " " + " ".join(v.get("keywords", [])) + (" " + v.get("name", "")) * 2
+
+    def _crit_doc(self, c: dict) -> str:
+        # the first-choice variable's keywords give each criterion the students' vocabulary
+        kw = " ".join(self.variables[c["variables"][0]].get("keywords", [])) if c["variables"] else ""
+        return f"{c['name']} {c['name']} {c['id'].replace('_', ' ')} {c['domain']} {c['definition']} {kw}"
 
     # ------------------------------------------------------------------
     def get(self, vid: str) -> dict:
@@ -44,6 +53,18 @@ class Catalog:
                     return cand
             raise NotFound(f"Unknown variable {vid!r}")
         return v
+
+    def match_criteria(self, text: str, rel: float = 0.6) -> list[tuple[dict, float]]:
+        """Criteria the text is about: the best match plus any within `rel` of it, as (criterion, score/best)."""
+        sc = self._crit_index.scores(text)
+        # naming the domain ("ocean warming", "coastal flooding", "land surface") outweighs generic words
+        words = text.lower().split()
+        sc = [s * (1.5 if any(w.startswith(c["domain"][:5]) for w in words) else 1.0)
+              for c, s in zip(self.criteria, sc)]
+        best = max(sc or [0.0])
+        if best <= 1.0:
+            return []
+        return sorted(((c, s / best) for c, s in zip(self.criteria, sc) if s >= rel * best), key=lambda x: -x[1])
 
     def search(self, q: str | None = None, domain: str | None = None, region_type: str | None = None,
                source: str | None = None, limit: int = 20) -> list[dict]:
@@ -58,6 +79,15 @@ class Catalog:
                     for vid in vids:
                         if vid in scores:
                             scores[vid] += 2.0
+            # variables listed for the matching criterion (in its priority order) beat look-alikes
+            # such as daily or upper-air products that merely share words with the question
+            crit_bonus: dict[str, float] = {}
+            for n, (c, rel) in enumerate(self.match_criteria(q)):
+                for rank, vid in enumerate(c["variables"]):
+                    b = (6.0 - rank) if n == 0 else 0.5 * rel * (4.0 - 0.75 * rank)   # the best criterion leads
+                    crit_bonus[vid] = max(crit_bonus.get(vid, 0.0), b)
+            for vid, b in crit_bonus.items():
+                scores[vid] += b
         if region_type:
             arch = self.archetype(region_type)
             if arch:

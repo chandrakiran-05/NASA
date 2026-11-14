@@ -1,0 +1,214 @@
+{
+ "_comment": "Keyless global monthly grids (no NASA Earthdata token): NOAA PSL datasets mirrored on the NOAA upwell ERDDAP (source erddap, same entry shape as seed_catalog_ocean_atmos.json). All four grids use 0..360 longitudes (erddap_lon360) and north-to-south latitudes. GPCP v2.3, CMAP and PREC/L are on the same server but their precip variable carries a wrong 'seconds since 1970' unit there and every value comes back empty (checked 2026-11-15), so precipitation uses NCEP/DOE Reanalysis 2. No sea-level-anomaly grid with 30+ years exists on a NOAA ERDDAP (checked 2026-11-15), so global_sea_level_anomaly is not included. erddap_alt_dataset_ids lists identical copies of a grid on the same server, tried when the first returns an error.",
+ "variables": [
+  {
+   "id": "global_t2m",
+   "name": "Air temperature near the ground, anywhere on Earth (NOAA NCEP/NCAR Reanalysis)",
+   "domain": "atmosphere",
+   "family": "temperature",
+   "short_definition": "How warm the air is 2 metres above the ground, for any place on Earth since 1948, from NOAA's NCEP/NCAR reanalysis (no login needed).",
+   "definition": "A reanalysis feeds weather-station, balloon, ship and satellite observations into a weather model to make a complete monthly map with no gaps, including oceans, deserts and Antarctica. This is the 2 m air temperature (the height of a weather-station thermometer) from the NCEP/NCAR Reanalysis 1, on a grid of about 1.9 degrees (roughly 200 km). One grid cell covers a whole city and its countryside, so it shows the regional climate, not the heat of a single street. Places with few weather stations (Antarctica, central Africa, early decades) rely more on the model and are less certain.",
+   "keywords": [
+    "temperature",
+    "air temperature",
+    "heat",
+    "warming",
+    "climate",
+    "hot",
+    "cold",
+    "t2m",
+    "surface temperature",
+    "heatwave",
+    "global",
+    "worldwide",
+    "reanalysis",
+    "ncep",
+    "antarctica"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-15: axis and data queries on https://upwell.pfeg.noaa.gov/erddap/griddap/noaa_psl_0561_6c6f_3139 (time axis 1948-01 to 2026-02, 94 x 192 Gaussian grid, units degK); identical copy noaa_psl_9674_ce9f_347a (air2m.mon.mean) used when the first is offline (it returned HTTP 404 for part of 2026-11-15)",
+   "erddap_base": "https://upwell.pfeg.noaa.gov/erddap",
+   "dataset_id": "noaa_psl_0561_6c6f_3139",
+   "erddap_variable": "air",
+   "erddap_lon360": true,
+   "dataset": {
+    "short_name": "NCEP/NCAR Reanalysis 1 air.2m.mon.mean",
+    "version": "R1",
+    "variable": "air",
+    "doi": "10.1175/1520-0477(1996)077<0437:TNYRP>2.0.CO;2",
+    "url": "https://psl.noaa.gov/data/gridded/data.ncep.reanalysis.html",
+    "citation": "Kalnay, E. et al. (1996): The NCEP/NCAR 40-Year Reanalysis Project. Bull. Amer. Meteor. Soc., 77, 437-471. Data provided by NOAA PSL, Boulder, Colorado, USA, https://psl.noaa.gov"
+   },
+   "native_resolution": "monthly",
+   "units": "degK",
+   "units_source": "erddap",
+   "convert": {
+    "factor": 1.0,
+    "offset": -273.15,
+    "units": "\u00b0C"
+   },
+   "coverage_start": "1948-01",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false,
+   "erddap_alt_dataset_ids": [
+    "noaa_psl_9674_ce9f_347a"
+   ]
+  },
+  {
+   "id": "global_precip",
+   "name": "Rainfall, anywhere on Earth (NOAA NCEP/DOE Reanalysis 2)",
+   "domain": "atmosphere",
+   "family": "precipitation",
+   "short_definition": "How much rain and snow falls, in millimetres per day, for any place on Earth since 1979, from NOAA's NCEP/DOE Reanalysis 2 (no login needed).",
+   "definition": "Monthly mean precipitation rate (rain plus melted snow) from the NCEP/DOE Reanalysis 2, on a grid of about 1.9 degrees (roughly 200 km), converted to millimetres per day. In a reanalysis the rainfall is calculated by the weather model, guided by observed temperature, wind and humidity; it is not measured by rain gauges. It shows wet and dry seasons and big regional changes well, but local amounts can be off by a lot, especially in mountains and the tropics. For a measured record use a weather station or a satellite rainfall product when one is available.",
+   "keywords": [
+    "rain",
+    "rainfall",
+    "precipitation",
+    "monsoon",
+    "drought",
+    "wet",
+    "dry",
+    "snowfall",
+    "global",
+    "worldwide",
+    "reanalysis",
+    "ncep"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-15: axis and data queries on https://upwell.pfeg.noaa.gov/erddap/griddap/noaa_psl_6974_55ee_1b93 (time axis 1979-01 to 2026-02, 94 x 192 Gaussian grid, units Kg/m^2/s)",
+   "erddap_base": "https://upwell.pfeg.noaa.gov/erddap",
+   "dataset_id": "noaa_psl_6974_55ee_1b93",
+   "erddap_variable": "prate",
+   "erddap_lon360": true,
+   "dataset": {
+    "short_name": "NCEP/DOE Reanalysis 2 prate.sfc.mon.mean",
+    "version": "R2",
+    "variable": "prate",
+    "doi": "10.1175/BAMS-83-11-1631",
+    "url": "https://psl.noaa.gov/data/gridded/data.ncep.reanalysis2.html",
+    "citation": "Kanamitsu, M. et al. (2002): NCEP-DOE AMIP-II Reanalysis (R-2). Bull. Amer. Meteor. Soc., 83, 1631-1643. Data provided by NOAA PSL, Boulder, Colorado, USA, https://psl.noaa.gov"
+   },
+   "native_resolution": "monthly",
+   "units": "Kg/m^2/s",
+   "units_source": "erddap",
+   "convert": {
+    "factor": 86400.0,
+    "offset": 0.0,
+    "units": "mm/day"
+   },
+   "coverage_start": "1979-01",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false
+  },
+  {
+   "id": "global_soil_moisture",
+   "name": "Soil moisture, any land on Earth (NOAA CPC model)",
+   "domain": "land",
+   "family": "soil_moisture",
+   "short_definition": "How much water the soil holds (top 1.6 m, in millimetres of water) on any land since 1948, from NOAA's Climate Prediction Center (no login needed).",
+   "definition": "The CPC soil moisture is a simple land model driven by measured rain-gauge precipitation and temperature. It keeps track of the water stored in a 1.6 m deep soil column, as millimetres of water (up to about 760 mm when the soil is full). It is a calculated estimate, not a direct measurement. The grid is 0.5 degrees (about 55 km). Oceans have no value, so for a coastal point the nearest land cell is used; Antarctica and Greenland ice sheets are not covered.",
+   "keywords": [
+    "soil moisture",
+    "soil water",
+    "drought",
+    "dry soil",
+    "wet soil",
+    "agriculture",
+    "farming",
+    "crops",
+    "land",
+    "global",
+    "worldwide",
+    "cpc"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-15: axis and data queries on https://upwell.pfeg.noaa.gov/erddap/griddap/noaa_psl_fd1c_3970_e940 (time axis 1948-01 to 2026-10, 360 x 720 cells, units mm, ocean cells NaN); noaa_psl_bec3_56fa_c395 (soilw.mon.mean file of the same CPC product, same grid and units) used when the first is offline",
+   "erddap_base": "https://upwell.pfeg.noaa.gov/erddap",
+   "dataset_id": "noaa_psl_fd1c_3970_e940",
+   "erddap_variable": "soilw",
+   "erddap_lon360": true,
+   "dataset": {
+    "short_name": "CPC Soil Moisture soilw.mon.mean.v2",
+    "version": "v2",
+    "variable": "soilw",
+    "doi": "10.1029/2003JD004345",
+    "url": "https://psl.noaa.gov/data/gridded/data.cpcsoil.html",
+    "citation": "Fan, Y. and H. van den Dool (2004): Climate Prediction Center global monthly soil moisture data set at 0.5 degree resolution for 1948 to present. J. Geophys. Res., 109, D10102. Data provided by NOAA PSL, Boulder, Colorado, USA, https://psl.noaa.gov"
+   },
+   "native_resolution": "monthly",
+   "units": "mm",
+   "units_source": "erddap",
+   "coverage_start": "1948-01",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": true,
+   "erddap_alt_dataset_ids": [
+    "noaa_psl_bec3_56fa_c395"
+   ]
+  },
+  {
+   "id": "global_humidity",
+   "name": "Relative humidity near the ground, anywhere on Earth (NOAA NCEP/NCAR Reanalysis)",
+   "domain": "atmosphere",
+   "family": "humidity",
+   "short_definition": "How close the air near the ground is to being saturated with water vapour (in %), for any place on Earth since 1948 (no login needed).",
+   "definition": "Relative humidity in the lowest model layer (about 40 m above the ground) from the NCEP/NCAR Reanalysis 1, on a 2.5 degree grid (about 280 km). 100% means the air holds all the water vapour it can at that temperature. Humidity in reanalyses depends strongly on the model, and long-term humidity trends in NCEP/NCAR are known to be less reliable than its temperature trends, so treat a trend as a hint to check with other data.",
+   "keywords": [
+    "humidity",
+    "relative humidity",
+    "moisture",
+    "water vapour",
+    "water vapor",
+    "muggy",
+    "dry air",
+    "global",
+    "worldwide",
+    "reanalysis",
+    "ncep"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-15: axis and data queries on https://upwell.pfeg.noaa.gov/erddap/griddap/noaa_psl_5044_a685_b2d5 (time axis 1948-01 to 2026-02, 73 x 144 cells, units percent); identical copy noaa_psl_cc61_dd96_0a45 (rhum.mon.mean) used when the first is offline",
+   "erddap_base": "https://upwell.pfeg.noaa.gov/erddap",
+   "dataset_id": "noaa_psl_5044_a685_b2d5",
+   "erddap_variable": "rhum",
+   "erddap_lon360": true,
+   "dataset": {
+    "short_name": "NCEP/NCAR Reanalysis 1 rhum.sig995.mon.mean",
+    "version": "R1",
+    "variable": "rhum",
+    "doi": "10.1175/1520-0477(1996)077<0437:TNYRP>2.0.CO;2",
+    "url": "https://psl.noaa.gov/data/gridded/data.ncep.reanalysis.html",
+    "citation": "Kalnay, E. et al. (1996): The NCEP/NCAR 40-Year Reanalysis Project. Bull. Amer. Meteor. Soc., 77, 437-471. Data provided by NOAA PSL, Boulder, Colorado, USA, https://psl.noaa.gov"
+   },
+   "native_resolution": "monthly",
+   "units": "percent",
+   "units_source": "erddap",
+   "coverage_start": "1948-01",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false,
+   "erddap_alt_dataset_ids": [
+    "noaa_psl_cc61_dd96_0a45"
+   ]
+  }
+ ]
+}

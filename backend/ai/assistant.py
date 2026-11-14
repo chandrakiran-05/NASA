@@ -87,6 +87,8 @@ class AIService:
         if not g.on_topic and not blocked:
             gl = max(self._gidx.scores(text) or [0.0])
             bonus = min(gl / 3.0, 1.5)
+            if self.catalog.match_criteria(text):     # names one of the investigation criteria
+                bonus += 1.0
             if g.score > 0 and gazetteer.find_places(text, 1):
                 bonus += 0.5
             if bonus > 0:
@@ -102,7 +104,9 @@ class AIService:
         places = gazetteer.find_places(question, max_n=4)
         archs = self.catalog.match_archetypes(question, k=1)
         arch = archs[0] if archs else None
-        variables = self.catalog.search(q=question, region_type=arch["id"] if arch else None, limit=6)
+        # a quantity asked about an ocean region ("Is the Gulf of Mexico warming?") is the ocean's quantity
+        q = question + (" ocean" if any(p.get("kind") == "ocean" for p in places) else "")
+        variables = self.catalog.search(q=q, region_type=arch["id"] if arch else None, limit=6)
         if y0 is not None:
             # prefer variables whose record covers the requested start year (stable re-order)
             def starts_late(v):
@@ -115,7 +119,10 @@ class AIService:
             r = gazetteer.place_to_region(p, as_point=wishes["point"])
             if r:
                 regions.append({"name": p["name"], "kind": p["type"], "geometry": r.as_dict(),
-                                "source": "offline gazetteer (GeoNames)" + (" — approximate box" if p.get("approximate") else "")})
+                                "approximate": bool(p.get("approximate")),
+                                "source": ("offline gazetteer (GeoNames)" if p["type"] != "region" else "editorial region preset")
+                                + (" — approximate box" if p.get("approximate") else "")
+                                + (f" ({p['note']})" if p.get("note") else "")})
         if not regions and arch and arch.get("example_bbox"):
             eb = arch["example_bbox"]
             regions.append({"name": eb["name"], "kind": "example", "source": f"example region for '{arch['name']}'",

@@ -162,3 +162,21 @@ def test_crossref_ntrs_semantic_ads_parsers(tmp_path):
     ok = {s["source"] for s in sources if s["status"] == "ok"}
     assert {"Crossref", "NASA NTRS", "Semantic Scholar", "NASA ADS"} <= ok
     asyncio.run(http.aclose())
+
+
+def test_stance_ignores_negation_comparisons_and_questions():
+    from backend.research.evidence import read_stance, verify_ai_reading
+    t = ["sea ice"]
+    assert read_stance("Arctic sea ice is no longer declining after 2012.", t)["stance"] == "unclear"
+    assert read_stance("Does sea ice decline everywhere?", t)["stance"] == "unclear"
+    assert read_stance("Sea ice estimates from product A are higher than product B.", t)["stance"] == "unclear"
+    assert read_stance("Arctic sea ice extent has fallen to an all-time low.", t)["stance"] == "falling"
+    ab = "Arctic sea ice did not decline in the Bering Sea during this period."
+    assert not verify_ai_reading(ab, {"stance": "falling", "evidence_quote": ab})[0]
+
+
+def test_duplicate_preprint_and_journal_copy_kept_once():
+    from backend.research.literature import _key
+    a = {"title": "Rapid decline of Arctic sea ice", "doi": "10.5194/egusphere-1"}
+    b = {"title": "Rapid Decline of Arctic Sea Ice", "doi": "10.1029/2024GL1"}
+    assert _key(a) == _key(b)
