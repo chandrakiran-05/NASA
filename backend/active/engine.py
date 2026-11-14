@@ -243,14 +243,17 @@ def beast_gate(onset: dict, det: dict) -> dict:
     since = None
     if regime:
         since = {"date": regime["date"], "interval90": regime["interval90"], "probability": regime["probability"],
-                 "kind": regime.get("kind"), "near_seam": regime.get("near_seam")}
+                 "kind": regime.get("kind"), "near_seam": regime.get("near_seam"),
+                 "agrees_with_pelt": regime.get("agrees_with_pelt")}
     txt = {"agrees": "BEAST agrees on the current direction",
            "disagrees": "BEAST does not support this direction",
            "uncertain": "BEAST cannot tell the current direction"}[verdict]
     txt += f" (model probability {p_dir:.0%} for {det['direction']} over the last year)"
     if since:
-        txt += (f"; the current regime began around {since['date']} (90% interval {since['interval90'][0]} to "
+        txt += (f"; the current regime began around {since['date']} (approximate interval {since['interval90'][0]} to "
                 f"{since['interval90'][1]})")
+        if since["agrees_with_pelt"]:
+            txt += "; PELT finds a break within two years of it too"
         if since["near_seam"]:
             txt += ", next to a possible instrument effect"
     return {"status": verdict, "agrees": verdict == "agrees", "p_direction": p_dir, "active_since": since,

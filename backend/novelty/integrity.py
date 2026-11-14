@@ -186,8 +186,11 @@ def trend_or_jump(t: np.ndarray, y: np.ndarray, time: pd.DatetimeIndex) -> dict:
     bic = {}
     for name, X in models.items():
         _, _, rss = _fit(X, yy)
-        bic[name] = neff * math.log(max(rss, 1e-300) / len(yy)) + X.shape[1] * math.log(neff)
+        searched = name != "trend"          # the jump date was searched over every month: one more parameter
+        bic[name] = neff * math.log(max(rss, 1e-300) / len(yy)) + (X.shape[1] + searched) * math.log(neff)
     best = min(bic, key=bic.get)
+    if best == "jump" and bic["trend_plus_jump"] >= bic["trend"]:
+        best = "trend"                      # a step that adds nothing on top of the trend is not "a jump"
     date = tv[j].strftime("%Y-%m")
     txt = {"trend": "a steady trend explains the data best",
            "jump": f"a single jump around {date} explains the data better than a steady trend",

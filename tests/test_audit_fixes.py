@@ -102,3 +102,26 @@ def test_geometry_and_empty_composite_edge_cases():
     ms = to_monthly(raw, start=pd.Timestamp("2001-01-01").date(), end=pd.Timestamp("2001-03-31").date(),
                     min_valid_fraction=0.7)
     assert ms.n_valid == 0
+
+
+def test_steady_trend_is_not_called_a_jump_but_a_real_jump_is():
+    from backend.novelty.integrity import trend_or_jump
+    n = 288
+    t = np.arange(n) / 12
+    time = pd.date_range("2001-01-01", periods=n, freq="MS")
+    def flags(jump, seeds=range(60)):
+        return sum(trend_or_jump(t, 0.03 * t * (jump == 0) + np.random.default_rng(s).normal(0, 1, n)
+                                 + jump * (t >= 12), time)["best_model"] == "jump" for s in seeds)
+    assert flags(0.0) <= 3            # was ~42 of 60 before the search penalty
+    assert flags(2.0) >= 57
+
+
+def test_beast_confirms_at_most_one_event():
+    from backend.insights.onset import change_onset
+    n = 288
+    t = np.arange(n) / 12
+    idx = pd.date_range("2000-01-01", periods=n, freq="MS")
+    y = np.where(t < 12, 0, 1.5) + np.where(t > 18, 1.5, 0) + np.random.default_rng(3).normal(0, 1, n)
+    o = change_onset(MonthlySeries(time=idx, value=y, units="x",
+                                   provenance=Provenance(source_api="u", variable="v", geometry={})), n_surrogates=19)
+    assert sum(e["status"] == "confirmed" for e in o["events"]) <= 1

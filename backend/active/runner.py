@@ -171,8 +171,9 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
             else:
                 await log.emit("beast_started", variable_id=key)
                 onset = await pipeline.cached_novelty(
-                    st, "onset", sid, lambda ms: change_onset(ms, seams=events_for(ms), alpha=alpha, n_surrogates=49),
-                    {"alpha": alpha, "k": 49})
+                    st, "onset", sid, lambda ms: change_onset(ms, seams=events_for(ms), pelt_breaks=_pelt(ms), alpha=alpha,
+                                                             n_surrogates=49),
+                    {"alpha": alpha, "k": 49, "pelt": True})
                 beasts[key] = engine.beast_gate(onset, det)
             await log.emit("beast", variable_id=key, **beasts[key])
             await log.emit("verdict", variable_id=key, provisional=True, **engine.label(det, checks[key], beasts[key]))
@@ -236,6 +237,13 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
                       "Physics and second-opinion checks compare signs only; they are 'consistent with', never a cause."]}
     await log.emit("done", summary=out["summary"], plain_language=out["plain_language"])
     return out
+
+
+def _pelt(ms) -> list[dict]:
+    """PELT trend breaks (fast, same power as BEAST in docs/BEAST-VALIDATION.md) to cross-check BEAST's dates."""
+    from ..analysis.deseason import deseasonalize
+    from ..insights.changepoint import detect_trend_breaks
+    return detect_trend_breaks(ms.time, ms.t_years(), deseasonalize(ms, "stl").deseasonalized)["breaks"]
 
 
 async def review(llm, tr: dict) -> dict | None:

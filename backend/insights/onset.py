@@ -149,13 +149,21 @@ def _month_index(block_idx: int, L: int, n: int, edge: int) -> int:
 
 
 def _top_change_stat(t: np.ndarray, a: np.ndarray, L: int, start_year: float, seed: int, edge: int) -> float:
-    """Identical procedure to the observed series: BEAST window peak, then month refinement."""
+    """Identical procedure to the observed series: up to 3 greedy BEAST window peaks, month refinement in
+    each, and the largest F wins (the observed series confirms its largest-F event the same way)."""
     o = _beast_blocks(_blocks(a, L), L, start_year, seed)
-    w = _window_prob(o.trend.cpOccPr, L)
-    j, h, n = int(np.argmax(w)), _window(L), len(a)
-    m_lo = int(np.clip(max(0, j - h) * L, edge, n - edge))
-    m_hi = int(np.clip(min(len(w), j + h + 1) * L, edge, n - edge))
-    return max(_f_stat(t, a, kk) for kk in range(m_lo, max(m_lo + 1, m_hi + 1)))
+    w = _window_prob(np.nan_to_num(np.asarray(o.trend.cpOccPr, float)), L)
+    h, n = _window(L), len(a)
+    best = 0.0
+    for _ in range(3):
+        j = int(np.argmax(w))
+        if w[j] < 0.2:
+            break
+        m_lo = int(np.clip(max(0, j - h) * L, edge, n - edge))
+        m_hi = int(np.clip(min(len(w), j + h + 1) * L, edge, n - edge))
+        best = max(best, max(_f_stat(t, a, kk) for kk in range(m_lo, max(m_lo + 1, m_hi + 1))))
+        w[max(0, j - 2 * h): min(len(w), j + 2 * h + 1)] = 0.0
+    return best
 
 
 def _ar1(phi: float, n: int, rng: np.random.Generator) -> np.ndarray:
@@ -270,8 +278,11 @@ def change_onset(ms: MonthlySeries, *, seams: list[dict] | None = None, pelt_bre
         e["agrees_with_pelt"] = bool(pelt_breaks) and any(
             abs((ms.time[e["k"]] - pd.Timestamp(pb["date"] + "-01")).days) <= 24 * 30.5 for pb in pelt_breaks)
 
-    for e in events[1:]:          # surrogates calibrate only the strongest change; later ones stay 'possible'
-        if e["status"] == "confirmed":
+    # the surrogates calibrate one statistic (the largest F); only that event may be confirmed, the rest stay
+    # 'possible' (validated in docs/BEAST-VALIDATION.md: highest-probability window was sometimes the wrong one)
+    top = max(events, key=lambda e: e["f_stat"]) if events else None
+    for e in events:
+        if e["status"] == "confirmed" and e is not top:
             e["status"] = "possible"
 
     # ---- segment trends (on the original seasonal anomalies, AR(1)-adjusted) for confirmed events
@@ -335,7 +346,7 @@ def change_onset(ms: MonthlySeries, *, seams: list[dict] | None = None, pelt_bre
         "plain_language": txt,
         "limits": ["A change point is a date when the trend's behaviour changed, not its cause.",
                    "Persistent (autocorrelated) data hides changes; 'no confirmed change' is not proof of no change.",
-                   "Dates are resolved to about one block of months; see interval90."],
+                   "Dates are resolved to about one block of months. interval90 is approximate: in validation it covered the true date about 68% of the time (80-100% for sudden jumps, far less for gradual slope changes)."],
     }
 
 
@@ -348,7 +359,7 @@ def _plain_language(events: list[dict], p0: float | None, phi: float, L: int, p_
         for e in conf:
             kind = e.get("kind", "change")
             s = (f"The trend changed ({kind}) around {e['date']} "
-                 f"(90% interval {e['interval90'][0]} to {e['interval90'][1]}; probability {e['probability']:.0%}). "
+                 f"(approximate interval {e['interval90'][0]} to {e['interval90'][1]}; probability {e['probability']:.0%}). "
                  f"This change is stronger than in {round((1 - e['p_calibrated']) * (k + 1))} of {k} simulated "
                  f"series with the same noise and no change.")
             if "slope_before_per_decade" in e:
