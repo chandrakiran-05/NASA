@@ -11,6 +11,8 @@ Official, documented APIs only (no scraping):
   * NASA NTRS          https://ntrs.nasa.gov/api         (NASA Technical Reports Server; no key)
   * NASA ADS           https://ui.adsabs.harvard.edu     (NASA-funded Astrophysics Data System, incl. Earth
                        science; free token ADS_API_TOKEN)
+Default (always on, no key, reliable): arXiv, OpenAlex, Crossref, NASA NTRS. Keyed sources are used
+only when their key/token is set. Retracted works are excluded (OpenAlex is_retracted filter).
 Google Scholar is NOT used: it has no API, its terms forbid automated scraping and it answers bots with
 CAPTCHAs. OpenAlex + Crossref + Semantic Scholar cover the same journal literature through official APIs.
 
@@ -65,7 +67,7 @@ async def arxiv(http, terms: list[str], since_year: int, n: int) -> list[dict]:
 async def openalex(http, query: str, since_year: int, n: int) -> list[dict]:
     r = await http.request("GET", OPENALEX, params={
         "search": query, "per-page": n,
-        "filter": f"from_publication_date:{since_year}-01-01,has_abstract:true",
+        "filter": f"from_publication_date:{since_year}-01-01,has_abstract:true,is_retracted:false",
         "select": "id,doi,title,publication_year,abstract_inverted_index,primary_location,authorships,type"})
     out = []
     for w in r.json().get("results", []):
@@ -181,8 +183,10 @@ async def search(http, *, query: str, terms: list[str], since_year: int, per_sou
     calls = {"arXiv": arxiv(http, terms, since_year, per_source),
              "OpenAlex": openalex(http, query, since_year, per_source),
              "Crossref": crossref(http, query, since_year, per_source),
-             "Semantic Scholar": semantic_scholar(http, query, since_year, per_source, semantic_key),
              "NASA NTRS": ntrs(http, query, since_year, per_source)}
+    # keyed sources are used only when configured (keyless Semantic Scholar is usually rate-limited)
+    if semantic_key:
+        calls["Semantic Scholar"] = semantic_scholar(http, query, since_year, per_source, semantic_key)
     if springer_key:
         calls["Springer Nature"] = springer(http, query, since_year, per_source, springer_key)
     if ads_token:
@@ -203,6 +207,9 @@ async def search(http, *, query: str, terms: list[str], since_year: int, per_sou
     if not springer_key:
         sources.append({"source": "Springer Nature", "status": "not_configured",
                         "reason": "set SPRINGER_API_KEY (free) to include Springer journals"})
+    if not semantic_key:
+        sources.append({"source": "Semantic Scholar", "status": "not_configured",
+                        "reason": "set SEMANTIC_SCHOLAR_API_KEY (free) to include Semantic Scholar"})
     if not ads_token:
         sources.append({"source": "NASA ADS", "status": "not_configured",
                         "reason": "set ADS_API_TOKEN (free) to include NASA ADS"})

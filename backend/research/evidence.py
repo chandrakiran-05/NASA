@@ -69,6 +69,17 @@ def _has(text: str, terms: list[str]) -> bool:
     return any(term.lower() in t for term in terms)
 
 
+def trust(p: dict) -> tuple[float, str]:
+    """How much a paper counts as evidence: peer-reviewed journal > NASA report > other > preprint."""
+    if p.get("peer_reviewed"):
+        return 1.0, "peer-reviewed journal"
+    if p.get("source") == "NASA NTRS":
+        return 0.85, "NASA technical report"
+    if p.get("source") == "arXiv" or "preprint" in (p.get("venue") or "").lower() or "egusphere" in (p.get("doi") or ""):
+        return 0.6, "preprint (not peer-reviewed)"
+    return 0.75, "other publication"
+
+
 def relevance(p: dict, terms: list[str], region: str | None, today_year: int) -> float:
     title, abstract = p.get("title") or "", p.get("abstract") or ""
     text = f"{title} {abstract}"
@@ -77,9 +88,8 @@ def relevance(p: dict, terms: list[str], region: str | None, today_year: int) ->
     if region:
         s += 2.0 if region.lower() in text.lower() else 0.0
     s += 1.0 if TREND.search(text) else 0.0
-    s += 0.5 if p.get("peer_reviewed") else 0.0
     age = max(0, today_year - int(p.get("year") or today_year))
-    return s * math.exp(-0.07 * age)
+    return s * math.exp(-0.07 * age) * trust(p)[0]
 
 
 def read_stance(abstract: str, terms: list[str]) -> dict:
@@ -192,6 +202,7 @@ async def research_evidence(http, llm, *, variable_id: str, variable_name: str |
                                               semantic_key=semantic_key, ads_token=ads_token)
     for p in papers:
         p["relevance"] = relevance(p, terms, region, today)
+        p["trust"] = trust(p)[1]
         p["region_match"] = bool(region and region.lower() in f"{p['title']} {p['abstract']}".lower())
     papers = sorted([p for p in papers if p["relevance"] >= min_relevance], key=lambda p: -p["relevance"])[:12]
 
@@ -210,7 +221,7 @@ async def research_evidence(http, llm, *, variable_id: str, variable_name: str |
                     n_ai_rejected += 1
     ag = agreement(direction, papers)
     shown = [{k: p.get(k) for k in ("title", "year", "venue", "authors", "doi", "url", "source", "peer_reviewed",
-                                    "stance", "evidence_quote", "read_by", "ai_reading_rejected", "region_match",
+                                    "trust", "stance", "evidence_quote", "read_by", "ai_reading_rejected", "region_match",
                                     "relevance")} for p in papers[:8]]
     return {
         "query": query, "since_year": since, "sources": sources,

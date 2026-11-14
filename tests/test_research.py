@@ -93,10 +93,13 @@ def test_research_evidence_end_to_end_with_ai_slop_guard(tmp_path):
     r = asyncio.run(research_evidence(http, slop, variable_id="modis_ndvi_monthly", variable_name="NDVI",
                                       region_name="Sahel", direction="rising"))
     assert {"export.arxiv.org", "api.openalex.org"} <= set(hosts)
-    assert r["n_relevant"] == 3 and r["agreement"]["label"] == "supported"
+    # one peer-reviewed paper for, one against, one preprint for: a preprint counts less -> mixed
+    assert r["n_relevant"] == 3 and r["agreement"]["label"] == "mixed"
+    trusts = {p["source"]: p["trust"] for p in r["papers"]}
+    assert trusts["arXiv"] == "preprint (not peer-reviewed)" and trusts["OpenAlex"] == "peer-reviewed journal"
     assert r["ai_readings"]["accepted"] == 0 and r["ai_readings"]["rejected_as_unsupported"] == 3
     assert all(p["read_by"] == "lexicon" for p in r["papers"])
-    assert "doi:10.1/y" in r["plain_language"]
+    assert "1 studies agree and 1 disagree" in r["plain_language"] or "mixed" in r["plain_language"].lower()
     assert any(s["source"] == "Springer Nature" and s["status"] == "not_configured" for s in r["sources"])
     asyncio.run(http.aclose())
 
@@ -154,6 +157,8 @@ def test_crossref_ntrs_semantic_ads_parsers(tmp_path):
     assert run(lit.semantic_scholar(http, "q", 2016, 5, "k"))[0]["doi"] == "10.3/s"
     assert run(lit.nasa_ads(http, "q", 2016, 5, "t"))[0]["year"] == 2021
     papers, sources = run(lit.search(http, query="q", terms=["NDVI"], since_year=2016, semantic_key="k", ads_token="t"))
+    _, keyless = run(lit.search(http, query="q", terms=["NDVI"], since_year=2016))
+    assert {s["source"]: s["status"] for s in keyless}["Semantic Scholar"] == "not_configured"
     ok = {s["source"] for s in sources if s["status"] == "ok"}
     assert {"Crossref", "NASA NTRS", "Semantic Scholar", "NASA ADS"} <= ok
     asyncio.run(http.aclose())
