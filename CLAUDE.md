@@ -39,6 +39,7 @@ Source of truth for scope, in this order:
 | Driver hints / scan coherence | "consistent with", "associated with" | "caused by", "because of" |
 | Stamp (F3) | `SIGNIFICANT` / `NOT PROVEN` | "proven", "no trend exists" |
 | Active-trend label | `VERIFIED` / `PROBABLE` / `NOT VERIFIED` + `verdict.limit` | "confirmed cause", "will keep rising" |
+| Digital twin output | "simulated" + `disclaimer` on every curve | "prediction", "the world will end in YYYY" |
 | AI reviewer note (`ai_review`) | "AI reviewer (advisory)" | present it as part of the verdict |
 
 Whenever the API returns `plain_language`, `limit`, `limits`, `caveats` or `disclaimer`, show it.
@@ -85,6 +86,7 @@ CORS allows `http://localhost:5173` and `:3000` (change `CORS_ORIGINS` in `.env`
 | Extra insight cards | — | `POST /api/insights` | `breaks`, `emergence`, `records`, `forecast`, `trend_evidence_index` |
 | Trend Scan ("what's changing here?") | F12 | `POST /api/scan` → job | `ranking[]`, `coherence[]`, `plain_language` |
 | **Active trends** ("what is changing now?") — live cards per variable | active | `GET /api/criteria`; `POST /api/active-trends` → `stream_url` (SSE) or `events_url` (long-poll) → final `GET /api/jobs/{id}` | events `candidate`, `check`, `beast`, `verdict`; result `trends[].{detect.state, detect.plain_language, checks[], beast.active_since, verdict.label}`, `skipped[]` (show `where_to_look` for not-trendable criteria) |
+| **Digital twin** (separate engineer mode, no verification) | twin | `POST /api/twin`, `/api/twin/{id}/data` or `/data-csv`, `/api/twin/{id}/simulate` | `variables.<name>.{p05,p50,p95,threshold}`, `disclaimer` |
 | Explain / ask | F13 | `POST /api/ai/explain {series_id}`, `POST /api/ai/ask {question}` | `explanation`, `answer`, `source` (show "AI-written, number-checked" when `local_llm`) |
 | Demo cases | F6 | `GET /api/demos`, `POST /api/demos/{id}/run` → job | full report |
 | Data-source status banner | ⑧ | `GET /api/sources/status` | `alerts.alerts[]`, `llm.available` |

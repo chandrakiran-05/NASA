@@ -20,6 +20,7 @@ from .ai.assistant import AIService
 from .ai.llm import LocalLLM
 from .ai.deep_llm import DeepLLM
 from .api.routes import router
+from .twin.api import router as twin_router
 from .api.state import AppState
 from .catalog.catalog import load_catalog
 from .core.config import Settings, get_settings
@@ -107,6 +108,7 @@ def create_app(settings: Settings | None = None, transport: httpx.AsyncBaseTrans
                                                                   "detail": {"type": type(exc).__name__}}})
 
     app.include_router(router)
+    app.include_router(twin_router)                # digital twin: separate mode, no verification gate
     return app
 
 

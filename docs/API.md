@@ -119,6 +119,24 @@ coherence with linked active variables), `second_opinion` (other product of the 
 Result: `{trends:[{variable_id, name, series_id, criteria[], detect, checks[], beast, verdict, ai_review?}],
 not_active[], failed{}, skipped[], summary, plain_language, method, limits[]}`.
 
+## Digital twin (separate mode) — `backend/twin/`
+
+A sandbox for engineers. Research data (e.g. from the chatbot team) is stored as-is: it does **not** go
+through integrity, Trend Court, active-trend checks or BEAST. Each variable gets a fitted baseline
+(monthly climatology + linear trend + AR(1) noise); simulations continue it forward under what-if knobs.
+
+| Method | Path | Body | Returns |
+|---|---|---|---|
+| POST | `/twin` | `{name, description?}` | `{id, name, variables: []}` |
+| GET | `/twin` | | all twins |
+| GET | `/twin/{id}` | | twin + `variables[].baseline.{slope_per_decade, slope_se_per_decade, noise_sd, lag1_autocorr, last_observed}` |
+| POST | `/twin/{id}/data` | `{source?, variables:[{name, units?, time[], value[]}]}` | twin (same name re-uploaded = replaced; upload order matters for drivers) |
+| POST | `/twin/{id}/data-csv` | multipart `file` (date column, then one numeric column per variable), `source?` | twin |
+| POST | `/twin/{id}/simulate` | `{horizon_years=30, n_runs=500, seed, scenario:{<name>:{trend_multiplier, trend_add_per_decade, shocks:[{year,size}], drivers:[{from, coefficient}], threshold:{value, direction:"above"|"below"}}}}` | `variables.<name>.{time[], p05[], p50[], p95[], baseline, threshold.{probability_by_end, median_first_crossing, earliest_10pct, plain_language}}`, `disclaimer` |
+
+`drivers` couple a variable to one uploaded **earlier**: y += coefficient × (driver − driver's baseline).
+Always show `disclaimer` and label every curve "simulated".
+
 ## Investigation and demos
 
 | Method | Path | Body | Returns |
