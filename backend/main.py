@@ -18,6 +18,7 @@ from fastapi.responses import ORJSONResponse
 
 from .ai.assistant import AIService
 from .ai.llm import LocalLLM
+from .ai.deep_llm import DeepLLM
 from .api.routes import router
 from .api.state import AppState
 from .catalog.catalog import load_catalog
@@ -48,7 +49,8 @@ def build_state(settings: Settings, transport: httpx.AsyncBaseTransport | None =
     ts = TimeSeriesService(settings, http, catalog, store)
     llm = LocalLLM(settings, transport=llm_transport)
     ai = AIService(settings, catalog, llm)
-    return AppState(settings, http, catalog, db, store, ts, JobManager(db, settings.max_concurrent_jobs), llm, ai)
+    return AppState(settings, http, catalog, db, store, ts, JobManager(db, settings.max_concurrent_jobs), llm, ai,
+                    DeepLLM(settings))
 
 
 def create_app(settings: Settings | None = None, transport: httpx.AsyncBaseTransport | None = None,
@@ -74,6 +76,7 @@ def create_app(settings: Settings | None = None, transport: httpx.AsyncBaseTrans
             await st.jobs.shutdown()
             await st.http.aclose()
             await st.llm.aclose()
+            await st.deep.aclose()
             st.db.close()
 
     app = FastAPI(
@@ -95,6 +98,13 @@ def create_app(settings: Settings | None = None, transport: httpx.AsyncBaseTrans
         return ORJSONResponse(status_code=422, content={"error": {"code": "invalid_request",
                                                                   "message": "Request validation failed",
                                                                   "detail": {"errors": exc.errors()}}})
+
+    @app.exception_handler(Exception)
+    async def unexpected_error(_: Request, exc: Exception):
+        log.exception("unhandled error")
+        return ORJSONResponse(status_code=500, content={"error": {"code": "internal_error",
+                                                                  "message": "Unexpected server error",
+                                                                  "detail": {"type": type(exc).__name__}}})
 
     app.include_router(router)
     return app

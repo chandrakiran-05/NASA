@@ -129,3 +129,16 @@ class TextRequest(BaseModel):
 class ExplainRequest(BaseModel):
     series_id: str
     include_insights: bool = True
+
+
+class ActiveTrendsRequest(BaseModel):
+    geometry: dict | None = Field(None, description="GeoJSON Point/Polygon or BBox; not needed with series_ids")
+    start: str | None = Field(None, examples=["1995-01"])
+    end: str | None = Field(None, examples=["2024-12"])
+    criteria: list[str] | None = Field(None, description="ids from GET /api/criteria; default: every trendable criterion")
+    variable_ids: list[str] | None = Field(None, max_length=40, description="instead of criteria")
+    series_ids: list[str] | None = Field(None, max_length=40, description="already fetched or uploaded series")
+    per_criterion: int = Field(1, ge=1, le=4, description="variables tried per criterion")
+    options: dict = Field(default_factory=dict, description="passed to the connectors (site_id, station_id, feature_id ...)")
+    alpha: float = Field(0.05, gt=0, lt=0.5)
+    ai_review: bool = True

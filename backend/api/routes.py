@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from fastapi import APIRouter, File, Form, Query, Request, UploadFile
-from fastapi.responses import ORJSONResponse, PlainTextResponse
+from fastapi.responses import ORJSONResponse, PlainTextResponse, StreamingResponse
 from starlette.concurrency import run_in_threadpool
 
 from ..analysis.deseason import climatology_anomalies, deseasonalize
@@ -33,13 +33,14 @@ from ..novelty.evidence_clock import evidence_clock
 from ..novelty.integrity import integrity_audit
 from ..novelty.nulls import null_lineup
 from ..novelty.scan import rank_and_cohere
-from .schemas import (AnalyzeRequest, CompareRequest, DriversRequest, ExplainRequest, InsightsRequest,
+from ..active import runner as active
+from .schemas import (ActiveTrendsRequest, AnalyzeRequest, CompareRequest, DriversRequest, ExplainRequest, InsightsRequest,
                       InvestigateRequest, NullsRequest, ScanRequest, TextRequest, TimeseriesRequest,
                       TrendMapRequest, UploadSeries)
 from .state import AppState
 
 router = APIRouter(prefix="/api", default_response_class=ORJSONResponse)
-DEMOS = json.loads((CATALOG_DATA / "demos.json").read_text())["demos"]
+DEMOS = json.loads((CATALOG_DATA / "demos.json").read_text(encoding="utf-8"))["demos"]
 
 
 def S(request: Request) -> AppState:
@@ -154,9 +155,12 @@ async def get_timeseries(request: Request, series_id: str,
 async def upload_series(request: Request, body: UploadSeries):
     """Bring your own series (e.g. a CSV exported from Giovanni or KNMI Climate Explorer)."""
     st = S(request)
-    ms = MonthlySeries.from_arrays(body.time, [np.nan if v is None else v for v in body.value], units=body.units,
-                                   provenance=Provenance(source_api="user_upload", variable=body.label or "value",
-                                                         geometry={}), label=body.label)
+    try:
+        ms = MonthlySeries.from_arrays(body.time, [np.nan if v is None else v for v in body.value], units=body.units,
+                                       provenance=Provenance(source_api="user_upload", variable=body.label or "value",
+                                                             geometry={}), label=body.label)
+    except ValueError as exc:                          # unparseable dates
+        raise InvalidRequest(f"Could not read the dates: {exc}") from exc
     sid = st.ts.save_user_series(ms, body.label)
     return {"series_id": sid, "completeness": ms.completeness()}
 
@@ -170,7 +174,10 @@ async def upload_csv(request: Request, file: UploadFile = File(...), label: str 
     text = raw.decode("utf-8", errors="replace")
     lines = text.splitlines()
     start = next((i for i, l in enumerate(lines) if l.lower().split(",")[0].strip().startswith(("time", "date", "timestamp"))), 0)
-    df = pd.read_csv(io.StringIO("\n".join(lines[start:])))
+    try:
+        df = pd.read_csv(io.StringIO("\n".join(lines[start:])))
+    except ValueError as exc:                          # pandas ParserError/EmptyDataError are ValueErrors
+        raise InvalidRequest(f"Could not read the CSV: {exc}") from exc
     tcol = df.columns[0]
     vcol = next((c for c in df.columns[1:] if pd.api.types.is_numeric_dtype(df[c])), None)
     if vcol is None:
@@ -181,9 +188,18 @@ async def upload_csv(request: Request, file: UploadFile = File(...), label: str 
 
 
 @router.get("/export/{series_id}", tags=["timeseries"])
-async def export_series(request: Request, series_id: str, format: str = Query("csv", pattern="^(csv|json)$")):
+async def export_series(request: Request, series_id: str,
+                        format: str = Query("csv", pattern="^(csv|json|waterml2|cuahsi_csv)$")):
     st = S(request)
     ms = st.store.load(series_id)
+    if format in ("waterml2", "cuahsi_csv"):          # CUAHSI HIS / HydroShare-compatible outputs
+        from ..timeseries.waterml import to_cuahsi_csv, to_waterml2
+        v = st.catalog.variables.get(ms.variable_id or "")
+        if format == "waterml2":
+            return PlainTextResponse(to_waterml2(ms, series_id=series_id, variable=v), media_type="application/xml",
+                                     headers={"Content-Disposition": f'attachment; filename="{series_id}.wml2.xml"'})
+        return PlainTextResponse(to_cuahsi_csv(ms, series_id=series_id, variable=v), media_type="text/csv",
+                                 headers={"Content-Disposition": f'attachment; filename="{series_id}_cuahsi.csv"'})
     prov = ms.provenance.to_dict()
     citation = prov.get("citation") or (
         f"{prov.get('dataset_short_name')} v{prov.get('version')}" + (f", doi:{prov['doi']}" if prov.get("doi") else "")
@@ -385,8 +401,8 @@ async def trendmap_upload(request: Request, file: UploadFile = File(...), variab
     with tempfile.TemporaryDirectory() as d:
         p = Path(d) / "upload.nc"
         p.write_bytes(raw)
-        ds = open_many([p])
-        times, cube, lat, lon = to_cube(ds, variable)
+        with open_many([p]) as ds:  # closed before cleanup: Windows cannot delete an open file
+            times, cube, lat, lon = to_cube(ds, variable)
         months = pd.DatetimeIndex(times).month.to_numpy()
         res = await run_in_threadpool(cube_trends, cube, months, lat, lon, alpha=alpha)
     return _clean(res)
@@ -464,3 +480,137 @@ async def ai_explain(request: Request, body: ExplainRequest):
         except NotFound:
             entry = None
     return await st.ai.explain(an, ins, entry)
+
+
+# ===================================================================== active trends (live, verified)
+@router.get("/criteria", tags=["active"])
+async def criteria(request: Request):
+    """The 28 investigation criteria, their catalog variables and whether they can be trend-tested."""
+    return {"criteria": active.criteria_view(S(request).catalog)}
+
+
+@router.post("/active-trends", status_code=202, tags=["active"])
+async def active_trends(request: Request, body: ActiveTrendsRequest):
+    """Which variables are changing NOW? Detect -> independent checks (concurrent) -> BEAST -> verdict.
+
+    Follow progress live with GET /api/active-trends/{job_id}/events (long-poll) or /stream (SSE).
+    Identical requests reuse the running job, so a client may start one while the user is still typing."""
+    st = S(request)
+    key = active.request_key(body.model_dump())
+    jid = active.INFLIGHT.get(key)
+    if jid and (st.db.get_job(jid) or {}).get("status") in ("queued", "fetching", "processing"):
+        return {"job_id": jid, "reused": True, **_active_urls(jid)}
+    start, end = active.parse_period(body.start, body.end)
+    region = None
+    if body.series_ids:
+        items, skipped = [{"variable_id": None, "series_id": s} for s in body.series_ids], []
+        for s in body.series_ids:
+            st.store.load(s)                                   # 404 early for unknown ids
+    else:
+        if not (body.geometry and start and end):
+            raise InvalidRequest("geometry, start and end are required unless series_ids are given")
+        region = parse_geometry(body.geometry)
+        items, skipped = active.plan(st.catalog, region, start, end, criteria=body.criteria,
+                                     variable_ids=body.variable_ids, per_criterion=body.per_criterion,
+                                     options=body.options)
+        if not items:
+            raise InvalidRequest("No variable can be trend-tested for this region and period", detail={"skipped": skipped})
+    log = active.EventLog()
+
+    async def job(progress):
+        try:
+            out = await active.run(st, log, progress, items=items, region=region, start=start, end=end,
+                                   alpha=body.alpha, ai_review=body.ai_review, options=body.options)
+        except Exception as exc:
+            await log.emit("error", message=getattr(exc, "message", str(exc)))
+            raise
+        finally:
+            active.INFLIGHT.pop(key, None)     # a retry after this point runs again (results are cached)
+        out["skipped"] = skipped
+        return _clean(out)
+
+    jid = st.jobs.submit("active_trends", body.model_dump(), job)
+    active.register(jid, log)
+    active.INFLIGHT[key] = jid
+    return {"job_id": jid, "reused": False, "variables": [i["variable_id"] or i["series_id"] for i in items],
+            "skipped": skipped, **_active_urls(jid)}
+
+
+def _active_urls(jid: str) -> dict:
+    return {"status_url": f"/api/jobs/{jid}", "events_url": f"/api/active-trends/{jid}/events",
+            "stream_url": f"/api/active-trends/{jid}/stream"}
+
+
+def _log(jid: str) -> "active.EventLog":
+    log = active.LOGS.get(jid)
+    if log is None:
+        raise NotFound(f"No live event log for job {jid!r} (finished results stay at /api/jobs/{jid})")
+    return log
+
+
+@router.get("/active-trends/{job_id}/events", tags=["active"])
+async def active_events(job_id: str, after: int = Query(0, ge=0), wait: float = Query(0, ge=0, le=30)):
+    """Events after sequence number `after`; waits up to `wait` seconds for new ones."""
+    log = _log(job_id)
+    ev = await log.wait(after, wait)
+    return {"events": _clean(ev), "next": after + len(ev), "done": log.done}
+
+
+@router.get("/active-trends/{job_id}/stream", tags=["active"])
+async def active_stream(job_id: str, after: int = Query(0, ge=0)):
+    """Server-Sent Events: one `data:` line per event; the stream ends after `done` or `error`."""
+    log = _log(job_id)
+
+    async def gen():
+        i = after
+        while True:
+            ev = await log.wait(i, 15)
+            for e in ev:
+                yield f"id: {e['seq']}\nevent: {e['type']}\ndata: {json.dumps(_clean(e))}\n\n"
+            i += len(ev)
+            if log.done and i >= len(log.events):
+                return
+            if not ev:
+                yield ": keep-alive\n\n"
+    return StreamingResponse(gen(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
+
+
+@router.post("/active-trends/{job_id}/deep-review", status_code=202, tags=["active"])
+async def active_deep_review(request: Request, job_id: str, top: int = Query(3, ge=1, le=5)):
+    """Optional AirLLM deep reviewer on the top finished trends. Slow (minutes per trend on a 4 GB GPU),
+    advisory only: it never changes a label. Events also go to the original job's stream if it is open."""
+    st = S(request)
+    if not st.deep.enabled:
+        raise InvalidRequest("Deep AI tier is off (DEEP_LLM_PROVIDER=none); see GET /api/ai/hardware",
+                             detail=await st.deep.status())
+    j = st.db.get_job(job_id)
+    if not j or j.get("kind") != "active_trends" or j.get("status") != "done":
+        raise InvalidRequest("Run POST /api/active-trends first and wait until it is done")
+    picks = [t for t in j["result"]["trends"] if t["verdict"]["label"] != "NOT VERIFIED"][:top]
+    log = active.LOGS.get(job_id)
+
+    async def job(progress):
+        out = []
+        for i, tr in enumerate(picks):
+            await progress(i / max(len(picks), 1), f"Deep review of {tr['name']}")
+            c = {**active.engine.check_llm_note(await active.review(st.deep, tr)), "check": "deep_review"}
+            out.append({"variable_id": tr["variable_id"], **c})
+            if log:
+                await log.emit("deep_review", variable_id=tr["variable_id"], **c)
+        return {"reviews": out, "model": (await st.deep.status()).get("model"),
+                "limit": "Advisory AI opinion; the statistical verdicts above are unchanged."}
+
+    jid = st.jobs.submit("deep_review", {"job_id": job_id, "top": top}, job)
+    return {"job_id": jid, "status_url": f"/api/jobs/{jid}", "trends": [t["variable_id"] for t in picks]}
+
+
+@router.get("/ai/hardware", tags=["ai"])
+async def ai_hardware(request: Request):
+    """This machine's GPU/RAM/disk, and which live (Ollama) and deep (AirLLM) models fit it."""
+    from ..core import hardware
+    st = S(request)
+    prof = await run_in_threadpool(hardware.probe, st.settings.deep_llm_layer_dir)
+    rec = hardware.recommend(prof)
+    prof.pop("disk_path", None)                   # keep local folder names out of the profile block
+    return {"profile": prof, "recommendation": rec,
+            "live": await st.llm.status(), "deep": await st.deep.status()}

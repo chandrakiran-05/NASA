@@ -25,7 +25,7 @@ from scipy import stats
 from ..analysis.trend import effective_n, lag1_autocorr
 from ..timeseries.model import MonthlySeries
 
-EVENTS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "events.json").read_text())["events"]
+EVENTS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "events.json").read_text(encoding="utf-8"))["events"]
 
 
 # ------------------------------------------------------------------ integrity flags
@@ -179,7 +179,10 @@ def trend_or_jump(t: np.ndarray, y: np.ndarray, time: pd.DatetimeIndex) -> dict:
         "trend_plus_jump": np.column_stack([np.ones_like(tt), tt, step]),
     }
     _, r_tr, _ = _fit(models["trend"], yy)
-    neff = effective_n(len(yy), lag1_autocorr(r_tr))
+    phi = float(np.clip(lag1_autocorr(r_tr), 0.0, 0.95))
+    neff = effective_n(len(yy), phi)
+    n_ = len(yy)   # Pettitt assumes independent values; inflate its variance by the AR(1) factor
+    pt["p"] = float(min(1.0, 2 * math.exp(-6 * pt["K"] ** 2 / ((n_ ** 3 + n_ ** 2) * (1 + phi) / (1 - phi)))))
     bic = {}
     for name, X in models.items():
         _, _, rss = _fit(X, yy)

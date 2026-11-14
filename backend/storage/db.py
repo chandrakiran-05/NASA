@@ -158,6 +158,10 @@ class Database:
                  json.dumps(result, default=str), _now()),
             )
 
+    def delete_results(self, series_id: str) -> None:
+        with self._lock:
+            self._conn.execute("DELETE FROM results WHERE series_id=?", (series_id,))
+
     def get_result(self, result_id: str) -> dict | None:
         with self._lock:
             row = self._conn.execute("SELECT result_json FROM results WHERE result_id=?", (result_id,)).fetchone()

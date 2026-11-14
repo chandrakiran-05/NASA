@@ -13,7 +13,7 @@ REC = Path(__file__).parent / "fixtures" / "recorded"
 
 
 def test_real_noaa_chennai_station_parses_and_is_flagged_not_fit():
-    raw = (REC / "ncei_gsom_IN020040900_1981_2024.json").read_text()
+    raw = (REC / "ncei_gsom_IN020040900_1981_2024.json").read_text(encoding="utf-8")
     t, v, st = parse_ncei_ads_json(raw, "TAVG")
     assert set(st) == {"IN020040900"} and np.nanmax(v) < 40 and np.nanmin(v) > 20     # Chennai monthly means, degC
     ms = to_monthly(RawSeries(t, v, "monthly", Provenance("ncei.ads", "TAVG", {}), ValueMeta(units="degC")),
@@ -25,7 +25,7 @@ def test_real_noaa_chennai_station_parses_and_is_flagged_not_fit():
 def test_real_giovanni_listing_contains_every_catalog_id():
     from backend.catalog.catalog import load_catalog
     from backend.timeseries.parsers import parse_configured_variables
-    ids = set(parse_configured_variables((REC / "giovanni_configured_variables.json").read_text()))
+    ids = set(parse_configured_variables((REC / "giovanni_configured_variables.json").read_text(encoding="utf-8")))
     assert len(ids) > 700
     for v in load_catalog().variables.values():
         for k in ("giovanni_id", "giovanni_point_id"):

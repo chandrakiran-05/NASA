@@ -13,6 +13,12 @@ from ..connectors.giovanni import GiovanniPoint
 from ..connectors.harmony_area import HarmonyArea
 from ..connectors.ncei import NCEIStations
 from ..connectors.opendap import OpendapMonthly
+from ..connectors.coops import NOAACoops
+from ..core.http import BYPASS_CACHE
+from ..connectors.erddap import ERDDAPGrid
+from ..connectors.nsidc_seaice import NSIDCSeaIce
+from ..connectors.swot import SwotHydrocron
+from ..connectors.usgs_nwis import USGSNwis
 from ..core.config import Settings
 from ..core.errors import (CredentialsMissing, InsufficientData, InvalidRequest, TrendDetectiveError,
                            UpstreamError, UpstreamUnavailable)
@@ -62,6 +68,11 @@ class TimeSeriesService:
             "opendap": OpendapMonthly(settings, http),
             "appeears": AppEEARS(settings, http),
             "ncei": NCEIStations(settings, http),
+            "usgs_nwis": USGSNwis(settings, http),
+            "swot_hydrocron": SwotHydrocron(settings, http),
+            "erddap": ERDDAPGrid(settings, http),
+            "nsidc_seaice": NSIDCSeaIce(settings, http),
+            "noaa_coops": NOAACoops(settings, http),
         }
 
     def validate(self, variable_id: str, region: Region, start: date, end: date) -> dict:
@@ -82,7 +93,8 @@ class TimeSeriesService:
         return v
 
     def request_hash(self, v: dict, region: Region, start: date, end: date, options: dict) -> str:
-        opts = {k: options[k] for k in sorted(options) if k in ("stations", "max_stations", "min_valid_fraction")}
+        opts = {k: options[k] for k in sorted(options) if k in ("stations", "max_stations", "min_valid_fraction",
+                                                                     "site_id", "station_id", "feature_id")}
         return hash_request(v["id"], region.key(), start.isoformat(), end.isoformat(), opts)
 
     async def build_series(self, variable_id: str, region: Region, start: date, end: date, *,
@@ -98,6 +110,8 @@ class TimeSeriesService:
             return {"series_id": sid, "cached": True, "completeness": rec.get("completeness"),
                     "source_api": rec.get("source_api")}
 
+        if refresh:
+            BYPASS_CACHE.set(True)       # contextvar: scoped to this job's task
         cs = v.get("coverage_start")
         eff_start = max(start, parse_date(cs)) if cs else start
         routes, notes = plan_routes(v, region, self.catalog)

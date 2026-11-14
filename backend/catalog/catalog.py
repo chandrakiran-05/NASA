@@ -150,15 +150,18 @@ class Catalog:
 
 
 def load_catalog(data_dir: Path | None = None) -> Catalog:
-    seed = json.loads((DATA / "seed_catalog.json").read_text())
-    arch = json.loads((DATA / "archetypes.json").read_text())
-    alerts = json.loads((DATA / "alerts.json").read_text())
+    seed = json.loads((DATA / "seed_catalog.json").read_text(encoding="utf-8"))
+    arch = json.loads((DATA / "archetypes.json").read_text(encoding="utf-8"))
+    alerts = json.loads((DATA / "alerts.json").read_text(encoding="utf-8"))
     variables = {v["id"]: v for v in seed["variables"]}
+    for extra in sorted(DATA.glob("seed_catalog_*.json")):       # per-domain additions (hydro, ocean/atmosphere)
+        for v in json.loads(extra.read_text(encoding="utf-8"))["variables"]:
+            variables.setdefault(v["id"], v)
     built_at = None
     if data_dir is not None:
         built = data_dir / "catalog_built.json"
         if built.exists():
-            b = json.loads(built.read_text())
+            b = json.loads(built.read_text(encoding="utf-8"))
             built_at = b.get("built_at")
             for vid, patch in b.get("updates", {}).items():   # official metadata overrides seed values
                 if vid in variables:

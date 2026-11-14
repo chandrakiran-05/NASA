@@ -20,7 +20,7 @@ from ..analysis.deseason import deseasonalize
 from ..analysis.trend import mann_kendall, ols_trend
 from ..timeseries.model import MonthlySeries, Provenance
 
-GROUPS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "quantity_groups.json").read_text())["groups"]
+GROUPS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "quantity_groups.json").read_text(encoding="utf-8"))["groups"]
 
 
 def second_opinions(variable_id: str) -> dict:

@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 from statsmodels.stats.multitest import multipletests
 
-LINKS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "links.json").read_text())["links"]
+LINKS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "links.json").read_text(encoding="utf-8"))["links"]
 
 
 def rank_and_cohere(analyses: dict[str, dict], alpha: float = 0.05) -> dict:

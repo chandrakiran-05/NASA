@@ -39,14 +39,25 @@ def anomaly_average(series: dict[str, pd.Series]) -> pd.Series:
     if len(series) == 1:
         return next(iter(series.values()))
     df = pd.DataFrame(series)
+    # Each station's climatology must come from the SAME years: a station that only reports the warm 2010s,
+    # centred on its own mean, would cancel the warming. Drop the shortest record until every calendar
+    # month has >= 5 years that all remaining stations report.
+    while df.shape[1] > 1:
+        common = df.notna().all(axis=1)
+        per_month = pd.Series(df.index.month[common]).value_counts().reindex(range(1, 13), fill_value=0)
+        if per_month.min() >= 5:
+            break
+        df = df.drop(columns=df.notna().sum().idxmin())
+    if df.shape[1] == 1:
+        return df.iloc[:, 0].rename((df.columns[0],))
     month = df.index.month
-    clim = df.groupby(month).transform("mean")
+    clim = df[common].groupby(month[common]).mean().loc[month].set_axis(df.index)
     anom = df - clim
     mean_anom = anom.mean(axis=1, skipna=True)
     mean_clim = clim.mean(axis=1, skipna=True)
     out = mean_anom + mean_clim
     out[df.notna().sum(axis=1) == 0] = np.nan
-    return out
+    return out.rename(tuple(df.columns))
 
 
 class NCEIStations(Connector):
@@ -149,12 +160,14 @@ class NCEIStations(Connector):
         if not per_station:
             raise UpstreamUnavailable(f"No {datatype} values returned for stations {stations}")
         combined = anomaly_average(per_station)
+        used = combined.name if isinstance(combined.name, tuple) else (combined.name,)
         prov = Provenance(
             source_api=used_api, variable=datatype, geometry=req.region.as_dict(), dataset_short_name=cdo_ds,
             request_url=(url.split("&startDate")[0] if url else f"{self.s.cdo_base}/data"),
             citation="NOAA NCEI Global Summary of the Month (GSOM)",
             notes=[f"stations: {', '.join(per_station)}"] + (
-                ["multi-station climate-anomaly average"] if len(per_station) > 1 else []),
+                [f"multi-station climate-anomaly average over stations {', '.join(map(str, used))} "
+                 "(shorter records without enough common years were left out)"] if len(per_station) > 1 else []),
         )
         rs = RawSeries(combined.index.to_numpy("datetime64[ns]"), combined.to_numpy(float), "monthly", prov,
                        ValueMeta(units=v.get("units")))

@@ -40,6 +40,7 @@ effect".
 from __future__ import annotations
 
 import contextlib
+import threading
 import math
 import sys
 
@@ -66,15 +67,19 @@ def available() -> bool:
     return _rb is not None
 
 
+_HOOK_LOCK = threading.Lock()   # sys.unraisablehook is process-global; parallel swaps left it replaced
+
+
 @contextlib.contextmanager
 def _quiet_unraisable():
     """Rbeast's C extension emits a harmless 'Exception ignored' message on Python >= 3.12."""
-    old = sys.unraisablehook
-    sys.unraisablehook = lambda *_: None
-    try:
-        yield
-    finally:
-        sys.unraisablehook = old
+    with _HOOK_LOCK:                # Rbeast holds the GIL anyway, so this costs no parallelism
+        old = sys.unraisablehook
+        sys.unraisablehook = lambda *_: None
+        try:
+            yield
+        finally:
+            sys.unraisablehook = old
 
 
 # ------------------------------------------------------------------ helpers
@@ -264,6 +269,10 @@ def change_onset(ms: MonthlySeries, *, seams: list[dict] | None = None, pelt_bre
                 break
         e["agrees_with_pelt"] = bool(pelt_breaks) and any(
             abs((ms.time[e["k"]] - pd.Timestamp(pb["date"] + "-01")).days) <= 24 * 30.5 for pb in pelt_breaks)
+
+    for e in events[1:]:          # surrogates calibrate only the strongest change; later ones stay 'possible'
+        if e["status"] == "confirmed":
+            e["status"] = "possible"
 
     # ---- segment trends (on the original seasonal anomalies, AR(1)-adjusted) for confirmed events
     confirmed = sorted([e for e in events if e["status"] == "confirmed"], key=lambda e: e["k"])

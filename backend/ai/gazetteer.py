@@ -72,7 +72,7 @@ def _index() -> dict:
         k = _fold(st["name"])
         idx.setdefault(k, {"type": "us_state", "name": st["name"], "code": st["code"], "population": 10 ** 7})
     # editorial region presets win over everything (states, basins, deserts)
-    for r in json.loads(PRESETS.read_text())["regions"]:
+    for r in json.loads(PRESETS.read_text(encoding="utf-8"))["regions"]:
         rec = {"type": "region", "name": r["name"], "bbox": r["bbox"], "approximate": True, "population": 10 ** 9}
         for n in [r["name"], *r.get("aliases", [])]:
             kk = _fold(n)

@@ -1,0 +1,277 @@
+{
+"_note": "Real CO-OPS mdapi response (stations.json?type=waterlevels, 2026-11-14) reduced to the stations near New York plus Honolulu, Buffalo and Calumet Harbor, and to the fields the connector reads.",
+"count": 30,
+"units": null,
+"stations": [
+{
+"id": "1612340",
+"name": "Honolulu",
+"lat": 21.303333,
+"lng": -157.86453,
+"tidal": true,
+"greatlakes": false,
+"state": "HI"
+},
+{
+"id": "8443970",
+"name": "Boston",
+"lat": 42.35389,
+"lng": -71.05028,
+"tidal": true,
+"greatlakes": false,
+"state": "MA"
+},
+{
+"id": "8447386",
+"name": "Fall River",
+"lat": 41.7043,
+"lng": -71.1641,
+"tidal": true,
+"greatlakes": false,
+"state": "MA"
+},
+{
+"id": "8452660",
+"name": "Newport",
+"lat": 41.504333,
+"lng": -71.32614,
+"tidal": true,
+"greatlakes": false,
+"state": "RI"
+},
+{
+"id": "8452944",
+"name": "Conimicut Light",
+"lat": 41.7167,
+"lng": -71.3433,
+"tidal": true,
+"greatlakes": false,
+"state": "RI"
+},
+{
+"id": "8454000",
+"name": "Providence",
+"lat": 41.807167,
+"lng": -71.400665,
+"tidal": true,
+"greatlakes": false,
+"state": "RI"
+},
+{
+"id": "8461490",
+"name": "New London",
+"lat": 41.371666,
+"lng": -72.09556,
+"tidal": true,
+"greatlakes": false,
+"state": "CT"
+},
+{
+"id": "8465705",
+"name": "New Haven",
+"lat": 41.2833,
+"lng": -72.9083,
+"tidal": true,
+"greatlakes": false,
+"state": "CT"
+},
+{
+"id": "8467150",
+"name": "Bridgeport",
+"lat": 41.17582,
+"lng": -73.18397,
+"tidal": true,
+"greatlakes": false,
+"state": "CT"
+},
+{
+"id": "8510560",
+"name": "Montauk",
+"lat": 41.048332,
+"lng": -71.95944,
+"tidal": true,
+"greatlakes": false,
+"state": "NY"
+},
+{
+"id": "8516945",
+"name": "Kings Point",
+"lat": 40.8103,
+"lng": -73.7649,
+"tidal": true,
+"greatlakes": false,
+"state": "NY"
+},
+{
+"id": "8518750",
+"name": "The Battery",
+"lat": 40.700554,
+"lng": -74.01417,
+"tidal": true,
+"greatlakes": false,
+"state": "NY"
+},
+{
+"id": "8518962",
+"name": "Turkey Point Hudson River NERRS",
+"lat": 42.0139,
+"lng": -73.9392,
+"tidal": true,
+"greatlakes": false,
+"state": "NY"
+},
+{
+"id": "8518979",
+"name": "Coxsackie, Hudson River",
+"lat": 42.35264,
+"lng": -73.79486,
+"tidal": true,
+"greatlakes": false,
+"state": "NY"
+},
+{
+"id": "8531680",
+"name": "Sandy Hook",
+"lat": 40.4669,
+"lng": -74.0094,
+"tidal": true,
+"greatlakes": false,
+"state": "NJ"
+},
+{
+"id": "8534720",
+"name": "Atlantic City",
+"lat": 39.356667,
+"lng": -74.41805,
+"tidal": true,
+"greatlakes": false,
+"state": "NJ"
+},
+{
+"id": "8536110",
+"name": "Cape May",
+"lat": 38.9683,
+"lng": -74.96,
+"tidal": true,
+"greatlakes": false,
+"state": "NJ"
+},
+{
+"id": "8537121",
+"name": "Ship John Shoal",
+"lat": 39.30539,
+"lng": -75.37668,
+"tidal": true,
+"greatlakes": false,
+"state": "NJ"
+},
+{
+"id": "8539094",
+"name": "Burlington, Delaware River",
+"lat": 40.0817,
+"lng": -74.8697,
+"tidal": true,
+"greatlakes": false,
+"state": "NJ"
+},
+{
+"id": "8540433",
+"name": "Marcus Hook",
+"lat": 39.811806,
+"lng": -75.4095,
+"tidal": true,
+"greatlakes": false,
+"state": "PA"
+},
+{
+"id": "8545240",
+"name": "Philadelphia",
+"lat": 39.933056,
+"lng": -75.14198,
+"tidal": true,
+"greatlakes": false,
+"state": "PA"
+},
+{
+"id": "8546252",
+"name": "Bridesburg",
+"lat": 39.979683,
+"lng": -75.079315,
+"tidal": true,
+"greatlakes": false,
+"state": "PA"
+},
+{
+"id": "8548989",
+"name": "Newbold",
+"lat": 40.137333,
+"lng": -74.75183,
+"tidal": true,
+"greatlakes": false,
+"state": "PA"
+},
+{
+"id": "8551762",
+"name": "Delaware City",
+"lat": 39.582195,
+"lng": -75.588974,
+"tidal": true,
+"greatlakes": false,
+"state": "DE"
+},
+{
+"id": "8551910",
+"name": "Reedy Point",
+"lat": 39.558334,
+"lng": -75.571945,
+"tidal": true,
+"greatlakes": false,
+"state": "DE"
+},
+{
+"id": "8555889",
+"name": "Brandywine Shoal Light",
+"lat": 38.986668,
+"lng": -75.113335,
+"tidal": true,
+"greatlakes": false,
+"state": "DE"
+},
+{
+"id": "8557380",
+"name": "Lewes",
+"lat": 38.782833,
+"lng": -75.11928,
+"tidal": true,
+"greatlakes": false,
+"state": "DE"
+},
+{
+"id": "8573927",
+"name": "Chesapeake City",
+"lat": 39.52667,
+"lng": -75.81,
+"tidal": true,
+"greatlakes": false,
+"state": "MD"
+},
+{
+"id": "9063020",
+"name": "Buffalo",
+"lat": 42.877445,
+"lng": -78.89047,
+"tidal": false,
+"greatlakes": true,
+"state": "NY"
+},
+{
+"id": "9087044",
+"name": "Calumet Harbor",
+"lat": 41.72972,
+"lng": -87.53833,
+"tidal": false,
+"greatlakes": true,
+"state": "IL"
+}
+]
+}

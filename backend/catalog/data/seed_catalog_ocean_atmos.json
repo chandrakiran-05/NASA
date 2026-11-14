@@ -1,0 +1,442 @@
+{
+ "_comment": "Ocean, sea-ice and extra atmosphere variables (same entry shape as seed_catalog.json). source erddap = NOAA ERDDAP griddap (erddap_base, dataset_id, erddap_variable, optional erddap_zdim, erddap_lon360); nsidc_seaice = NSIDC Sea Ice Index G02135 v4.0 (hemisphere-wide); noaa_coops = NOAA CO-OPS tide-gauge monthly mean sea level (point only); giovanni entries follow merra2_t2m, with a Cloud OPeNDAP monthly fallback where one exists. sea_level_anomaly is not included: no NOAA ERDDAP satellite sea-level-anomaly dataset with 10 or more continuous years was found on 2026-11-14. Every entry's verified_note says how it was checked.",
+ "variables": [
+  {
+   "id": "sst",
+   "name": "Sea surface temperature (NOAA ERSST v5)",
+   "domain": "ocean",
+   "family": "sea_surface_temperature",
+   "short_definition": "How warm the top layer of the ocean is, from NOAA's long ship-and-buoy record (monthly, 2-degree grid).",
+   "definition": "ERSST version 5 (Extended Reconstructed Sea Surface Temperature) combines thermometer readings from ships, buoys and Argo floats since 1854 into a monthly map with 2-degree (about 220 km) grid cells. Cells that are mostly land have no value, so for a point near the coast the nearest grid cell over the sea is used, and the provenance says which one. Early decades had far fewer ships, so NOAA fills the map statistically there and those years are less certain.",
+   "keywords": [
+    "sea surface temperature",
+    "sst",
+    "ocean temperature",
+    "sea temperature",
+    "ocean warming",
+    "marine heatwave",
+    "el nino",
+    "la nina",
+    "coral",
+    "ocean",
+    "sea",
+    "water temperature",
+    "ersst"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-14: axis and data queries on https://coastwatch.pfeg.noaa.gov/erddap/griddap/nceiErsstv5_LonPM180 (time axis 1854-01-01 to 2026-10-15)",
+   "erddap_base": "https://coastwatch.pfeg.noaa.gov/erddap",
+   "dataset_id": "nceiErsstv5_LonPM180",
+   "erddap_variable": "sst",
+   "erddap_zdim": 0.0,
+   "erddap_lon360": false,
+   "dataset": {
+    "short_name": "ERSST",
+    "version": "v5",
+    "variable": "sst",
+    "doi": "10.7289/V5T72FNM",
+    "url": "https://coastwatch.pfeg.noaa.gov/erddap/griddap/nceiErsstv5_LonPM180.html",
+    "citation": "Huang, B. et al. (2017): NOAA Extended Reconstructed Sea Surface Temperature (ERSST), Version 5. NOAA National Centers for Environmental Information. doi:10.7289/V5T72FNM"
+   },
+   "native_resolution": "monthly",
+   "units": "degree_C",
+   "units_source": "erddap",
+   "convert": {
+    "factor": 1.0,
+    "offset": 0.0,
+    "units": "\u00b0C"
+   },
+   "coverage_start": "1854-01",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false,
+   "canonical": true
+  },
+  {
+   "id": "modis_chlorophyll",
+   "name": "Ocean chlorophyll-a (MODIS-Aqua satellite, monthly)",
+   "domain": "ocean",
+   "family": "ocean_biology",
+   "short_definition": "How green the sea is: chlorophyll-a, the pigment of phytoplankton, seen from space by NASA's MODIS-Aqua.",
+   "definition": "MODIS on NASA's Aqua satellite measures the colour of the sea. Greener water holds more chlorophyll-a, the pigment of phytoplankton: microscopic ocean plants at the base of the food web. These are NASA monthly 4 km maps (reprocessing R2022, science quality). Clouds, sea ice and land leave gaps, and those stay as missing months. Near coasts, mud and river water can make the estimate too high.",
+   "keywords": [
+    "chlorophyll",
+    "chlorophyll-a",
+    "phytoplankton",
+    "ocean colour",
+    "ocean color",
+    "algae",
+    "algal bloom",
+    "plankton",
+    "modis",
+    "aqua",
+    "productivity",
+    "ocean",
+    "coastal",
+    "river plume"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-14: axis and data queries on https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chlamday_R2022SQ (time axis 2002-07-16 to 2026-04-16; latitude runs north to south, handled by index queries)",
+   "erddap_base": "https://coastwatch.pfeg.noaa.gov/erddap",
+   "dataset_id": "erdMH1chlamday_R2022SQ",
+   "erddap_variable": "chlor_a",
+   "erddap_lon360": false,
+   "dataset": {
+    "short_name": "MODISA_L3m_CHL",
+    "version": "R2022.0",
+    "variable": "chlor_a",
+    "doi": "10.5067/AQUA/MODIS/L3M/CHL/2022",
+    "url": "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chlamday_R2022SQ.html",
+    "citation": "NASA Ocean Biology Processing Group: MODIS-Aqua Level-3 Mapped Chlorophyll Data, Version R2022.0. NASA OB.DAAC. doi:10.5067/AQUA/MODIS/L3M/CHL/2022"
+   },
+   "native_resolution": "monthly",
+   "units": "mg m-3",
+   "units_source": "erddap",
+   "coverage_start": "2002-07",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false
+  },
+  {
+   "id": "seaice_extent",
+   "name": "Sea-ice extent (whole hemisphere, NSIDC Sea Ice Index)",
+   "domain": "polar",
+   "family": "sea_ice",
+   "short_definition": "How much of the Arctic or Antarctic Ocean is covered by sea ice, as one number for the whole hemisphere.",
+   "definition": "Extent is the total ocean area where at least 15% of the surface is ice, measured by satellite microwave sensors since late 1978. The Sea Ice Index gives one value per month for the whole Northern or Southern Hemisphere. It is NOT a value for the place you pick: the point or box only chooses the hemisphere and must be poleward of 40\u00b0N or 40\u00b0S. Arctic ice is smallest in September and largest in March.",
+   "keywords": [
+    "sea ice",
+    "ice",
+    "arctic",
+    "antarctic",
+    "polar",
+    "ice extent",
+    "melting ice",
+    "north pole",
+    "south pole",
+    "cryosphere",
+    "frozen ocean",
+    "nsidc"
+   ],
+   "source": "nsidc_seaice",
+   "verified": true,
+   "verified_note": "verified live 2026-11-14: https://noaadata.apps.nsidc.org/NOAA/G02135/{north,south}/monthly/data/{N,S}_MM_extent_v4.0.csv (both hemispheres from 1978-11; -9999 marks the Dec 1987 - Jan 1988 data gap)",
+   "dataset": {
+    "short_name": "G02135",
+    "version": "4.0",
+    "variable": "extent",
+    "doi": "10.7265/a98x-0f50",
+    "url": "https://nsidc.org/data/g02135/versions/4",
+    "citation": "Sea Ice Index, Version 4 (G02135). NSIDC: National Snow and Ice Data Center, Boulder, Colorado USA. doi:10.7265/a98x-0f50"
+   },
+   "native_resolution": "monthly",
+   "units": "million km\u00b2",
+   "units_source": "nsidc",
+   "coverage_start": "1978-11",
+   "coverage_source": "nsidc",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false
+  },
+  {
+   "id": "tide_gauge_msl",
+   "name": "Sea level at a tide gauge (NOAA monthly mean)",
+   "domain": "ocean",
+   "family": "sea_level",
+   "short_definition": "Monthly average height of the sea at a NOAA tide gauge on the US coast or islands, in metres.",
+   "definition": "A tide gauge measures the water level every few minutes; NOAA averages it into a monthly mean sea level, in metres above or below the station's own mean-sea-level reference. The gauge is fixed to land, so its trend is relative sea-level change: the sea rising plus any sinking or rising of the land. The tool uses the nearest NOAA gauge within about 110 km of your point. Months NOAA marks as inferred (not directly measured) are left missing.",
+   "keywords": [
+    "sea level",
+    "sea-level rise",
+    "sea level rise",
+    "tide gauge",
+    "tides",
+    "coastal flooding",
+    "coast",
+    "ocean",
+    "water level",
+    "msl",
+    "noaa tides",
+    "harbor",
+    "port"
+   ],
+   "source": "noaa_coops",
+   "verified": true,
+   "verified_note": "verified live 2026-11-14: api.tidesandcurrents.noaa.gov datagetter product=monthly_mean datum=MSL (The Battery 8518750 from 1856-01; at most 73 000 days per request) and mdapi stations.json?type=waterlevels (303 stations)",
+   "dataset": {
+    "short_name": "CO-OPS monthly_mean",
+    "version": null,
+    "variable": "MSL",
+    "doi": null,
+    "url": "https://tidesandcurrents.noaa.gov/sltrends/",
+    "citation": "NOAA Center for Operational Oceanographic Products and Services (CO-OPS), Tides & Currents monthly mean water levels, https://tidesandcurrents.noaa.gov/"
+   },
+   "native_resolution": "monthly",
+   "units": "m",
+   "units_source": "coops",
+   "coverage_start": null,
+   "spatial_modes": [
+    "point"
+   ],
+   "land_only": false
+  },
+  {
+   "id": "merra2_wind_speed",
+   "name": "Wind speed at the surface (MERRA-2)",
+   "domain": "atmosphere",
+   "family": "wind",
+   "short_definition": "How fast the wind blows at the surface, from NASA's MERRA-2 reanalysis (monthly area averages).",
+   "definition": "A reanalysis blends satellite and weather-station observations with a weather model to make a complete record since 1980. SPEED is MERRA-2's surface wind speed in metres per second. Only area averages are offered: Giovanni has no monthly version of this variable for single points.",
+   "keywords": [
+    "wind",
+    "wind speed",
+    "windy",
+    "breeze",
+    "storm",
+    "gale",
+    "surface wind",
+    "speed",
+    "merra-2"
+   ],
+   "source": "giovanni",
+   "verified": true,
+   "giovanni_id": "M2T1NXFLX_5_12_4_SPEED",
+   "harmony_variable": "M2T1NXFLX_5_12_4_SPEED",
+   "dataset": {
+    "short_name": "M2T1NXFLX",
+    "version": "5.12.4",
+    "concept_id": "C1276812838-GES_DISC",
+    "variable": "SPEED",
+    "doi": "10.5067/7MCPBJ41Y0K6"
+   },
+   "fallback": {
+    "short_name": "M2TMNXFLX",
+    "version": "5.12.4",
+    "concept_id": "C1276812868-GES_DISC",
+    "variable": "SPEED",
+    "resolution": "monthly"
+   },
+   "native_resolution": "hourly",
+   "units": "m s-1",
+   "units_source": "seed",
+   "coverage_start": "1980-01",
+   "coverage_source": "cmr",
+   "spatial_modes": [
+    "area"
+   ],
+   "land_only": false,
+   "verified_note": "Giovanni id found in the live https://api.giovanni.earthdata.nasa.gov/configured-variables/ listing on 2026-11-14; concept ids and DOIs from the CMR collections API on 2026-11-14; fallback variable SPEED is associated with collection C1276812868-GES_DISC in CMR (checked 2026-11-14). A live Giovanni/Harmony/OPeNDAP data request was NOT run (needs an Earthdata token)."
+  },
+  {
+   "id": "merra2_aod",
+   "name": "Aerosol optical depth: haze, dust and smoke (MERRA-2)",
+   "domain": "atmosphere",
+   "family": "aerosol",
+   "short_definition": "How much sunlight tiny particles in the air (dust, smoke, sea salt, pollution) block; 0 means perfectly clear air.",
+   "definition": "Aerosol optical depth (AOD) at 550 nm measures how hazy the whole column of air is. Below 0.1 is very clean air; above 1 is thick dust or smoke. MERRA-2 combines satellite AOD observations with a model of how particles are emitted, carried by the wind and washed out by rain. It has no units. Only area averages are offered: Giovanni has no monthly version of this variable for single points.",
+   "keywords": [
+    "aerosol",
+    "aod",
+    "aerosol optical depth",
+    "haze",
+    "dust",
+    "smoke",
+    "pollution",
+    "air quality",
+    "particles",
+    "wildfire smoke",
+    "sandstorm",
+    "atmospheric composition",
+    "merra-2"
+   ],
+   "source": "giovanni",
+   "verified": true,
+   "giovanni_id": "M2T1NXAER_5_12_4_TOTEXTTAU",
+   "harmony_variable": "M2T1NXAER_5_12_4_TOTEXTTAU",
+   "dataset": {
+    "short_name": "M2T1NXAER",
+    "version": "5.12.4",
+    "concept_id": "C1276812830-GES_DISC",
+    "variable": "TOTEXTTAU",
+    "doi": "10.5067/KLICLTZ8EM9D"
+   },
+   "fallback": {
+    "short_name": "M2TMNXAER",
+    "version": "5.12.4",
+    "concept_id": "C1276812866-GES_DISC",
+    "variable": "TOTEXTTAU",
+    "resolution": "monthly"
+   },
+   "native_resolution": "hourly",
+   "units": "1",
+   "units_source": "seed",
+   "coverage_start": "1980-01",
+   "coverage_source": "cmr",
+   "spatial_modes": [
+    "area"
+   ],
+   "land_only": false,
+   "verified_note": "Giovanni id found in the live https://api.giovanni.earthdata.nasa.gov/configured-variables/ listing on 2026-11-14; concept ids and DOIs from the CMR collections API on 2026-11-14; fallback variable TOTEXTTAU is associated with collection C1276812866-GES_DISC in CMR (checked 2026-11-14). A live Giovanni/Harmony/OPeNDAP data request was NOT run (needs an Earthdata token)."
+  },
+  {
+   "id": "airs_total_ozone",
+   "name": "Total ozone from the AIRS satellite (monthly)",
+   "domain": "atmosphere",
+   "family": "ozone",
+   "short_definition": "Total amount of ozone above a place, in Dobson Units, measured in infrared light by AIRS on NASA's Aqua satellite.",
+   "definition": "Most ozone sits in the stratosphere (the ozone layer) and blocks harmful ultraviolet light. AIRS retrieves total ozone from infrared light on its daytime (ascending) pass. This is the monthly AIRS version 7 product, available since September 2002, and an independent check on the OMI ozone record, which uses ultraviolet light.",
+   "keywords": [
+    "ozone",
+    "ozone layer",
+    "total ozone",
+    "uv",
+    "ultraviolet",
+    "dobson",
+    "stratosphere",
+    "airs"
+   ],
+   "source": "giovanni",
+   "verified": true,
+   "giovanni_id": "AIRS3STM_7_0_TotO3_A",
+   "harmony_variable": "AIRS3STM_7_0_TotO3_A",
+   "dataset": {
+    "short_name": "AIRS3STM",
+    "version": "7.0",
+    "concept_id": "C1701805662-GES_DISC",
+    "variable": "TotO3_A",
+    "doi": "10.5067/UBENJB9D3T2H"
+   },
+   "fallback": null,
+   "native_resolution": "monthly",
+   "units": "DU",
+   "units_source": "seed",
+   "coverage_start": "2002-09",
+   "coverage_source": "cmr",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false,
+   "verified_note": "Giovanni id found in the live https://api.giovanni.earthdata.nasa.gov/configured-variables/ listing on 2026-11-14; concept ids and DOIs from the CMR collections API on 2026-11-14. A live Giovanni/Harmony/OPeNDAP data request was NOT run (needs an Earthdata token).",
+   "giovanni_point_id": "AIRS3STM_7_0_TotO3_A",
+   "giovanni_point_resolution": "monthly"
+  },
+  {
+   "id": "merra2_tropopause_temp",
+   "name": "Temperature at the tropopause, the top of the weather layer (MERRA-2)",
+   "domain": "atmosphere",
+   "family": "temperature",
+   "short_definition": "How cold the air is at the tropopause, the boundary between the weather layer and the stratosphere, about 8-17 km up.",
+   "definition": "The tropopause is the top of the troposphere, where clouds and weather stop and the stratosphere begins: about 16-17 km high near the equator and 8-10 km near the poles. Its temperature, often between -50 and -80 \u00b0C, describes the upper atmosphere, which can change differently from the air at the ground. From NASA's MERRA-2 reanalysis, monthly means since 1980.",
+   "keywords": [
+    "tropopause",
+    "upper atmosphere",
+    "stratosphere",
+    "troposphere",
+    "atmospheric temperature",
+    "upper air",
+    "temperature aloft",
+    "high altitude",
+    "merra-2"
+   ],
+   "source": "giovanni",
+   "verified": true,
+   "giovanni_id": "M2IMNXASM_5_12_4_TROPT",
+   "harmony_variable": "M2IMNXASM_5_12_4_TROPT",
+   "dataset": {
+    "short_name": "M2IMNXASM",
+    "version": "5.12.4",
+    "concept_id": "C1276812823-GES_DISC",
+    "variable": "TROPT",
+    "doi": "10.5067/5ESKGQTZG7FO"
+   },
+   "fallback": {
+    "short_name": "M2TMNXSLV",
+    "version": "5.12.4",
+    "concept_id": "C1276812859-GES_DISC",
+    "variable": "TROPT",
+    "resolution": "monthly"
+   },
+   "native_resolution": "monthly",
+   "units": "K",
+   "units_source": "seed",
+   "convert": {
+    "factor": 1.0,
+    "offset": -273.15,
+    "units": "\u00b0C"
+   },
+   "coverage_start": "1980-01",
+   "coverage_source": "cmr",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false,
+   "verified_note": "Giovanni id found in the live https://api.giovanni.earthdata.nasa.gov/configured-variables/ listing on 2026-11-14; concept ids and DOIs from the CMR collections API on 2026-11-14; fallback variable TROPT is associated with collection C1276812859-GES_DISC in CMR (checked 2026-11-14). A live Giovanni/Harmony/OPeNDAP data request was NOT run (needs an Earthdata token).",
+   "giovanni_point_id": "M2IMNXASM_5_12_4_TROPT",
+   "giovanni_point_resolution": "monthly"
+  },
+  {
+   "id": "merra2_skin_temp",
+   "name": "Surface skin temperature: sea surface over the ocean, ground over land (MERRA-2)",
+   "domain": "atmosphere",
+   "family": "temperature",
+   "short_definition": "Temperature of the surface itself, not the air: over the ocean the sea-surface temperature, over land the ground's skin temperature.",
+   "definition": "Over the ocean this is the prescribed sea-surface temperature: MERRA-2 does not compute it but takes it from observation-based sea-surface temperature and sea-ice analyses. Over land it is the skin temperature of the ground, computed by the model's land surface. A box that covers both land and sea mixes the two. From NASA's MERRA-2 reanalysis since 1980. Only area averages are offered: Giovanni has no monthly version of this variable for single points.",
+   "keywords": [
+    "skin temperature",
+    "surface temperature",
+    "sea surface temperature",
+    "sst",
+    "ground temperature",
+    "ocean temperature",
+    "land surface temperature",
+    "ts",
+    "merra-2"
+   ],
+   "source": "giovanni",
+   "verified": true,
+   "giovanni_id": "M2T1NXSLV_5_12_4_TS",
+   "harmony_variable": "M2T1NXSLV_5_12_4_TS",
+   "dataset": {
+    "short_name": "M2T1NXSLV",
+    "version": "5.12.4",
+    "concept_id": "C1276812863-GES_DISC",
+    "variable": "TS",
+    "doi": "10.5067/VJAFPLI1CSIV"
+   },
+   "fallback": {
+    "short_name": "M2TMNXSLV",
+    "version": "5.12.4",
+    "concept_id": "C1276812859-GES_DISC",
+    "variable": "TS",
+    "resolution": "monthly"
+   },
+   "native_resolution": "hourly",
+   "units": "K",
+   "units_source": "seed",
+   "convert": {
+    "factor": 1.0,
+    "offset": -273.15,
+    "units": "\u00b0C"
+   },
+   "coverage_start": "1980-01",
+   "coverage_source": "cmr",
+   "spatial_modes": [
+    "area"
+   ],
+   "land_only": false,
+   "verified_note": "Giovanni id found in the live https://api.giovanni.earthdata.nasa.gov/configured-variables/ listing on 2026-11-14; concept ids and DOIs from the CMR collections API on 2026-11-14; fallback variable TS is associated with collection C1276812859-GES_DISC in CMR (checked 2026-11-14). A live Giovanni/Harmony/OPeNDAP data request was NOT run (needs an Earthdata token)."
+  }
+ ]
+}

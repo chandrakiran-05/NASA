@@ -72,7 +72,7 @@ def court(ms: MonthlySeries, alpha: float = 0.05) -> dict:
 
     jurors = _jurors(t, des, ms, alpha)
     by_id = {j["id"]: j for j in jurors}
-    verdict_sig = by_id[chosen]["significant"] and by_id["ols_ar1"]["significant"]
+    verdict_sig = by_id["mk_ess_ar1"]["significant"] and by_id["ols_ar1"]["significant"]   # same pair as the result card
     n_sig = sum(j["significant"] for j in jurors)
     flips = 0 < n_sig < len(jurors)
 

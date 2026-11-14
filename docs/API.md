@@ -83,6 +83,42 @@ Dates: `YYYY`, `YYYY-MM` or `YYYY-MM-DD` (end dates are expanded to the end of t
 | POST | `/compare` | `{series_ids:[a,b], mode:"product_agreement"}` | F4: `badge` ROBUST/DISPUTED/INCONCLUSIVE, `a`, `b`, `difference`, `slope_difference` |
 | POST | `/scan` | `{geometry, start, end, variable_ids? , region_type?}` | 202 job → `ranking[]` (FDR across variables, effect size), `coherence[]`, `failed{}` |
 
+## Active trends (live, verified) — `backend/active/`
+
+"What is changing **now**?" For each variable: the last W = clip(N/3, 10, 15) years are tested against
+the years before (AR(1)-corrected Mann-Kendall + AR(1)-adjusted OLS). Candidates then go through
+independent checks that run concurrently and stream as they finish, and finally a calibrated BEAST gate.
+
+| Method | Path | Body / query | Returns |
+|---|---|---|---|
+| GET | `/criteria` | | the 28 criteria: `id`, `n`, `name`, `definition`, `status` (live / proxy / short_record / not_trendable), `variables[]`, `note`, `where_to_look[]`, `missing_variables[]` |
+| POST | `/active-trends` | `{geometry, start, end, criteria?[], variable_ids?[], per_criterion=1, options{}, alpha, ai_review=true}` **or** `{series_ids[]}` | 202 `{job_id, variables[], skipped[], events_url, stream_url, status_url, reused}`. Identical requests return the same job (`reused:true`), so the UI may start a scan while the student is still typing. |
+| GET | `/active-trends/{job_id}/events` | `after=0`, `wait=0..30` | `{events[], next, done}` (long-poll) |
+| GET | `/active-trends/{job_id}/stream` | `after=0` | Server-Sent Events, one event per step; ends after `done` / `error` |
+| GET | `/jobs/{job_id}` | | final result (below) |
+| POST | `/active-trends/{job_id}/deep-review?top=3` | | 202 job: optional AirLLM reviewer on the top trends (advisory, slow); also emits `deep_review` events |
+| GET | `/ai/hardware` | | GPU/RAM/disk profile and the live/deep model that fits it |
+
+**Event types** (each has `seq`, `type`, `t`, usually `variable_id`): `started`, `fetching`, `fetched`,
+`candidate` / `not_active` (`state`, `plain_language`, `rate_per_decade`, `units`), `check`
+(`check`, `status` pass/warn/fail/skipped, `plain_language`, `detail`), `beast_started`, `beast`
+(`status` agrees/disagrees/uncertain/skipped, `active_since`), `verdict` (`provisional` true after BEAST,
+false once the cross-variable checks are in), `failed`, `done`, `error`.
+
+**States:** `active` (trend continues), `accelerating`, `emerging` (not detectable before the window),
+`reversed`, `stalled` (full-record trend not detectable recently), `none`, `too_short` (< 15 years).
+
+**Checks:** `integrity` (F1; seams/jumps near the window start), `court` (F3 on the recent window),
+`chance` (F5 block bootstrap), `stability` (nearby windows give the same answer), `physics` (sign
+coherence with linked active variables), `second_opinion` (other product of the same quantity in the scan),
+`fdr` (Benjamini-Hochberg across scanned variables), `ai_review` (local LLM, advisory, never changes the label).
+
+**Labels:** `VERIFIED` (no failed check, ≥ 3 passed, BEAST agrees, regime start not at a seam),
+`PROBABLE`, `NOT VERIFIED`. Show `verdict.limit`: VERIFIED is not a cause and not a forecast.
+
+Result: `{trends:[{variable_id, name, series_id, criteria[], detect, checks[], beast, verdict, ai_review?}],
+not_active[], failed{}, skipped[], summary, plain_language, method, limits[]}`.
+
 ## Investigation and demos
 
 | Method | Path | Body | Returns |

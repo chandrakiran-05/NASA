@@ -25,7 +25,7 @@ Source of truth for scope, in this order:
 | Never invent, interpolate or smooth data. Missing months are `null` in the API; draw them as gaps. | Data rule in every design doc. |
 | Do **not** change files in `backend/`, `tests/` or `scripts/` unless the user explicitly asks. If the UI needs something the API lacks, write it down in `docs/FRONTEND-NEEDS.md` and tell the user. | Backend has 92 passing tests and a fixed contract. |
 | Use the exact honest wording below. | Judges score validity; overclaiming is the main risk. |
-| Data sources shown on screen: Giovanni, AppEEARS, NOAA NCEI (plus CMR / Cloud OPeNDAP behind them). Show the `provenance` block (dataset, version, DOI, retrieved_at) for every series. | Challenge resources only; reproducibility. |
+| Data sources shown on screen: Giovanni, AppEEARS, NOAA NCEI (plus CMR / Cloud OPeNDAP behind them), USGS NWIS (CUAHSI WaterML), PO.DAAC SWOT Hydrocron, NOAA ERDDAP (ERSST, MODIS-Aqua chlorophyll), NSIDC Sea Ice Index, NOAA CO-OPS tide gauges. Show the `provenance` block (dataset, version, DOI, retrieved_at) for every series. | Challenge resources only; reproducibility. |
 
 ### Required wording
 
@@ -38,6 +38,8 @@ Source of truth for scope, in this order:
 | Projection (`insights.forecast`) | "statistical extrapolation, not a climate projection" (`disclaimer` field) | "prediction", "forecast of climate" |
 | Driver hints / scan coherence | "consistent with", "associated with" | "caused by", "because of" |
 | Stamp (F3) | `SIGNIFICANT` / `NOT PROVEN` | "proven", "no trend exists" |
+| Active-trend label | `VERIFIED` / `PROBABLE` / `NOT VERIFIED` + `verdict.limit` | "confirmed cause", "will keep rising" |
+| AI reviewer note (`ai_review`) | "AI reviewer (advisory)" | present it as part of the verdict |
 
 Whenever the API returns `plain_language`, `limit`, `limits`, `caveats` or `disclaimer`, show it.
 
@@ -82,10 +84,12 @@ CORS allows `http://localhost:5173` and `:3000` (change `CORS_ORIGINS` in `.env`
 | F7 FDR trend map | F7 | `POST /api/trendmap` → job | `lat[]`, `lon[]`, `slope_per_decade[][]`, `significant[][]`, `area_fraction_rising/falling` |
 | Extra insight cards | — | `POST /api/insights` | `breaks`, `emergence`, `records`, `forecast`, `trend_evidence_index` |
 | Trend Scan ("what's changing here?") | F12 | `POST /api/scan` → job | `ranking[]`, `coherence[]`, `plain_language` |
+| **Active trends** ("what is changing now?") — live cards per variable | active | `GET /api/criteria`; `POST /api/active-trends` → `stream_url` (SSE) or `events_url` (long-poll) → final `GET /api/jobs/{id}` | events `candidate`, `check`, `beast`, `verdict`; result `trends[].{detect.state, detect.plain_language, checks[], beast.active_since, verdict.label}`, `skipped[]` (show `where_to_look` for not-trendable criteria) |
 | Explain / ask | F13 | `POST /api/ai/explain {series_id}`, `POST /api/ai/ask {question}` | `explanation`, `answer`, `source` (show "AI-written, number-checked" when `local_llm`) |
 | Demo cases | F6 | `GET /api/demos`, `POST /api/demos/{id}/run` → job | full report |
 | Data-source status banner | ⑧ | `GET /api/sources/status` | `alerts.alerts[]`, `llm.available` |
-| Export | F9 | `GET /api/export/{id}?format=csv|json` | file with provenance + citation |
+| AI hardware panel (optional) | AI | `GET /api/ai/hardware`; `POST /api/active-trends/{job_id}/deep-review` → job | `recommendation.{live, deep, notes}`; deep reviews are advisory, minutes per trend |
+| Export | F9 | `GET /api/export/{id}?format=csv|json|waterml2|cuahsi_csv` | file with provenance + citation; `waterml2` / `cuahsi_csv` load into CUAHSI HydroShare |
 
 ## 5. Frontend stack and layout
 

@@ -7,6 +7,7 @@ the same for Giovanni, AppEEARS, NCEI, CDO and CMR.
 from __future__ import annotations
 
 import asyncio
+import contextvars
 import email.utils
 import hashlib
 import json
@@ -26,6 +27,8 @@ from .errors import UpstreamError
 log = logging.getLogger("etd.http")
 
 RETRY_STATUS = {429, 500, 502, 503, 504}
+# set by TimeSeriesService.build_series(refresh=True): re-download instead of serving the raw cache
+BYPASS_CACHE: contextvars.ContextVar[bool] = contextvars.ContextVar("bypass_cache", default=False)
 # headers that must never end up in cache keys or provenance
 SECRET_HEADERS = {"authorization", "token", "cookie"}
 
@@ -108,7 +111,7 @@ class RawCache:
         body_p, meta_p = self._paths(key)
         if not (body_p.exists() and meta_p.exists()):
             return None
-        meta = json.loads(meta_p.read_text())
+        meta = json.loads(meta_p.read_text(encoding="utf-8"))
         if self.ttl_s > 0 and time.time() - meta.get("stored_at", 0) > self.ttl_s:
             return None
         return CachedResponse(meta["status_code"], body_p.read_bytes(), meta.get("headers", {}),
@@ -170,7 +173,7 @@ class ResilientHTTP:
         expected: tuple[int, ...] = (200,),
     ) -> CachedResponse:
         key = request_key(method, url, params, json_body if json_body is not None else data, headers)
-        if use_cache:
+        if use_cache and not BYPASS_CACHE.get():
             hit = self.cache.get(key)
             if hit is not None:
                 self.stats["cache_hits"] += 1

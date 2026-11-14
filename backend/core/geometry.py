@@ -99,6 +99,8 @@ def parse_geometry(g: dict) -> Region:
             _check_lonlat(lon, lat)
         lons = [p[0] for p in pts]
         lats = [p[1] for p in pts]
+        if max(lons) - min(lons) > 180:
+            raise InvalidRequest("Polygon spans more than 180° of longitude (antimeridian crossing unsupported)")
         return Region("polygon", (min(lons), min(lats), max(lons), max(lats)), polygon=pts, name=name)
     raise InvalidRequest(f"Unsupported geometry type {t!r}; use Point, Polygon or BBox")
 

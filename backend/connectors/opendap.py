@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from ..core.auth import edl_bearer_headers
 from ..core.errors import CredentialsMissing, InvalidRequest, UpstreamError, UpstreamUnavailable
 from ..timeseries.gridded import _region_mask
 from ..timeseries.model import Provenance, RawSeries, ValueMeta
@@ -85,12 +86,14 @@ class OpendapMonthly(Connector):
         self.cmr = CMR(settings.cmr_base, http)
 
     def _auth_kwargs(self) -> dict:
-        if self.s.earthdata_token is not None:
-            return {"headers": {"Authorization": f"Bearer {self.s.earthdata_token.get_secret_value()}"}}
+        try:
+            return {"headers": edl_bearer_headers(self.s)}   # same token path as Giovanni (incl. username/password)
+        except CredentialsMissing:
+            pass
         try:
             return {"auth": httpx.NetRCAuth()}
         except Exception as exc:  # noqa: BLE001
-            raise CredentialsMissing("Cloud OPeNDAP needs EARTHDATA_TOKEN or ~/.netrc") from exc
+            raise CredentialsMissing("Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc") from exc
 
     def granule_url(self, concept_id: str, title: str) -> str:
         return f"{self.s.opendap_base}/collections/{concept_id}/granules/{quote(title, safe='')}"
@@ -174,6 +177,8 @@ class OpendapMonthly(Connector):
             extra = "nearest grid cell"
         else:
             mask = _region_mask(ctx.sub_lat, ctx.sub_lon, req.region)
+            if not mask.any():                  # box smaller than one cell: use the nearest cell(s)
+                mask[:] = True
             w = np.where(mask, np.cos(np.deg2rad(ctx.sub_lat))[:, None] * np.ones((1, len(ctx.sub_lon))), 0.0)
             vals = []
             for g in grids:
@@ -196,6 +201,7 @@ class OpendapMonthly(Connector):
         grids, units, cached = await self._grids(ctx, progress)
         cube = np.stack(grids)
         mask = _region_mask(ctx.sub_lat, ctx.sub_lon, req.region)
-        cube[:, ~mask] = np.nan
+        if mask.any():                          # box smaller than one cell: keep the nearest cell(s)
+            cube[:, ~mask] = np.nan
         prov = self._prov(v, req, ctx, cached, "per-pixel cube for trend map")
         return self._times(ctx), cube, ctx.sub_lat, ctx.sub_lon, units or v.get("units"), prov

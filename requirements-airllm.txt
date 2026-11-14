@@ -1,0 +1,17 @@
+# Optional deep-review tier (AirLLM). NOT installed by default (not in requirements.txt / -dev).
+# Needs an NVIDIA GPU with >= 4 GB VRAM and ~45 GB free disk for the default 14B model.
+# It is slow by design (seconds per token): background jobs only, advisory output. See backend/ai/deep_llm.py.
+#
+# 1) Install a CUDA build of PyTorch FIRST. The default Windows wheel on PyPI is CPU-only, and installing
+#    airllm before this would pull that CPU wheel in:
+#      pip install torch --index-url https://download.pytorch.org/whl/cu126
+#    (cu126 runs on any recent driver that supports CUDA 12.6+; check with `nvidia-smi`.
+#     Verify: python -c "import torch; print(torch.cuda.is_available())"  -> True)
+# 2) pip install -r requirements-airllm.txt
+# 3) python scripts/airllm_setup.py             (shows the model this machine should use)
+#    python scripts/airllm_setup.py --download  (downloads + splits it: tens of GB)
+airllm>=4.0
+bitsandbytes>=0.43          # 4bit/8bit compression; ships native Windows wheels since 0.43
+accelerate>=1.0
+transformers>=4.49,<6       # range airllm 4.0 declares
+safetensors

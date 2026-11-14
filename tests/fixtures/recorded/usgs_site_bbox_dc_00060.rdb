@@ -1,0 +1,78 @@
+#
+#
+# US Geological Survey
+# retrieved: 2026-11-14 09:43:28 -05:00	(caas01)
+#
+# The Site File stores location and general information about groundwater,
+# surface water, and meteorological sites
+# for sites in USA.
+#
+# File-format description:  http://help.waterdata.usgs.gov/faq/about-tab-delimited-output
+# Automated-retrieval info: http://waterservices.usgs.gov/rest/Site-Service.html
+#
+# Contact:   gs-w_support_nwisweb@usgs.gov
+# Warning: A site search criterion has been used for which the data may be unavailable.
+#
+# The following selected fields are included in this output:
+#
+#  agency_cd       -- Agency
+#  site_no         -- Site identification number
+#  station_nm      -- Site name
+#  site_tp_cd      -- Site type
+#  lat_va          -- DMS latitude
+#  long_va         -- DMS longitude
+#  dec_lat_va      -- Decimal latitude
+#  dec_long_va     -- Decimal longitude
+#  coord_meth_cd   -- Latitude-longitude method
+#  coord_acy_cd    -- Latitude-longitude accuracy
+#  coord_datum_cd  -- Latitude-longitude datum
+#  dec_coord_datum_cd -- Decimal Latitude-longitude datum
+#  district_cd     -- District code
+#  state_cd        -- State code
+#  county_cd       -- County code
+#  country_cd      -- Country code
+#  land_net_ds     -- Land net location description
+#  map_nm          -- Name of location map
+#  map_scale_fc    -- Scale of location map
+#  alt_va          -- Altitude of Gage/land surface
+#  alt_meth_cd     -- Method altitude determined
+#  alt_acy_va      -- Altitude accuracy
+#  alt_datum_cd    -- Altitude datum
+#  huc_cd          -- Hydrologic unit code
+#  basin_cd        -- Drainage basin code
+#  topo_cd         -- Topographic setting code
+#  instruments_cd  -- Flags for instruments at site
+#  construction_dt -- Date of first construction
+#  inventory_dt    -- Date site established or inventoried
+#  drain_area_va   -- Drainage area
+#  contrib_drain_area_va -- Contributing drainage area
+#  tz_cd           -- Time Zone abbreviation
+#  local_time_fg   -- Site honors Daylight Savings Time
+#  reliability_cd  -- Data reliability code
+#  gw_file_cd      -- Data-other GW files
+#  nat_aqfr_cd     -- National aquifer code
+#  aqfr_cd         -- Local aquifer code
+#  aqfr_type_cd    -- Local aquifer type code
+#  well_depth_va   -- Well depth
+#  hole_depth_va   -- Hole depth
+#  depth_src_cd    -- Source of depth data
+#  project_no      -- Project number
+#
+agency_cd	site_no	station_nm	site_tp_cd	lat_va	long_va	dec_lat_va	dec_long_va	coord_meth_cd	coord_acy_cd	coord_datum_cd	dec_coord_datum_cd	district_cd	state_cd	county_cd	country_cd	land_net_ds	map_nm	map_scale_fc	alt_va	alt_meth_cd	alt_acy_va	alt_datum_cd	huc_cd	basin_cd	topo_cd	instruments_cd	construction_dt	inventory_dt	drain_area_va	contrib_drain_area_va	tz_cd	local_time_fg	reliability_cd	gw_file_cd	nat_aqfr_cd	aqfr_cd	aqfr_type_cd	well_depth_va	hole_depth_va	depth_src_cd	project_no
+5s	15s	50s	7s	16s	16s	16s	16s	1s	1s	10s	10s	3s	2s	3s	2s	23s	20s	7s	8s	1s	3s	10s	16s	2s	1s	30s	8s	8s	8s	8s	6s	1s	1s	30s	10s	8s	1s	8s	8s	1s	12s
+USGS	01645704	DIFFICULT RUN ABOVE FOX LAKE NEAR FAIRFAX, VA	ST	385304.5	0771957.8	38.88469518	-77.3324293	M	1	NAD27	NAD83	51	51	059	US		VIENNA	  24000	 288.1	Y	 .1	NAVD88	02070008			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN			5.49		EST	Y									
+USGS	01645762	S F LITTLE DIFFICULT RUN ABOVE MOUTH NR VIENNA, VA	ST	385431.6	0772018.8	38.90888916	-77.3382627	M	1	NAD27	NAD83	51	51	059	US		VIENNA	  24000	 275.16	X	.14	NAVD88	02070008			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN			2.71		EST	Y									
+USGS	01646000	DIFFICULT RUN NEAR GREAT FALLS, VA	ST	385833	0771446	38.97594346	-77.24581439	M	U	NAD27	NAD83	51	51	059	US		FALLS CHURCH	  24000	 150.94	Y	.13	NAVD88	02070008			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN		19901213	57.8		EST	Y		NNNNNNNN							
+USGS	01646305	DEAD RUN AT WHANN AVENUE NEAR MCLEAN, VA	ST	385734.8	0771033.5	38.95977716	-77.1756743	M	1	NAD27	NAD83	51	51	059	US		FALLS CHURCH	  24000	 177.18	X	.11	NAVD88	02070008			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN			2.05		EST	Y									
+USGS	01646500	POTOMAC RIVER NEAR WASH, DC LITTLE FALLS PUMP STA	ST	385659.2	0770739.5	38.94977778	-77.12763889	G	S	NAD83	NAD83	24	24	031	US		Falls Church	24000	37.04	X	0.1	NAVD88	020700081005			YNNNYNYNNYNNNNNNNNNNNNNNNNNNNN			11560.0		EST	Y		NNNNNNNNNNNNNNNNNNNN							442400100
+USGS	01646502	POTOMAC RIVER, ADJUSTED, NEAR WASH, DC	ST	385659.2	0770739.5	38.94977778	-77.12763889	N	S	NAD83	NAD83	24	24	031	US		FALLS CHURCH, VA	  24000	 37.20	L	.01	NAVD88	02070008			NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN			11560.00		EST	Y		NNNNNNNN							
+USGS	01647850	TURKEY BRANCH NEAR ROCKVILLE, MD	ST	390406.6	0770454.8	39.0685	-77.081889	G	S	NAD83	NAD83	24	24	031	US		Kensington	24000	260.03	X	0.18	NAVD88	020700100101			YNNNYNNNNYNNNNNNYNNNNNNNNNNNNN		20061106	2.74		EST	Y									242700100
+USGS	01648000	ROCK CREEK AT SHERRILL DRIVE WASHINGTON, DC	ST	385821	0770224	38.9725	-77.04	M	S	NAD83	NAD83	24	11	001	US		Washington West	24000	148.15	L	0.02	NAVD88	020700100102			NNNNNNNNNNYNNNNNNNNNNNNNNNNNNN			62.2		EST	Y		NNNNNNNNNNNNNNNNNNNN							442400100
+USGS	01648010	Rock Creek at Joyce Rd Washington, DC	ST	385736.6	0770231.4	38.960167	-77.042056	M	1	NAD83	NAD83	24	11	001	US		Washington West	24000	136.35	X	0.14	NAVD88	020700100102			YNNYNNYNNNNNNNNNNNNNNNNNNNNNNN			63.7		EST	Y		NNNNNNNNNNNNNNNNNNNN							
+USGS	01650500	Northwest Branch Anacostia River nr Colesville, MD	ST	390355.9	0770145.7	39.06552778	-77.02936111	Y	D	NAD83	NAD83	24	24	031	US		KENSINGTON, MD	24000	264.05	L	0.01	NAVD88	020700100201			YNNNYNYNNNYNNNNNNNNNNNNNNNNNNN			21.0		EST	Y		NNNNNNNNNNNNNNNNNNNN							
+USGS	01650800	SLIGO CREEK NEAR TAKOMA PARK, MD	ST	385910.4	0770017.5	38.9862222	-77.0048611	G	1	NAD83	NAD83	24	24	031	US		Washington West	24000	161.37	X	.32	NAVD88	02070010			YNNNYNNNNYNNNNNNNNNNNNNNNNNNNN		20081008	6.45		EST	Y	C								
+USGS	01652500	FOURMILE RUN AT ALEXANDRIA, VA	ST	385036.0	0770509.1	38.8433333	-77.0858611	G	1	NAD83	NAD83	51	51	013	US		ALEXANDRIA	  24000	 27.66	X	.07	NAVD88	02070010			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN		19901213	12.6		EST	Y		NNNNNNNN							
+USGS	01653000	CAMERON RUN AT ALEXANDRIA, VA	ST	384815.6	0770621.2	38.8044466	-77.10558989	M	S	NAD27	NAD83	51	51	510	US		ALEXANDRIA, VA	  24000	 22.5	X	 .1	NAVD88	02070010			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN		19901213	33.9		EST	Y		NNNNNNNN							
+USGS	0165389205	ACCOTINK CREEK NEAR RANGER ROAD AT FAIRFAX, VA	ST	385158.47	0771710.98	38.86624167	-77.2863833	N	S	NAD83	NAD83	51	51	600	US		FAIRFAX	  24000	 295.61	G	.01	NAVD88	02070010			NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN		20111005	3.99		EST	Y	C								2482-9RL10
+USGS	01654000	ACCOTINK CREEK NEAR ANNANDALE, VA	ST	384846	0771343	38.81289066	-77.2283158	M	U	NAD27	NAD83	51	51	059	US		ANNANDALE	  24000	 190.6	X	.08	NAVD88	02070010			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN		19901213	23.9		EST	Y		NNNNNNNN							
+USGS	01654500	LONG BRANCH NEAR ANNANDALE, VA	ST	384848.5	0771412.3	38.81358508	-77.2364549	M	U	NAD83	NAD83	51	51	059	US		ANNANDALE	  24000	 203.39	X	.11	NAVD88	02070010			NNNNYNNNNNNNNNNNNNNNNNNNNNNNNN		19901213	3.72		EST	Y		NNNNNNNN							

@@ -7,6 +7,15 @@ from ..core.geometry import Region
 from .catalog import Catalog
 
 
+DIRECT = {  # single-route sources (no fallback service exists for them)
+    "usgs_nwis": "USGS NWIS daily values (CUAHSI WaterML)",
+    "swot_hydrocron": "PO.DAAC SWOT Hydrocron",
+    "erddap": "NOAA ERDDAP griddap",
+    "nsidc_seaice": "NSIDC Sea Ice Index (G02135)",
+    "noaa_coops": "NOAA CO-OPS tide gauge",
+}
+
+
 @dataclass
 class Route:
     connector: str
@@ -33,6 +42,8 @@ def plan_routes(v: dict, region: Region, catalog: Catalog) -> tuple[list[Route],
         routes.append(Route("appeears", "AppEEARS point task" if region.is_point else "AppEEARS area task"))
     elif src == "ncei":
         routes.append(Route("ncei", "NCEI Access Data Service (CDO v2 fallback)"))
+    elif src in DIRECT:
+        routes.append(Route(src, DIRECT[src]))
     else:
         notes.append(f"Unknown source {src!r}")
     return routes, notes

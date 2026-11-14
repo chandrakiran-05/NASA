@@ -66,7 +66,16 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 700
     ai_guard_threshold: float = 1.0                  # minimum earth-topic score to accept a query
 
-    @field_validator("earthdata_token", "earthdata_password", "noaa_cdo_token", "earthdata_username", mode="before")
+    # ---- deep review tier (optional; AirLLM, seconds per token: background jobs only, advisory) ----
+    deep_llm_provider: str = Field("none", description="none | airllm")
+    deep_llm_model: str = ""                         # empty = hardware.recommend() choice for this machine
+    deep_llm_compression: str = "4bit"               # 4bit | 8bit | none (needs bitsandbytes)
+    deep_llm_max_new_tokens: int = 64                # hard cap: every new token re-reads all layers from disk
+    deep_llm_layer_dir: Path | None = None           # where AirLLM saves split layers (default: next to HF cache)
+    deep_llm_timeout_s: float = 1800.0
+
+    @field_validator("earthdata_token", "earthdata_password", "noaa_cdo_token", "earthdata_username",
+                     "deep_llm_layer_dir", mode="before")
     @classmethod
     def _blank_is_none(cls, v):
         """`EARTHDATA_TOKEN=` left blank in .env means 'not configured', not an empty token."""

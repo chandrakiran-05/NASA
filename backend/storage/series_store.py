@@ -44,6 +44,7 @@ class SeriesStore:
         }
         table = table.replace_schema_metadata({**(table.schema.metadata or {}), **meta})
         pq.write_table(table, self._path(series_id), compression="zstd")
+        self.db.delete_results(series_id)       # analyses of the old data are stale
         ms.series_id = series_id
         comp = ms.completeness()
         self.db.upsert_series({

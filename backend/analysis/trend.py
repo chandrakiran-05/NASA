@@ -99,7 +99,7 @@ def ols_trend(t: np.ndarray, y: np.ndarray, alpha: float = 0.05) -> OLSResult:
     tss = float(np.sum((yf - ym) ** 2))
     dof = n - 2
     se = math.sqrt(rss / dof / sxx) if dof > 0 else float("nan")
-    tstat = b / se if se > 0 else float("inf") * np.sign(b)
+    tstat = b / se if se > 0 else (math.copysign(math.inf, b) if b else 0.0)
     p = float(2 * stats.t.sf(abs(tstat), dof)) if np.isfinite(tstat) else 0.0
     tq = stats.t.ppf(1 - alpha / 2, dof)
     # residuals on the full (gappy) grid for autocorrelation
@@ -108,7 +108,7 @@ def ols_trend(t: np.ndarray, y: np.ndarray, alpha: float = 0.05) -> OLSResult:
     neff = effective_n(n, r1)
     dof_adj = max(neff - 2, 1.0)
     se_adj = se * math.sqrt(dof / dof_adj) if dof_adj > 0 else float("nan")
-    t_adj = b / se_adj if se_adj > 0 else float("inf") * np.sign(b)
+    t_adj = b / se_adj if se_adj > 0 else (math.copysign(math.inf, b) if b else 0.0)
     p_adj = float(2 * stats.t.sf(abs(t_adj), dof_adj)) if np.isfinite(t_adj) else 0.0
     tq_adj = stats.t.ppf(1 - alpha / 2, dof_adj)
     dw = float(np.sum(np.diff(resid) ** 2) / rss) if rss > 0 else float("nan")

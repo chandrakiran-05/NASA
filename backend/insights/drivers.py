@@ -60,6 +60,8 @@ def driver_analysis(target: MonthlySeries, drivers: list[MonthlySeries], *, max_
             lag_rows.append(row)
             if best is None or abs(r) > abs(best["r"]):
                 best = row
+        if best is not None:   # picking the best of several lags: Bonferroni over lags before FDR across drivers
+            best = {**best, "p_single_lag": best["p"], "p": min(1.0, best["p"] * len(lag_rows))}
         if best is None:
             rows.append({"driver": d.label or d.variable_id, "status": "insufficient_overlap"})
             continue

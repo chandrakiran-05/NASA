@@ -178,6 +178,8 @@ def judge_suspects(screen: dict, suspects: list[dict]) -> dict:
                 st = "unstable"          # significant overall but not in both halves: do not count it
             else:
                 st = "supported" if exp in ("either", sign) else "opposite_sign"
+                if b["lag_months"] == 0 and b.get("graph", "-->") != "-->":
+                    st = "direction_unknown"   # same-month link whose arrow PCMCI+ could not orient
             row.update(status=st, lag_months_found=b["lag_months"], partial_r=b["partial_r"], p_fdr=b["p_fdr"],
                        robust_both_halves=robust)
         out.append(row)

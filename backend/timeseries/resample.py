@@ -94,7 +94,7 @@ def to_monthly(raw: RawSeries, *, start=None, end=None, min_valid_fraction: floa
             daily = pd.Series(np.concatenate(rows_v), index=pd.DatetimeIndex(np.concatenate([d.values for d in rows_t])))
             daily = daily.groupby(level=0).mean()
         else:
-            daily = pd.Series(dtype=float)
+            daily = pd.Series(dtype=float, index=pd.DatetimeIndex([]))
         out, nobs, ratio = _daily_to_monthly(daily, idx, thr)
     else:
         raise ValueError(f"unsupported native resolution {res!r}")

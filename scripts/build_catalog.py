@@ -115,7 +115,7 @@ async def main() -> None:
     out = {"built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "report": report,
            "updates": updates, "additional": additional}
     p = s.data_dir / "catalog_built.json"
-    p.write_text(json.dumps(out, indent=1, ensure_ascii=False))
+    p.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
     await http.aclose()
     unverified = [k for k, u in updates.items() if u.get("verified") is False]
     print(f"wrote {p}\n report={report}\n extra variables={len(additional)}\n seed entries NOT verified: {unverified}")

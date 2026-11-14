@@ -63,7 +63,7 @@ class HarmonyArea(Connector):
         texts = []
         for f in files:
             if str(f).lower().endswith(".csv"):
-                texts.append(Path(f).read_text())
+                texts.append(Path(f).read_text(encoding="utf-8"))
         if not texts:
             raise UpstreamError("Harmony job finished without CSV output", detail={"job_id": job_id, "files": files})
         return texts

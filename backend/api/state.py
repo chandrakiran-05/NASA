@@ -6,6 +6,7 @@ import json
 from dataclasses import dataclass
 
 from ..ai.assistant import AIService
+from ..ai.deep_llm import DeepLLM
 from ..ai.llm import LocalLLM
 from ..catalog.catalog import Catalog
 from ..core.config import Settings
@@ -27,6 +28,7 @@ class AppState:
     jobs: JobManager
     llm: LocalLLM
     ai: AIService
+    deep: DeepLLM                     # optional AirLLM tier: background, advisory only
 
     def result_key(self, kind: str, series_id: str, params: dict) -> str:
         h = hashlib.sha256(json.dumps({"k": kind, "s": series_id, "p": params}, sort_keys=True,

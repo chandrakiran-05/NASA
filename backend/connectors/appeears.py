@@ -23,7 +23,7 @@ import numpy as np
 
 from ..core.auth import edl_basic_auth
 from ..core.errors import InvalidRequest, UpstreamError
-from ..timeseries.gridded import area_mean, open_many
+from ..timeseries.gridded import area_mean, find_variable, open_many, valid_range_only
 from ..timeseries.model import Provenance, RawSeries, ValueMeta
 from ..timeseries.parsers import appeears_column_name, parse_appeears_point_csv
 from .base import Connector, FetchRequest, ProgressFn, _noop
@@ -114,7 +114,7 @@ class AppEEARS(Connector):
         key = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()[:20]
         p = self._task_dir / f"{key}.json"
         if p.exists():
-            return json.loads(p.read_text())["task_id"]
+            return json.loads(p.read_text(encoding="utf-8"))["task_id"]
         body = {**body, "task_name": f"etd-{key}"}
         r = await self.http.request("POST", f"{self.base}/task", json_body=body, headers=await self._auth_headers(),
                                     use_cache=False, expected=(200, 201, 202))
@@ -122,16 +122,27 @@ class AppEEARS(Connector):
         p.write_text(json.dumps({"task_id": task_id, "submitted": time.time()}))
         return task_id
 
+    def _forget(self, task_id: str) -> None:
+        for p in self._task_dir.glob("*.json"):
+            if json.loads(p.read_text(encoding="utf-8")).get("task_id") == task_id:
+                p.unlink(missing_ok=True)
+
     async def _wait(self, task_id: str, progress: ProgressFn) -> None:
         t0 = time.time()
         while True:
-            r = await self.http.request("GET", f"{self.base}/task/{task_id}", headers=await self._auth_headers(),
-                                        use_cache=False)
+            try:
+                r = await self.http.request("GET", f"{self.base}/task/{task_id}", headers=await self._auth_headers(),
+                                            use_cache=False)
+            except UpstreamError as exc:
+                if exc.detail.get("status") == 404:          # task expired/deleted upstream: submit anew next time
+                    self._forget(task_id)
+                raise
             st = str(r.json().get("status", "")).lower()
             elapsed = (time.time() - t0) / 60
             if st in DONE:
                 return
             if st in FAILED:
+                self._forget(task_id)                         # a dead task must not be resumed forever
                 raise UpstreamError(f"AppEEARS task {task_id} ended with status {st}", detail=r.json())
             if elapsed > self.s.appeears_timeout_min:
                 raise UpstreamError(f"AppEEARS task {task_id} still '{st}' after {elapsed:.0f} min; "
@@ -177,18 +188,20 @@ class AppEEARS(Connector):
             notes = [f"AppEEARS point task {task_id}", "scaling of CSV values auto-detected in QC step"]
         else:
             files = await self._download(task_id, (".nc", ".nc4"))
-            tmp = Path(tempfile.mkdtemp(prefix="etd_appeears_"))
-            paths = []
-            for n, c in files:
-                p = tmp / Path(n).name
-                p.write_bytes(c)
-                paths.append(p)
-            ds = open_many(paths)
-            qc_good = None
-            if qc_rule and qc_rule["layer"] in ds:
-                qv = ds[qc_rule["layer"]].values
-                qc_good = qc_pass_from_rule(qv, qc_rule).reshape(qv.shape)
-            t, val, frac = area_mean(ds, v["layer"], req.region, qc_good)
+            with tempfile.TemporaryDirectory(prefix="etd_appeears_") as tmp:
+                paths = []
+                for n, c in files:
+                    p = Path(tmp) / Path(n).name
+                    p.write_bytes(c)
+                    paths.append(p)
+                with open_many(paths) as ds:
+                    name = find_variable(ds, v["layer"])
+                    ds[name] = valid_range_only(ds[name], meta)
+                    qc_good = None
+                    if qc_rule and qc_rule["layer"] in ds:
+                        qv = ds[qc_rule["layer"]].values
+                        qc_good = qc_pass_from_rule(qv, qc_rule).reshape(qv.shape)
+                    t, val, frac = await asyncio.to_thread(area_mean, ds, name, req.region, qc_good)
             qc_pass = None
             meta = ValueMeta(units=meta.units, valid_min=None, valid_max=None, already_scaled=True)
             notes = [f"AppEEARS area task {task_id}", "netCDF decoded with CF scale/fill; cos(lat)-weighted mean",

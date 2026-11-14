@@ -58,7 +58,7 @@ def run_insights(ms: MonthlySeries, *, which: tuple[str, ...] | list[str] = ALL_
     mk = mann_kendall(t, y, alpha, "ess_ar1")
     valid_t = t[np.isfinite(y)]
     record_years = float(valid_t[-1] - valid_t[0] + 1 / 12)
-    start_year = ms.time[0].year + (ms.time[0].month - 1) / 12
+    start_year = ms.time[0].year + (ms.time[0].month - 1) / 12 + float(valid_t[0])   # first month WITH data
     timings["base"] = _time.perf_counter() - t0
     out: dict = {"series_id": ms.series_id, "label": ms.label, "units": ms.units}
 

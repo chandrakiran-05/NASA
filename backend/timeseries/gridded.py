@@ -58,6 +58,16 @@ def _region_mask(lat: np.ndarray, lon: np.ndarray, region: Region | None) -> np.
     return mask
 
 
+def valid_range_only(da: xr.DataArray, meta) -> xr.DataArray:
+    """xarray masks only _FillValue; values outside the source's valid range (e.g. MODIS land-cover codes
+    32761-32766 for water/urban above valid_max 32700) must not enter a mean. meta range is in raw units."""
+    if meta.valid_min is None or meta.valid_max is None:
+        return da
+    sf, off = meta.scale_factor or 1.0, meta.add_offset or 0.0
+    lo, hi = sorted((meta.valid_min * sf + off, meta.valid_max * sf + off))
+    return da.where((da >= lo) & (da <= hi))
+
+
 def area_mean(ds: xr.Dataset, var: str, region: Region | None = None, qc_good: np.ndarray | None = None,
               min_pixel_fraction: float = 0.3) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Returns (times, mean values, fraction of region pixels valid) per time step.
@@ -77,8 +87,8 @@ def area_mean(ds: xr.Dataset, var: str, region: Region | None = None, qc_good: n
     mask = _region_mask(lat, lon, region)
     w = np.cos(np.deg2rad(lat))[:, None] * np.ones((1, len(lon)))
     w = np.where(mask, w, 0.0)
-    total = w.sum()
     valid = np.isfinite(arr)
+    total = w[valid.any(axis=0)].sum()      # pixels that never have data (sea in a land product) do not count
     wv = np.where(valid, w[None], 0.0)
     num = np.nansum(np.where(valid, arr, 0.0) * wv, axis=(1, 2))
     den = wv.sum(axis=(1, 2))

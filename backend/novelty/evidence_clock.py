@@ -67,7 +67,7 @@ def evidence_clock(ms: MonthlySeries, *, start: int | None = None, end: int | No
     o = ols_trend(t, y, alpha)
     valid_t = t[np.isfinite(y)]
     rec = float(valid_t[-1] - valid_t[0] + 1 / 12)
-    start_year = ms.time[0].year + (ms.time[0].month - 1) / 12
+    start_year = ms.time[0].year + (ms.time[0].month - 1) / 12 + float(valid_t[0])   # first month WITH data
     det = detectability(o.slope, o.residuals, rec, start_year, phi=o.lag1_autocorr)
     # "can't tell" when the slope is indistinguishable from zero at the 1-sigma level
     if o.se_adj > 0 and abs(o.slope) < o.se_adj:

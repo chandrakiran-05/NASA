@@ -28,7 +28,7 @@ async def progress(f, m):
 
 async def main() -> None:
     st = build_state(get_settings())
-    demos = json.loads((DATA / "demos.json").read_text())["demos"]
+    demos = json.loads((DATA / "demos.json").read_text(encoding="utf-8"))["demos"]
     for d in demos:
         print(f"== {d['id']}: {d['title']}")
         for r in d.get("compare") or [d["request"]]:

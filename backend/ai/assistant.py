@@ -73,7 +73,7 @@ class AIService:
         self.s = settings
         self.catalog = catalog
         self.llm = llm
-        self.glossary = json.loads(GLOSSARY.read_text())["terms"]
+        self.glossary = json.loads(GLOSSARY.read_text(encoding="utf-8"))["terms"]
         self._gidx = BM25([f"{g['term']} {g['term']} {g['id'].replace('_', ' ')} {g['text']}" for g in self.glossary],
                           drop_question_words=False)
 
@@ -330,7 +330,7 @@ class AIService:
 
         Textbook bundle first; the local AI may add or re-rank, but only with catalog ids from the
         allowed list (anything else is dropped). Neither source sees data; PCMCI+ decides later."""
-        bundles = json.loads((GLOSSARY.parent / "driver_bundles.json").read_text())["bundles"]
+        bundles = json.loads((GLOSSARY.parent / "driver_bundles.json").read_text(encoding="utf-8"))["bundles"]
         base = [dict(s, source="textbook hypothesis") for s in bundles.get(target_id, [])]
         allowed = sorted({s["driver_id"] for b in bundles.values() for s in b} - {target_id})
         schema = {"type": "object", "properties": {"suspects": {"type": "array", "maxItems": max_n, "items": {
