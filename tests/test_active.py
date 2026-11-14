@@ -135,6 +135,9 @@ def test_api_live_events_sse_and_reuse(client):
     assert {c["check"] for c in top["checks"]} >= {"integrity", "court", "chance", "stability", "fdr"}
     assert top["ai_review"]["status"] == "warn" and top["ai_review"]["detail"]["advisory"]
     assert any(n["series_id"] == b for n in res["not_active"]) or any(t["series_id"] == b for t in res["trends"])
+    # Research Evidence ran (sources unreachable in tests -> reported, not fatal) and the best trend is chosen
+    assert top["research"]["agreement"]["label"] in ("no_literature", "inconclusive")
+    assert res["best_trend"]["best"]["variable_id"] == top["variable_id"]
 
     ev = client.get(f"/api/active-trends/{jid}/events", params={"after": 0}).json()
     kinds = [e["type"] for e in ev["events"]]

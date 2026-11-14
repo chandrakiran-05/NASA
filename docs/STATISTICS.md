@@ -120,3 +120,28 @@ deterministic text. Basis: LLMs reason over raw series barely above chance (Merr
 ### Any question → intents (`/api/investigate`)
 Questions are split into what / when / why / how_long / compare / forecast; `answer.sections` gives a
 direct answer for each from the modules above (no new numbers).
+
+## Research Evidence + best trend (`backend/research/`) — added 2026-11-14
+
+After active trends are verified (checks + calibrated BEAST), every VERIFIED/PROBABLE trend is compared
+with recent published research, live:
+
+1. **Search** official APIs only: arXiv API, OpenAlex (open index covering Google Scholar's
+   papers; Scholar has no API and forbids scraping), Springer Nature Meta API (optional free key
+   `SPRINGER_API_KEY`). Last `RESEARCH_MAX_AGE_YEARS` (default 10) years. Cached; a failing source is
+   reported, never fatal.
+2. **Relevance** (deterministic): variable term in title/abstract, region named, trend language,
+   peer review, recency decay. Low-relevance papers are dropped.
+3. **Reading**: a lexicon reads each abstract's stance (only sentences naming the variable count). The
+   local AI may read the top 5 too, but its reading is kept only if its evidence quote appears
+   **verbatim** in the abstract and itself contains wording for the claimed direction; otherwise it is
+   rejected as unsupported (`ai_readings.rejected_as_unsupported`).
+4. **Agreement**: relevance × region-match weights → supported / mixed / conflicts / no_literature,
+   with DOIs in `plain_language`.
+5. **Best trend** (`best_trend` in `POST /api/active-trends`): 0.6 × data verdict + 0.2 × size of
+   change + 0.2 × research agreement. NOT VERIFIED trends are never chosen: literature cannot rescue
+   data that failed verification.
+
+Live check (2026-11-14): NDVI, Sahel, rising → OpenAlex returned 15 papers, 12 relevant, 4 agree and
+1 disagrees → "supported" (e.g. doi:10.1088/1748-9326/ae628c).
+Standalone: `POST /api/research/evidence {variable_id, region_name, direction}`.
