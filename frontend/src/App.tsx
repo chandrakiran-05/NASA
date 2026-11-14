@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import {
   ArrowUp,
   ArrowUpRight,
@@ -7,6 +8,8 @@ import {
   FlaskConical,
   Globe2,
   Menu,
+  MapPin,
+  Waves,
   X,
   Upload,
   ChevronDown,
@@ -14,7 +17,9 @@ import {
 import { api } from "./api";
 import AirLLM from "./AirLLM";
 import ObservedEvidence from "./ObservedEvidence";
-import Narrative from "./Narrative";
+import ChatPage from "./ChatPage";
+import { loadNavigationGeometry } from "./navigationGeometry";
+import type { GlobeGeometry } from "./Globe";
 import AtlasStory from "./AtlasStory";
 import TwinLab from "./TwinLab";
 import type { TwinLabHandle } from "./TwinLab";
@@ -34,16 +39,15 @@ function geometryCenter(g: Data): Focus | null {
 }
 export default function App() {
   const [page, setPage] = useState(
-    location.pathname.startsWith("/airllm") ? "airllm" : "earth",
+    location.pathname.startsWith("/airllm") ? "airllm" : location.pathname.startsWith("/chat") ? "chat" : "earth",
   );
   const [twin, setTwin] = useState(location.pathname.startsWith("/digitwin"));
   const [observedQuestion, setObservedQuestion] = useState(""),
     [twinQuestion, setTwinQuestion] = useState("");
   const question = twin ? twinQuestion : observedQuestion;
   const setQuestion = twin ? setTwinQuestion : setObservedQuestion;
-  const [inputMode, setInputMode] = useState<"investigate" | "ask">(
-    "investigate",
-  );
+  const [chatLaunch, setChatLaunch] = useState<{id:number; question:string}|null>(null);
+  const [motionPaused, setMotionPaused] = useState(false);
   const [menu, setMenu] = useState(false),
     [changing, setChanging] = useState(false);
   const [observedFocus, setObservedFocus] = useState<Focus | null>(null),
@@ -58,11 +62,14 @@ export default function App() {
     setFocus = twin ? setScenarioFocus : setObservedFocus;
   const place = twin ? scenarioPlace : observedPlace,
     setPlace = twin ? setScenarioPlace : setObservedPlace;
+  const [observedGeometry, setObservedGeometry] = useState<GlobeGeometry|null>(null);
+  const [scenarioGeometry, setScenarioGeometry] = useState<GlobeGeometry|null>(null);
+  const geometry = twin ? scenarioGeometry : observedGeometry;
+  const setGeometry = twin ? setScenarioGeometry : setObservedGeometry;
   const currentWorld = useRef({ twin, page });
   currentWorld.current = { twin, page };
   const [plan, setPlan] = useState<Data | null>(null),
-    [report, setReport] = useState<Data | null>(null),
-    [answer, setAnswer] = useState<Data | null>(null);
+    [report, setReport] = useState<Data | null>(null);
   const [busy, setBusy] = useState(false),
     [twinBusy, setTwinBusy] = useState(false),
     [error, setError] = useState("");
@@ -75,6 +82,22 @@ export default function App() {
   const cursor = useRef<HTMLDivElement>(null),
     pointerFrame = useRef(0);
   const context = useMemo(() => inferPromptContext(question), [question]);
+  useEffect(() => {
+    let frame = 0;
+    const surface = document.querySelector<HTMLElement>(".experience");
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    function syncScroll() {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        surface?.style.setProperty("--earth-scroll", `${page === "earth" && !motion.matches && !motionPaused ? -Math.min(scrollY, 1200) * .055 : 0}px`);
+        frame = 0;
+      });
+    }
+    syncScroll();
+    window.addEventListener("scroll", syncScroll, {passive:true});
+    motion.addEventListener("change", syncScroll);
+    return () => {window.removeEventListener("scroll", syncScroll);motion.removeEventListener("change", syncScroll);cancelAnimationFrame(frame);};
+  }, [page, motionPaused]);
   const currentAnalysis = report?.results?.[0]?.analysis;
   const [selectedSeriesId, setSelectedSeriesId] = useState<
     string | undefined
@@ -85,7 +108,7 @@ export default function App() {
   );
   useEffect(() => {
     document.title =
-      page === "airllm"
+      page === "chat" ? "Earth conversations - Living Atlas" : page === "airllm"
         ? "Local AI — Earth System Trend Detective"
         : twin
           ? "DigiTwin — A possible Earth"
@@ -93,7 +116,7 @@ export default function App() {
   }, [page, twin]);
   useEffect(() => {
     const pop = () => {
-      setPage(location.pathname.startsWith("/airllm") ? "airllm" : "earth");
+      setPage(location.pathname.startsWith("/airllm") ? "airllm" : location.pathname.startsWith("/chat") ? "chat" : "earth");
       setTwin(location.pathname.startsWith("/digitwin"));
       setMenu(false);
     };
@@ -122,6 +145,7 @@ export default function App() {
   useEffect(() => {
     if (!question.trim()) {
       setLocationNote("");
+      setFocus(null); setPlace(""); setGeometry(null);
       return;
     }
     const controller = new AbortController();
@@ -131,9 +155,16 @@ export default function App() {
         setFocus(context.navigationFocus);
         setPlace(context.navigationFocus.name);
         setLocationNote("Navigation view · not a data boundary");
+        try {
+          const outline = await loadNavigationGeometry(context.navigationFocus.name, controller.signal);
+          if (!stale) setGeometry(outline);
+        } catch { if (!stale) setGeometry(null); }
         return;
       }
-      if (!context.placeQuery) return;
+      if (!context.placeQuery) {
+        setFocus(null); setPlace(""); setGeometry(null); setLocationNote("");
+        return;
+      }
       try {
         const regions = await api.regions(
           context.placeQuery,
@@ -141,16 +172,22 @@ export default function App() {
         );
         if (stale) return;
         const region = regions.results?.[0];
+        if (!region) { setFocus(null); setPlace(""); setGeometry(null); setLocationNote(""); }
         if (region) {
           const target = geometryCenter(region.geometry);
           if (target) {
             setFocus(target);
             setPlace(region.name);
+            setGeometry(region.geometry);
             setLocationNote(
               region.approximate
                 ? "Approximate region · confirm in your investigation"
                 : "Location resolved by the backend",
             );
+            try {
+              const outline = await loadNavigationGeometry(region.name, controller.signal);
+              if (!stale && outline) setGeometry(outline);
+            } catch { /* The resolved marker remains usable without boundary assets. */ }
           }
         }
       } catch {
@@ -162,20 +199,21 @@ export default function App() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [question, context]);
+  }, [question, context, twin]);
   function changeWorld(next: boolean) {
     if (next === twin) return;
     if (next && !scenarioFocus) {
       setScenarioFocus(observedFocus);
       setScenarioPlace(observedPlace);
+      setScenarioGeometry(observedGeometry);
+      if (!twinQuestion) setTwinQuestion(observedQuestion);
     }
     setTwin(next);
-    setAnswer(null);
     setMenu(false);
     setChanging(true);
     history.pushState({}, "", next ? "/digitwin" : "/");
     if (transitionTimer.current) clearTimeout(transitionTimer.current);
-    transitionTimer.current = setTimeout(() => setChanging(false), 1100);
+    transitionTimer.current = setTimeout(() => setChanging(false), 2900);
     window.scrollTo({ top: 0, behavior: "auto" });
   }
   function openAir() {
@@ -189,6 +227,19 @@ export default function App() {
     setPage("earth");
     window.scrollTo(0, 0);
   }
+  function launchChat() {
+    if (!question.trim()) return;
+    const enter = () => {
+      history.pushState({}, "", "/chat");
+      setChatLaunch({id:Date.now(),question:question.trim()});
+      setPage("chat");
+      window.scrollTo({top:0,behavior:"instant"});
+    };
+    if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const transition = document.startViewTransition(() => flushSync(enter));
+      void transition.finished.catch(() => {});
+    } else enter();
+  }
   async function submit(value = question) {
     const q = value.trim();
     if (!q || (twin ? twinBusy : busy)) return;
@@ -198,7 +249,6 @@ export default function App() {
     }
     setObservedQuestion(q);
     setError("");
-    setAnswer(null);
     setReport(null);
     setBusy(true);
     setProgress({ progress: 0.02, message: "Reading your question…" });
@@ -206,10 +256,6 @@ export default function App() {
     const controller = new AbortController();
     active.current = controller;
     try {
-      if (inputMode === "ask") {
-        setAnswer(await api.ask(q, controller.signal));
-        return;
-      }
       const nextPlan = await api.plan(q, controller.signal);
       setPlan(nextPlan);
       if (nextPlan.on_topic === false)
@@ -334,14 +380,17 @@ export default function App() {
   return (
     <div
       className={`experience ${changing ? "is-changing" : ""}`}
+      data-motion-paused={motionPaused}
       data-world={twin ? "twin" : "observed"}
       data-topic={context.topic}
       onPointerMove={pointerMove}
     >
       <div ref={cursor} className="cursor-light" aria-hidden="true" />
+      <div className="ambient-field" aria-hidden="true"><i/><i/></div>
+      <ChatPage active={page === "chat"} launch={chatLaunch} onExit={returnEarth} onInvestigate={q=>{returnEarth();void submit(q);}}/>
       {page === "airllm" ? (
         <AirLLM onBack={returnEarth} />
-      ) : (
+      ) : page !== "chat" ? (
         <>
           <a className="skip-link" href="#main">
             Skip to content
@@ -388,12 +437,12 @@ export default function App() {
             </button>
           </header>
         </>
-      )}
+      ) : null}
       <main
         id="main"
-        className={page === "airllm" ? "earth-hidden" : ""}
-        aria-hidden={page === "airllm"}
-        inert={page === "airllm"}
+        className={page !== "earth" ? "earth-hidden" : ""}
+        aria-hidden={page !== "earth"}
+        inert={page !== "earth"}
       >
         <section className="hero" aria-labelledby="hero-title">
           <div className="world-light" aria-hidden="true" />
@@ -418,6 +467,8 @@ export default function App() {
             >
               <Globe
                 focus={focus}
+                geometry={geometry}
+                paused={motionPaused}
                 twin={twin}
                 topic={context.topic}
               />
@@ -442,34 +493,23 @@ export default function App() {
             <span className="detail-rule" />
           </div>
           <div className="command-dock">
-            <label className="command-label" htmlFor="earth-question">
+            {place && <div className="prompt-location" role="status"><MapPin size={14}/><strong>{place}</strong><span>{geometry?.type === "BBox" ? "Approximate area" : geometry?.type === "Point" ? "Selected point" : "In view"}</span></div>}
+            <label className={place ? "sr-only" : "command-label"} htmlFor="earth-question">
               {twin
                 ? "Your what-if question"
                 : "What is changing in your part of Earth?"}
             </label>
             <form
               className="command-glass"
+              style={{viewTransitionName:page === "earth" ? "earth-composer" : undefined}}
               onSubmit={(e) => {
                 e.preventDefault();
-                void submit();
+                if (twin) void submit(); else launchChat();
               }}
             >
-              <button
-                className="command-mode"
-                type="button"
-                aria-label={
-                  twin
-                    ? "DigiTwin scenario mode"
-                    : `Mode: ${inputMode}. Switch question mode`
-                }
-                onClick={() => {
-                  if (!twin)
-                    setInputMode(inputMode === "ask" ? "investigate" : "ask");
-                }}
-              >
-                {twin ? <FlaskConical size={17} /> : <Globe2 size={17} />}
-                <ChevronDown size={10} />
-              </button>
+              <span className="command-mode" aria-label={twin ? "DigiTwin scenario" : "Earth conversation"}>
+                {twin ? <FlaskConical size={18} strokeWidth={1.5}/> : <Globe2 size={18} strokeWidth={1.5}/>}
+              </span>
               <input
                 id="earth-question"
                 className="command-input"
@@ -480,9 +520,7 @@ export default function App() {
                 placeholder={
                   twin
                     ? "What if warming in Chennai doubled?"
-                    : inputMode === "ask"
-                      ? "Ask about Earth data or trend tests…"
-                      : "Try “temperature trends in India”"
+                    : "Ask about temperature in India…"
                 }
               />
               {!twin && busy ? (
@@ -502,9 +540,7 @@ export default function App() {
                   aria-label={
                     twin
                       ? "Prepare DigiTwin scenario"
-                      : inputMode === "ask"
-                        ? "Ask the assistant"
-                        : "Investigate Earth"
+                      : "Start Earth conversation"
                   }
                 >
                   <ArrowUp size={21} />
@@ -516,7 +552,7 @@ export default function App() {
                 <i />
                 {twin
                   ? "DigiTwin input selected"
-                  : `${inputMode === "ask" ? "Ask · " : ""}${connection}`}
+                  : connection}
               </span>
               <button
                 className="world-switch"
@@ -536,25 +572,6 @@ export default function App() {
               <p className="dock-feedback error" role="alert">
                 {error}
               </p>
-            )}
-              {!twin && answer && (
-              <div className="assistant-answer" aria-live="polite">
-                <button
-                  className="answer-close"
-                  aria-label="Close assistant answer"
-                  onClick={() => setAnswer(null)}
-                >
-                  <X size={14} />
-                </button>
-                <span>
-                  {answer.source === "local_llm"
-                    ? "AI-written, number-checked"
-                    : answer.source === "guardrail"
-                      ? "Earth-topic guardrail"
-                      : "Local deterministic answer"}
-                </span>
-                <Narrative value={answer.answer || answer.message} />
-              </div>
             )}
           </div>
           <div className="hero-bottom">
@@ -642,6 +659,7 @@ export default function App() {
         </div>
         <footer className="site-footer">
           <span>EARTH SYSTEM TREND DETECTIVE</span>
+          <button className="motion-control" aria-pressed={motionPaused} onClick={()=>setMotionPaused(!motionPaused)}><Waves size={14}/>{motionPaused ? "Resume ambient motion" : "Pause ambient motion"}</button>
           <a
             href="https://github.com/chandrakiran-05/NASA"
             target="_blank"
@@ -651,7 +669,7 @@ export default function App() {
           </a>
           <p>
             Independent NASA Space Apps project. Earth textures: Three.js
-            examples. NASA insignia does not imply endorsement.
+            examples. Navigation outlines: Natural Earth. NASA insignia does not imply endorsement.
           </p>
         </footer>
       </main>

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { northUpPose } from "./globeOrientation";
+import { boundaryRibbon, focusedPose, northUpPose } from "./globeOrientation";
+import type { GlobeGeometry } from "./globeOrientation";
+export type { GlobeGeometry } from "./globeOrientation";
 
 export type GlobeFocus = { lat: number; lon: number };
 export type GlobeTopic =
@@ -11,6 +13,7 @@ type GlobeProps = {
   className?: string;
   twin?: boolean;
   topic?: GlobeTopic;
+  geometry?: GlobeGeometry | null;
 };
 const accents: Record<GlobeTopic, string> = {
   earth: "#4c9dff",
@@ -27,12 +30,13 @@ export default function Globe({
   className = "",
   twin = false,
   topic = "earth",
+  geometry = null,
 }: GlobeProps) {
   const container = useRef<HTMLDivElement>(null);
-  const props = useRef({ focus, paused, twin, topic });
+  const props = useRef({ focus, paused, twin, topic, geometry });
   const update = useRef<(() => void) | null>(null);
   const [unavailable, setUnavailable] = useState(false);
-  props.current = { focus, paused, twin, topic };
+  props.current = { focus, paused, twin, topic, geometry };
 
   useEffect(() => {
     const host = container.current;
@@ -58,6 +62,7 @@ export default function Globe({
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 40);
     const presentation = new THREE.Group();
+    presentation.position.y = 0.16;
     const earth = new THREE.Group();
     // A real geographic camera target: Africa, Europe and the Indian Ocean
     // share the opening view instead of starting on an anonymous ocean face.
@@ -95,7 +100,9 @@ export default function Globe({
     let previousTopic = "";
     let previousTwin: boolean | undefined;
     let targetRoll = 0;
-    let targetDistance = 3.85;
+    let modeTransition: { elapsed: number; fromRoll: number; fromDistance: number; tint: THREE.Color } | null = null;
+    let previousGeometry: GlobeGeometry | null | undefined;
+    let targetDistance = 4.05;
     camera.position.z = targetDistance;
     const targetPose = initialPose.clone();
     const targetTint = new THREE.Color(accents.earth);
@@ -237,6 +244,14 @@ export default function Globe({
     const halo = new THREE.Mesh(haloGeometry, haloMaterial);
     halo.visible = false;
     earth.add(halo);
+    const outlineGeometry = new THREE.BufferGeometry();
+    const glowGeometry = new THREE.BufferGeometry();
+    const outlineMaterial = new THREE.MeshBasicMaterial({ color: "#8bc9ff", transparent: true, opacity: 0.98, depthWrite: false, side: THREE.DoubleSide });
+    const glowMaterial = new THREE.MeshBasicMaterial({ color: "#398bff", transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    const outline = new THREE.Mesh(outlineGeometry, outlineMaterial);
+    const outlineGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+    outline.visible = outlineGlow.visible = false;
+    earth.add(outlineGlow, outline);
 
     function resize() {
       const rect = host!.getBoundingClientRect();
@@ -258,6 +273,18 @@ export default function Globe({
     }
     function syncProps() {
       const current = props.current;
+      if (current.twin !== previousTwin) {
+        const firstView = previousTwin === undefined;
+        previousTwin = current.twin;
+        targetRoll = current.twin ? Math.PI : 0;
+        if (firstView || reducedMotion.matches) presentation.rotation.z = targetRoll;
+        else modeTransition = {
+          elapsed: 0,
+          fromRoll: presentation.rotation.z,
+          fromDistance: camera.position.z,
+          tint: (atmosphereMaterial.uniforms.tint.value as THREE.Color).clone(),
+        };
+      }
       const validFocus =
         current.focus &&
         Number.isFinite(current.focus.lat) &&
@@ -275,18 +302,32 @@ export default function Globe({
             current.focus!.lon,
           );
           point.set(...(coords as [number, number, number])).normalize();
-          targetPose.copy(northUpPose(current.focus!.lat, current.focus!.lon));
+          targetPose.copy(focusedPose(current.focus!.lat, current.focus!.lon, targetRoll));
           pin.position.copy(point).multiplyScalar(1.016);
           halo.position.copy(point).multiplyScalar(1.017);
           halo.quaternion.setFromUnitVectors(forward, point);
           aimPending = true;
         }
-        targetDistance = focused ? 3.55 : 3.85;
+        targetDistance = focused ? 3.85 : 4.05;
       }
-      if (current.twin !== previousTwin) {
-        previousTwin = current.twin;
-        targetRoll = current.twin ? Math.PI : 0;
+      if (current.geometry !== previousGeometry) {
+        previousGeometry = current.geometry;
+        const core = boundaryRibbon(current.geometry, 0.0014);
+        const glow = boundaryRibbon(current.geometry, 0.006);
+        outlineGeometry.dispose();
+        glowGeometry.dispose();
+        outlineGeometry.setAttribute("position", new THREE.Float32BufferAttribute(core, 3));
+        glowGeometry.setAttribute("position", new THREE.Float32BufferAttribute(glow, 3));
+        outlineGeometry.computeBoundingSphere();
+        glowGeometry.computeBoundingSphere();
+        outline.visible = outlineGlow.visible = focused && core.length > 0;
+        host!.dataset.boundaryVertices = String(core.length / 3);
       }
+      outline.visible = outlineGlow.visible = focused && Boolean(outlineGeometry.getAttribute("position")?.count);
+      outlineMaterial.color.set(current.twin ? "#ffe1cc" : "#8bc9ff");
+      glowMaterial.color.set(current.twin ? "#ffb697" : "#398bff");
+      pinMaterial.color.set(current.twin ? "#ffe1cc" : "#d2ecff");
+      haloMaterial.color.set(current.twin ? "#ffb697" : "#6ab6ff");
       if (previousTopic !== `${current.twin}-${current.topic}`) {
         previousTopic = `${current.twin}-${current.topic}`;
         targetTint.set(current.twin ? "#d6a7a4" : accents[current.topic]);
@@ -298,9 +339,9 @@ export default function Globe({
     function transitioning() {
       const tint = atmosphereMaterial.uniforms.tint.value as THREE.Color;
       return (
+        modeTransition !== null ||
         (aimPending && earth.quaternion.angleTo(targetPose) > 0.001) ||
         Math.abs(presentation.rotation.z - targetRoll) > 0.0005 ||
-        Math.abs(presentation.rotation.y - targetRoll) > 0.0005 ||
         Math.abs(camera.position.z - targetDistance) > 0.0005 ||
         Math.abs(tint.r - targetTint.r) +
           Math.abs(tint.g - targetTint.g) +
@@ -327,36 +368,34 @@ export default function Globe({
       }
       lastRender = now;
       const ease = reducedMotion.matches ? 1 : 1 - Math.exp(-dt * 8);
-      if (aimPending) {
+      if (aimPending && !modeTransition) {
         earth.quaternion.slerp(targetPose, ease);
         if (earth.quaternion.angleTo(targetPose) < 0.001) {
           earth.quaternion.copy(targetPose);
           aimPending = false;
         }
       }
-      presentation.rotation.z = THREE.MathUtils.lerp(
-        presentation.rotation.z,
-        targetRoll,
-        ease,
-      );
-      // Roll north/south while turning to the opposite hemisphere. Both axes
-      // reverse from their current pose if the world switch is interrupted.
-      presentation.rotation.y = THREE.MathUtils.lerp(
-        presentation.rotation.y,
-        targetRoll,
-        ease,
-      );
+      if (modeTransition && !reducedMotion.matches) {
+        modeTransition.elapsed += dt;
+        const progress = Math.min(1, modeTransition.elapsed / 2.8);
+        const rollProgress = THREE.MathUtils.smootherstep(progress, 0.12, 1);
+        presentation.rotation.z = THREE.MathUtils.lerp(modeTransition.fromRoll, targetRoll, rollProgress);
+        const distance = THREE.MathUtils.lerp(modeTransition.fromDistance, targetDistance, progress);
+        camera.position.z = distance - Math.sin(Math.PI * progress) * 0.62;
+        (atmosphereMaterial.uniforms.tint.value as THREE.Color).copy(modeTransition.tint).lerp(targetTint, THREE.MathUtils.smoothstep(progress, 0, 1));
+        host!.dataset.worldTransition = progress.toFixed(3);
+        if (progress === 1) modeTransition = null;
+      } else {
+        modeTransition = null;
+        presentation.rotation.z = THREE.MathUtils.lerp(presentation.rotation.z, targetRoll, ease);
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetDistance, ease);
+        (atmosphereMaterial.uniforms.tint.value as THREE.Color).lerp(targetTint, ease);
+      }
       host!.dataset.worldTurn = presentation.rotation.y.toFixed(3);
       host!.dataset.worldRoll = presentation.rotation.z.toFixed(3);
-      camera.position.z = THREE.MathUtils.lerp(
-        camera.position.z,
-        targetDistance,
-        ease,
-      );
-      (atmosphereMaterial.uniforms.tint.value as THREE.Color).lerp(
-        targetTint,
-        ease,
-      );
+      host!.dataset.cameraDistance = camera.position.z.toFixed(3);
+      const markerPosition = pin.position.clone().applyQuaternion(earth.quaternion).applyQuaternion(presentation.quaternion).add(presentation.position).project(camera);
+      host!.dataset.focusScreen = `${((markerPosition.x + 1) / 2).toFixed(3)},${((1 - markerPosition.y) / 2).toFixed(3)}`;
       const moving = transitioning();
       const idle =
         !props.current.paused &&
@@ -524,6 +563,8 @@ export default function Globe({
         sphere,
         atmosphere.geometry,
         gridGeometry,
+        outlineGeometry,
+        glowGeometry,
         pinGeometry,
         haloGeometry,
       ].forEach((geometry) => geometry.dispose());
@@ -532,6 +573,8 @@ export default function Globe({
         cloudMaterial,
         atmosphereMaterial,
         gridMaterial,
+        outlineMaterial,
+        glowMaterial,
         pinMaterial,
         haloMaterial,
       ].forEach((material) => material.dispose());
@@ -543,7 +586,7 @@ export default function Globe({
 
   useEffect(() => {
     update.current?.();
-  }, [focus?.lat, focus?.lon, paused, twin, topic]);
+  }, [focus?.lat, focus?.lon, paused, twin, topic, geometry]);
 
   return (
     <div

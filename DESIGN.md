@@ -21,3 +21,13 @@ Evidence is a case sheet: record index, wide plot, finding margin, server-return
 ## Motion and trust
 
 Maintain existing single renderer, DPR cap, reduced-motion support and zero settled-paused/offscreen drawing. No blocking intro, cursor replacement, full-page animated blur or extra postprocessing. Pointer lighting is restrained. Space toggles automatic Earth rotation while its accessible globe is focused. AirLLM illustrates data flow and layer loading; motion pauses offscreen, in hidden tabs, with its pause control, and for reduced-motion users. Histories remain observations with units/date/provenance; scenario outputs always say simulated with disclaimer. Backend contracts unchanged.
+
+## Geographic focus and conversations
+
+The prompt reports its selected place in a compact pill above the composer. A low-resolution, public-domain Natural Earth country or continent outline glows on the geographic surface; cities and unmatched states use the backend-resolved point/extent marker. Navigation geometry never replaces scientific acquisition geometry. The selected point is raised above the composer in both modes.
+
+World switching lasts 2.8 seconds: a camera approach, a Z-axis upside-down roll and tint changes. No opposite-hemisphere turn. New location targets compensate the presentation roll. On mobile, Another Earth stays on one line with a separate centered subtitle.
+
+Hero submission opens /chat through a native shared-composer transition, with a CSS entrance fallback. The chat is a minimal paper workspace with a bottom composer and Back to Earth at top left. Recent turns are bounded context inside the existing question contract; the current answer source is visible. Conversation state stays in memory, stops pending requests on exit, and supports retry, cancellation and a new chat.
+
+Thin consistent icons, short hover responses, slow peripheral light and native scrolling provide motion without scroll interception. A footer control pauses ambient movement; reduced-motion users receive static transitions.

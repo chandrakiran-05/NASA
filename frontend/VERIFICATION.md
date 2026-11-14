@@ -44,3 +44,13 @@ The globe now crosses the hero bottom; translucent title alpha is0.24. Twin roll
 - BEAST, checked local-model reasoning, and optional AirLLM review descriptions checked against existing backend branches. No backend code or endpoint changes.
 - Font findings addressed by replacing the undeclared Manrope heading declaration with documented Newsreader. DM Sans remains documented. No new suppressions added.
 - Remaining build advisory: the lazy Plotly evidence chart is above Vite's 500KB uncompressed chunk threshold. External NASA/NOAA acquisition and actual model inference were not rerun for these frontend refinements.
+
+## Conversation and focus verification
+
+- 25 automated tests pass: prompt interpretation, geographic orientation under observed/partial/twin rolls, surface ribbons at the date line, actual country aliases and continent grouping, cached asset cancellation, bounded conversational context, and twin API contracts.
+- Dedicated local browser run passed (frontend/shots/conversation-qa.json, ignored QA artifact): India has 810 boundary vertices and its marker is 148px above the desktop prompt; Africa has 13,446 vertices and a centered target in DigiTwin.
+- Cinematic intermediate roll 0.259 radians and camera distance 3.325, final roll pi / Y turn zero / distance 3.850. Same canvas preserved.
+- At 390px, headline bottom247.78 and subtitle top263: no collision. No horizontal overflow at390 or320. Viewport screenshots inspected for observed/Twin/chat; the headless stitched screenshot is not used as evidence of fixed positioning.
+- Native shared-composer transition invoked once. Real backend initial answer and follow-up produced four transcript turns, correctly labeled deterministic. The globe stopped rendering behind chat. A temporary browser-only503 injection exposed retry; restoring the original fetch completed the answer. A temporary pending request was canceled and produced the stopped state. Production request behavior was restored.
+- Reduced motion immediately returned roll to0 and disabled ambient animation. Settled rendering count was unchanged over500ms. Desktop browser also confirmed scene scroll offset and changing ambient transforms.
+- Source detector reported no deterministic design findings. Existing lazy chart bundle size advisory remains. No backend endpoint or source changes. Actual local-model inference and fresh upstream NASA/NOAA acquisition were not exercised.

@@ -1,4 +1,4 @@
-import { ArrowUpRight, Upload, ArrowDown } from 'lucide-react';
+import { ArrowUpRight, Upload, ArrowDown, ChartNoAxesCombined, Cpu, Layers3 } from 'lucide-react';
 
 type Props = {
   onQuestion: (question: string) => void;
@@ -18,17 +18,17 @@ export default function AtlasStory({ onQuestion, onUpload, busy, onAir }: Props)
       </div>
       <div className="story-method">
         <div className="method-line">
-          <span>01</span>
+          <span aria-hidden="true"><ChartNoAxesCombined size={17}/></span>
           <h3>BEAST dates the change.</h3>
           <p>A Bayesian ensemble dates possible shifts in a trend. Calibration accounts for persistent climate noise; uncertainty stays visible.</p>
         </div>
         <div className="method-line">
-          <span>02</span>
+          <span aria-hidden="true"><Cpu size={17}/></span>
           <h3>Local AI. Grounded reasoning.</h3>
           <p>A model running on your machine helps plan questions and explain findings. Computed statistics decide the numbers, which are checked before the answer.</p>
         </div>
         <div className="method-line">
-          <span>03</span>
+          <span aria-hidden="true"><Layers3 size={17}/></span>
           <h3>AirLLM, layer by layer.</h3>
           <p>Optional AirLLM review loads model layers from disk to reduce GPU memory use. It runs more slowly in the background; its advice never determines the verdict.</p>
           {onAir ? <button type="button" className="text-link" onClick={onAir}>How local AI works <ArrowUpRight size={15} /></button> : <a className="text-link" href="/airllm">How local AI works <ArrowUpRight size={15} /></a>}
