@@ -113,12 +113,77 @@ async def investigate(st: AppState, *, question: str | None, variable_id: str | 
     report["results"] = results
     if len(results) > 1:
         report["comparison"] = compare_regions([r["analysis"] for r in results])
+    intents = (report.get("plan") or {}).get("intents") or ["what"]
+    drivers = None
+    if "why" in intents:
+        await progress(0.82, "Testing suspect drivers (PCMCI+)")
+        drivers = await why_drivers(st, targets[0], results[0]["series"]["series_id"])
+        report["why"] = drivers
+    report["answer"] = compose_answer(intents, results[0], drivers)
     if explain:
         await progress(0.9, "Writing the explanation")
         entry = st.catalog.get(targets[0]["variable_id"])
-        report["explanation"] = await st.ai.explain(results[0]["analysis"], results[0]["insights"], entry)
+        report["explanation"] = await st.ai.explain(results[0]["analysis"], results[0]["insights"], entry,
+                                                    drivers=drivers, intents=intents)
     report["on_topic"] = True
     return report
+
+
+async def why_drivers(st: AppState, target: dict, target_series_id: str) -> dict:
+    """WHY: pre-registered suspects (textbook + local AI, no data) -> fetch them -> PCMCI+ decides."""
+    from ..insights.causal import causal_screen, judge_suspects
+    region = parse_geometry(target["geometry"])
+    suspects = await st.ai.suspects(target["variable_id"], region.name)
+    if not suspects:
+        return {"status": "no_suspects", "suspects": [], "protocol": "suspects were fixed before any data was fetched; none are defined for this variable",
+                "plain_language": "No driver hypotheses are defined for this variable yet."}
+    tgt = st.store.load(target_series_id)
+    drv, notes = [], []
+    for s in suspects:
+        try:
+            info = await st.ts.build_series(s["driver_id"], region, parse_date(target["start"]),
+                                            parse_date(target["end"], end=True))
+            d = st.store.load(info["series_id"])
+            d.variable_id = s["driver_id"]
+            drv.append(d)
+        except Exception as exc:  # noqa: BLE001 - a missing driver must not sink the investigation
+            notes.append(f"{s['driver_id']}: {type(exc).__name__}")
+    screen = await run_in_threadpool(causal_screen, tgt, drv) if drv else {"status": "no_drivers"}
+    judged = judge_suspects(screen, suspects)
+    from ..analysis.engine import _clean
+    return _clean({"status": screen.get("status"), **judged, "screen": screen, "fetch_notes": notes,
+                   "protocol": "suspects were fixed before any data was fetched; PCMCI+ decided each one"})
+
+
+def compose_answer(intents: list[str], result: dict, drivers: dict | None) -> dict:
+    """Direct answer per question type, built only from module outputs (no new numbers)."""
+    an, ins = result.get("analysis") or {}, result.get("insights") or {}
+    v = an.get("verdict", {})
+    sections = [{"intent": "what", "question": "Is it changing, by how much, and is it significant?",
+                 "answer": v.get("plain_language"), "source": "trend tests (OLS AR1-adjusted, Mann-Kendall, Sen)"}]
+    if "when" in intents or "onset" in ins:
+        o = ins.get("onset") or {}
+        if o.get("plain_language"):
+            sections.append({"intent": "when", "question": "When did it change, and how sure are we?",
+                             "answer": o["plain_language"], "source": "calibrated BEAST (Zhao et al. 2019)"})
+    if "why" in intents and drivers:
+        sections.append({"intent": "why", "question": "Which processes is it associated with?",
+                         "answer": drivers.get("plain_language"), "source": "pre-registered suspects + PCMCI+ (Runge 2019)"})
+    if "how_long" in intents or "detectability" in ins:
+        parts = [(ins.get(k) or {}).get("plain_language") for k in ("emergence", "detectability")]
+        parts = [p for p in parts if p]
+        if parts:
+            sections.append({"intent": "how_long", "question": "Has it emerged from natural noise? How long until we know?",
+                             "answer": " ".join(parts), "source": "time of emergence (Hawkins & Sutton) + Weatherhead 1998"})
+    if "forecast" in intents and (ins.get("forecast") or {}).get("plain_language"):
+        sections.append({"intent": "forecast", "question": "Where is it heading if nothing changes?",
+                         "answer": ins["forecast"]["plain_language"],
+                         "source": "statistical extrapolation, not a climate projection"})
+    order = {k: i for i, k in enumerate(["what", "when", "why", "how_long", "forecast"])}
+    sections.sort(key=lambda s: order.get(s["intent"], 9))
+    asked = [s for s in sections if s["intent"] in intents and s["intent"] != "what"]
+    headline = (asked[0]["answer"] if asked else sections[0]["answer"]) or ""
+    return {"intents": intents, "headline": headline, "sections": sections}
 
 
 def demo_list(st: AppState, demos: list[dict]) -> list[dict]:

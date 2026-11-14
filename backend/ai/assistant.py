@@ -50,7 +50,19 @@ def detect_wishes(text: str) -> dict:
         "compare": bool(re.search(r"\b(compare|comparison|versus|vs\.?|difference between|than in)\b", t)),
         "drivers": bool(re.search(r"\b(why|cause|caused|because|driver|drivers|related to|linked to|due to)\b", t)),
         "point": bool(re.search(r"\b(station|exact point|at the point|pixel)\b", t)),
+        "when": bool(re.search(r"\b(when did|since when|when was|start(?:ed)? to|began|begin|shift(?:ed)?|sudden|"
+                               r"abrupt|turning point|change ?point|break)\b", t)),
+        "how_long": bool(re.search(r"\b(how long|how many (?:more )?years|when will (?:we|it)|emerge\w*|"
+                                   r"enough data|significant yet)\b", t)),
     }
+
+
+def intents_of(wishes: dict) -> list[str]:
+    """Question types answered by Trend Forensics: what / when / why / how_long (+ compare, forecast)."""
+    out = ["what"]
+    out += [k for k, name in (("when", "when"), ("drivers", "why"), ("how_long", "how_long"),
+                              ("compare", "compare"), ("forecast", "forecast")) if wishes.get(k)]
+    return [("why" if i == "drivers" else i) for i in out]
 
 
 GLOSSARY = Path(__file__).resolve().parents[1] / "catalog" / "data" / "glossary.json"
@@ -128,6 +140,7 @@ class AIService:
             "period": {"start": f"{start}-01" if start else None, "end": f"{(y1 or LAST_FULL_YEAR)}-12",
                        "parsed_from": ytxt, "note": coverage_note},
             "wishes": wishes,
+            "intents": intents_of(wishes),
             "needs_user_input": [k for k, ok in (("region", bool(regions)), ("variable", bool(variables))) if not ok],
             "planner": "deterministic",
         }
@@ -183,6 +196,7 @@ class AIService:
             plan["wishes"]["compare"] = True
         plan["needs_user_input"] = [k for k, ok in (("region", bool(plan["regions"])),
                                                     ("variable", bool(plan["variables"]))) if not ok]
+        plan["intents"] = intents_of(plan["wishes"])
         plan["planner"] = "deterministic + local AI"
         plan["planner_notes"] = notes
         return plan
@@ -258,7 +272,7 @@ class AIService:
         if catalog_entry:
             f["variable_definition"] = catalog_entry.get("short_definition")
         if insights:
-            for k in ("detectability", "emergence", "breaks", "triangle", "records", "forecast"):
+            for k in ("detectability", "emergence", "breaks", "triangle", "records", "forecast", "onset"):
                 if isinstance(insights.get(k), dict) and insights[k].get("plain_language"):
                     f[k] = insights[k]["plain_language"]
             tei = insights.get("trend_evidence_index") or {}
@@ -279,19 +293,72 @@ class AIService:
             parts.append("Caveat: " + facts["caveats"][0])
         return " ".join(p for p in parts if p)
 
-    async def explain(self, analysis: dict, insights: dict | None = None, catalog_entry: dict | None = None) -> dict:
+    async def explain(self, analysis: dict, insights: dict | None = None, catalog_entry: dict | None = None,
+                      drivers: dict | None = None, intents: list[str] | None = None) -> dict:
+        from .verify import failure_feedback, verify_text
         facts = self.facts_from(analysis, insights, catalog_entry)
+        if drivers and drivers.get("plain_language"):
+            facts["drivers"] = drivers["plain_language"]
+        if intents:
+            facts["question_types"] = intents
         base = self.deterministic_explanation(facts)
+        if facts.get("drivers"):
+            base += " " + facts["drivers"]
         msgs = [{"role": "system", "content": SYSTEM_BASE + "\n" + EXPLAIN_INSTRUCTIONS},
                 {"role": "user", "content": "FACTS:\n" + json.dumps(facts, ensure_ascii=False, default=str)}]
+        last = None
         for attempt in range(2):
             txt = await self.llm.chat(msgs, max_tokens=420)
             if not txt:
                 break
-            fc = fact_check(txt, facts)
-            if fc["passed"] and "OFF_TOPIC" not in txt:
-                return {"explanation": txt.strip(), "source": "local_llm", "fact_check": fc, "facts": facts}
+            v = verify_text(txt, facts)
+            last = v
+            if v["passed"] and "OFF_TOPIC" not in txt:
+                return {"explanation": txt.strip(), "source": "local_llm", "fact_check": v["fact_check"],
+                        "verification": v, "facts": facts}
             msgs.append({"role": "assistant", "content": txt})
-            msgs.append({"role": "user", "content": "Some numbers were not in FACTS: "
-                         f"{fc['unsupported_numbers']}. Rewrite using only numbers from FACTS."})
-        return {"explanation": base, "source": "deterministic", "facts": facts}
+            msgs.append({"role": "user", "content": "Your text failed verification: " + failure_feedback(v)
+                         + ". Rewrite using only FACTS, no causal words, and the correct direction."})
+        out = {"explanation": base, "source": "deterministic", "facts": facts}
+        if last:
+            out["verification"] = last
+            out["note"] = "Local AI text rejected by the verifier; deterministic text shown."
+        return out
+
+    async def suspects(self, target_id: str, region_name: str | None = None, max_n: int = 3) -> list[dict]:
+        """Pre-registered WHY hypotheses, made before any data is seen.
+
+        Textbook bundle first; the local AI may add or re-rank, but only with catalog ids from the
+        allowed list (anything else is dropped). Neither source sees data; PCMCI+ decides later."""
+        bundles = json.loads((GLOSSARY.parent / "driver_bundles.json").read_text())["bundles"]
+        base = [dict(s, source="textbook hypothesis") for s in bundles.get(target_id, [])]
+        allowed = sorted({s["driver_id"] for b in bundles.values() for s in b} - {target_id})
+        schema = {"type": "object", "properties": {"suspects": {"type": "array", "maxItems": max_n, "items": {
+            "type": "object", "properties": {
+                "driver_id": {"type": "string", "enum": allowed},
+                "expected_sign": {"type": "string", "enum": ["+", "-", "either"]},
+                "lag_months": {"type": "integer", "minimum": 0, "maximum": 6},
+                "mechanism": {"type": "string"}},
+            "required": ["driver_id", "expected_sign", "lag_months", "mechanism"]}}},
+            "required": ["suspects"]}
+        tname = (self.catalog.variables.get(target_id) or {}).get("name", target_id)
+        msgs = [{"role": "system", "content": SYSTEM_BASE + "\nPropose up to 3 physical drivers that could explain "
+                 "month-to-month changes of the target variable. Choose driver ids ONLY from the allowed list. You "
+                 "have NOT seen any data; these are hypotheses to be tested."},
+                {"role": "user", "content": f"TARGET: {target_id} ({tname})\nREGION: {region_name or 'unspecified'}\n"
+                 "ALLOWED: " + ", ".join(f"{a} ({(self.catalog.variables.get(a) or {}).get('name', a)})" for a in allowed)}]
+        out = await self.llm.chat_json(msgs, schema, max_tokens=300)
+        merged, seen = [], set()
+        for s in ((out or {}).get("suspects") or []):
+            if s.get("driver_id") in allowed and s["driver_id"] not in seen and s.get("expected_sign") in ("+", "-", "either"):
+                merged.append({"driver_id": s["driver_id"], "expected_sign": s["expected_sign"],
+                               "lag_months": int(s.get("lag_months") or 0), "mechanism": str(s.get("mechanism", ""))[:200],
+                               "source": "local AI hypothesis"})
+                seen.add(s["driver_id"])
+        for s in base:
+            if s["driver_id"] not in seen:
+                merged.append(s)
+                seen.add(s["driver_id"])
+        for s in merged:
+            s["driver_name"] = (self.catalog.variables.get(s["driver_id"]) or {}).get("name", s["driver_id"])
+        return merged[:max_n]

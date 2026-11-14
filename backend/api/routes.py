@@ -221,6 +221,30 @@ async def integrity(request: Request, series_id: str):
     return await pipeline.cached_novelty(S(request), "integrity", series_id, fn, {})
 
 
+@router.get("/analyze/{series_id}/onset", tags=["forensics"])
+async def onset_endpoint(request: Request, series_id: str, alpha: float = Query(0.05, gt=0, lt=0.5),
+                         n_surrogates: int = Query(49, ge=19, le=199)):
+    """Trend Forensics WHEN: calibrated BEAST change dating (events, probability, 90% interval, seams)."""
+    from ..insights.onset import change_onset
+    from ..novelty.integrity import events_for
+    return await pipeline.cached_novelty(
+        S(request), "onset", series_id,
+        lambda ms: change_onset(ms, seams=events_for(ms), alpha=alpha, n_surrogates=n_surrogates),
+        {"alpha": alpha, "k": n_surrogates})
+
+
+@router.post("/ai/suspects", tags=["forensics"])
+async def ai_suspects(request: Request, body: dict):
+    """Trend Forensics WHY, step 1: pre-registered driver hypotheses (no data seen)."""
+    vid = body.get("variable_id")
+    if not vid:
+        raise InvalidRequest("variable_id is required")
+    st = S(request)
+    st.catalog.get(vid)
+    return {"variable_id": vid, "suspects": await st.ai.suspects(vid, body.get("region_name")),
+            "protocol": "hypotheses fixed before data; test them with POST /api/drivers method=pcmci"}
+
+
 @router.get("/analyze/{series_id}/court", tags=["novelty"])
 async def court_endpoint(request: Request, series_id: str, alpha: float = Query(0.05, gt=0, lt=0.5)):
     """F3 Method Verdict / Trend Court."""
@@ -319,6 +343,12 @@ async def drivers(request: Request, body: DriversRequest):
     st = S(request)
     tgt = st.store.load(body.target_series_id)
     drv = [st.store.load(s) for s in body.driver_series_ids]
+    if body.method == "pcmci":
+        from ..insights.causal import causal_screen, judge_suspects
+        res = await run_in_threadpool(causal_screen, tgt, drv, tau_max=min(body.max_lag, 6), alpha=body.alpha)
+        if body.suspects:
+            res["judged"] = judge_suspects(res, body.suspects)
+        return _clean(res)
     return _clean(await run_in_threadpool(driver_analysis, tgt, drv, max_lag=body.max_lag, alpha=body.alpha))
 
 

@@ -97,6 +97,9 @@ class DriversRequest(BaseModel):
     driver_series_ids: list[str] = Field(..., min_length=1, max_length=8)
     max_lag: int = Field(6, ge=0, le=24)
     alpha: float = Field(0.05, gt=0, lt=0.5)
+    method: Literal["correlation", "pcmci"] = "correlation"
+    suspects: list[dict] | None = Field(None, description="pre-registered hypotheses to stamp (pcmci only); "
+                                        "driver_id must equal the driver series' variable_id")
 
 
 class TrendMapRequest(BaseModel):

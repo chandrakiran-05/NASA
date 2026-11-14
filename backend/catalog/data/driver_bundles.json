@@ -1,0 +1,341 @@
+{
+  "_comment": "Textbook hypotheses for the WHY panel (Trend Forensics). Each entry is a HYPOTHESIS written before any data is seen; the PCMCI+ test decides whether the data support it. Driver ids are restricted to catalog ids served by fast monthly connectors (Giovanni). expected_sign: '+' target rises when driver rises, '-' falls, 'either' when physics allows both. lag_months is the expected response time. Mechanism texts are plain-language physics, not data.",
+  "bundles": {
+    "modis_ndvi_monthly": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "+",
+        "lag_months": 1,
+        "mechanism": "Plants need water from the soil; wetter soil supports more green leaves a few weeks later."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 1,
+        "mechanism": "Rain refills the soil, which then feeds plant growth."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Warmth lengthens the growing season in cold places but adds heat and drought stress in hot places."
+      }
+    ],
+    "modis_evi_monthly": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "+",
+        "lag_months": 1,
+        "mechanism": "Wetter soil supports denser vegetation."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 1,
+        "mechanism": "Rain feeds plant growth through the soil."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Temperature can help or stress plants depending on the climate."
+      }
+    ],
+    "modis_gpp": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Photosynthesis slows when soil water runs short."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Photosynthesis has an optimum temperature."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 1,
+        "mechanism": "Rain supplies the water plants use to grow."
+      }
+    ],
+    "modis_lst_day": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Moist soil evaporates water, which cools the surface; dry soil heats up."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Warmer air goes with a warmer land surface."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rainy, cloudy months keep the surface cooler."
+      }
+    ],
+    "modis_lst_night": [
+      {
+        "driver_id": "merra2_qv2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Humid air traps outgoing heat at night."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Warmer air goes with a warmer land surface."
+      }
+    ],
+    "merra2_t2m": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Dry soil sends more of the Sun's energy into heating the air instead of evaporating water."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rainy months are cloudier and cooler."
+      },
+      {
+        "driver_id": "merra2_qv2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Warm air holds more water vapour."
+      }
+    ],
+    "gldas_tair": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Dry soil heats the air more."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rainy months are cloudier and cooler."
+      }
+    ],
+    "airs_surface_air_temp": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Dry soil heats the air more."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rainy months are cloudier and cooler."
+      }
+    ],
+    "gldas_soilmoist_0_10": [
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Rain wets the soil."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Heat dries the soil through evaporation."
+      },
+      {
+        "driver_id": "gldas_evap",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Evaporation removes water from the soil."
+      }
+    ],
+    "smap_soil_moisture": [
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Rain wets the soil."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Heat dries the soil."
+      }
+    ],
+    "gldas_evap": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Evaporation needs available soil water."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Warmer air increases evaporative demand."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Rain supplies the water that evaporates."
+      }
+    ],
+    "modis_et": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Evapotranspiration needs soil water."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Warmer air increases evaporative demand."
+      }
+    ],
+    "gldas_runoff": [
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Runoff is rain the soil cannot hold."
+      },
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Saturated soil sheds more water as runoff."
+      }
+    ],
+    "gldas_swe": [
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Warmer air melts snow and turns snowfall into rain."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Winter precipitation builds the snowpack."
+      }
+    ],
+    "grace_groundwater": [
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "+",
+        "lag_months": 2,
+        "mechanism": "Rain slowly recharges groundwater."
+      },
+      {
+        "driver_id": "gldas_evap",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Evaporation and plant water use draw water down."
+      }
+    ],
+    "omi_no2_trop": [
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Temperature changes NO2 chemistry and heating/cooling emissions."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rain and cloudy weather wash out and mix pollution."
+      }
+    ],
+    "omi_aerosol_index": [
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rain removes aerosols from the air."
+      },
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Dry soil lets wind lift more dust."
+      }
+    ],
+    "station_tavg": [
+      {
+        "driver_id": "gldas_soilmoist_0_10",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Dry soil heats the air more."
+      },
+      {
+        "driver_id": "imerg_precip_monthly",
+        "expected_sign": "-",
+        "lag_months": 0,
+        "mechanism": "Rainy months are cloudier and cooler."
+      }
+    ],
+    "imerg_precip_monthly": [
+      {
+        "driver_id": "merra2_qv2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Moister air holds more water that can fall as rain."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Warmer air can hold more moisture, but hot months can also be dry months."
+      }
+    ],
+    "imerg_precip_daily": [
+      {
+        "driver_id": "merra2_qv2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Moister air holds more water that can fall as rain."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Warmer air can hold more moisture, but hot months can also be dry months."
+      }
+    ],
+    "station_prcp": [
+      {
+        "driver_id": "merra2_qv2m",
+        "expected_sign": "+",
+        "lag_months": 0,
+        "mechanism": "Moister air holds more water that can fall as rain."
+      },
+      {
+        "driver_id": "merra2_t2m",
+        "expected_sign": "either",
+        "lag_months": 0,
+        "mechanism": "Warmer air can hold more moisture, but hot months can also be dry months."
+      }
+    ]
+  }
+}

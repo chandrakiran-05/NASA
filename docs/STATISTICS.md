@@ -86,3 +86,37 @@ A 0–100 summary for students; every component is returned so the score is neve
 | Records | 0.10 | excess of record years is significant (p < 0.05) |
 
 Labels: ≥75 Confirmed trend · ≥50 Likely trend · ≥25 Emerging or uncertain · otherwise No trend detected.
+
+## Trend Forensics (WHEN / WHY / verified AI) — added 2026-11-14
+
+### WHEN: calibrated BEAST (`backend/insights/onset.py`, `GET /api/analyze/{id}/onset`)
+BEAST (Zhao et al. 2019, RSE, doi:10.1016/j.rse.2019.04.034) assumes independent noise. Run raw on
+persistent monthly anomalies it invents changes. Safeguards: memory-matched blocks
+(L = ceil((1+phi)/(1-phi)) months), ±1-yr window probabilities, and an AR(1) surrogate null that
+re-runs the identical BEAST procedure (p_calibrated). `scripts/onset_calibration.py`, 25 trials,
+288 months, true break = jump + slope change at month 144:
+
+| phi | raw BEAST false alarms | calibrated false alarms | calibrated power |
+|---|---|---|---|
+| 0.0 | 0/25 | 0/25 | 24/25 |
+| 0.5 | 25/25 | 0/25 | 19/25 |
+| 0.7 | 25/25 | 1/25 | 6/25 |
+| 0.8 | 25/25 | 0/25 | 2/25 |
+
+Power falls with persistence: "no confirmed change" is not proof of no change (stated in `limits`).
+Changes within 18 months of a cited seam (`events.json`) are labelled "possible instrument effect".
+
+### WHY: pre-registered suspects + PCMCI+ (`backend/insights/causal.py`)
+Suspects come from `catalog/data/driver_bundles.json` (textbook hypotheses) and the local AI, which
+may only choose catalog ids and never sees data. PCMCI+ (Runge 2019/2020, tigramite, ParCorr) runs on
+detrended seasonal anomalies; BH-FDR over all links; a link must hold in both record halves or it is
+"unstable". Stamps: supported / opposite_sign / not_supported / unstable. Association, not cause.
+
+### Verified AI text (`backend/ai/verify.py`)
+Every AI sentence must pass: numbers traced to facts, direction matches, significance matches, no
+causal verbs, future values worded as extrapolation. Failure → one rewrite with the reasons → else
+deterministic text. Basis: LLMs reason over raw series barely above chance (Merrill et al. 2024).
+
+### Any question → intents (`/api/investigate`)
+Questions are split into what / when / why / how_long / compare / forecast; `answer.sections` gives a
+direct answer for each from the modules above (no new numbers).

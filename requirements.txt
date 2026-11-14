@@ -17,3 +17,6 @@ h5py>=3.11
 geonamescache>=2.0
 harmony-py>=1.0
 earthaccess>=0.10
+Rbeast>=0.1.25          # Trend Forensics WHEN (MIT)
+tigramite>=5.2          # Trend Forensics WHY, PCMCI+ (GPL-3.0)
+joblib>=1.3

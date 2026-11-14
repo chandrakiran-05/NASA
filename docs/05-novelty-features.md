@@ -1,5 +1,7 @@
 # Trend Detective — Novelty Features
 
+> **Superseded by [07-trend-forensics.md](07-trend-forensics.md)**, which is the locked signature. F1 from this doc is the backup.
+
 > This document covers only the **novelty layer** that sits on top of the baseline in [03-architecture.md](03-architecture.md). It supersedes the feature pick in [04-novelty-decision.md](04-novelty-decision.md).
 > Every feature traces back to real, documented problems: NASA alerts and guides, peer-reviewed papers, Stack Exchange, Reddit, and educator sources. The raw evidence is in [painpoints/](painpoints/).
 > Data comes **only** from the official challenge APIs: Giovanni, AppEEARS, NOAA NCEI, CMR and Cloud OPeNDAP.

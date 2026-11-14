@@ -25,7 +25,7 @@ from .emergence import record_statistics, time_of_emergence
 from .forecast import forecast_ensemble
 from .triangle import trend_triangle
 
-ALL_INSIGHTS = ("detectability", "emergence", "records", "breaks", "triangle", "forecast")
+ALL_INSIGHTS = ("detectability", "emergence", "records", "breaks", "triangle", "forecast", "onset")
 TEI_WEIGHTS = {"significance": 0.35, "robustness": 0.25, "detectability": 0.15, "emergence": 0.15, "records": 0.10}
 
 
@@ -84,6 +84,11 @@ def run_insights(ms: MonthlySeries, *, which: tuple[str, ...] | list[str] = ALL_
                                                  lag1=ols.lag1_autocorr, alpha=alpha))
     if "forecast" in which:
         timed("forecast", lambda: forecast_ensemble(ms.time, ms.value, horizon=forecast_horizon))
+    if "onset" in which:
+        from ..novelty.integrity import events_for
+        from .onset import change_onset
+        pelt = out.get("breaks", {}).get("breaks") if isinstance(out.get("breaks"), dict) else None
+        timed("onset", lambda: change_onset(ms, seams=events_for(ms), pelt_breaks=pelt, alpha=alpha))
 
     # ---- Trend Evidence Index ----
     both = max(ols.p_adj, mk.p)
