@@ -301,3 +301,39 @@ def choose_best(trends: list[dict]) -> dict:
             "plain_language": f"Best-supported trend: {b['name']}. " + " ".join(why),
             "scoring": "0.6 x data verdict (VERIFIED=1, PROBABLE=0.6) + 0.2 x size of change (SD/decade, capped at 1) "
                        "+ 0.2 x research agreement (supported=1, mixed=0.5, none=0.3, conflicts=0)"}
+
+
+METHOD_QUERIES = ["Mann-Kendall trend test", "Sen slope trend", "BEAST Bayesian change point time series",
+                  "PELT change point detection", "trend detection autocorrelation climate time series"]
+METHOD_TERMS = ["Mann-Kendall", "Sen", "Theil-Sen", "BEAST", "BFAST", "PELT", "change point", "change-point",
+                "changepoint", "breakpoint", "trend test", "trend detection", "autocorrelation"]
+
+
+async def method_literature(http, *, max_age_years: int = 10, per_source: int = 10, n: int = 15) -> dict:
+    """Recent papers on the trend methods this tool uses (Mann-Kendall, Sen, BEAST, PELT, change points)."""
+    import asyncio
+    today = date.today().year
+    since = today - max_age_years
+    runs = await asyncio.gather(*(literature.search(http, query=q, terms=q.split()[:2], since_year=since,
+                                                    per_source=per_source) for q in METHOD_QUERIES))
+    papers, seen, ok = [], set(), False
+    for found, sources in runs:
+        ok = ok or any(s["status"] == "ok" for s in sources)
+        for p in found:
+            k = literature._key(p)
+            if k in seen:
+                continue
+            seen.add(k)
+            text = f"{p['title']} {p['abstract']}"
+            hits = sum(t.lower() in text.lower() for t in METHOD_TERMS)
+            if hits:
+                age = max(0, today - int(p.get("year") or today))
+                p["relevance"] = hits * math.exp(-0.07 * age) * trust(p)[0]
+                p["trust"] = trust(p)[1]
+                papers.append(p)
+    papers.sort(key=lambda p: -p["relevance"])
+    keep = ("title", "year", "venue", "authors", "doi", "url", "source", "peer_reviewed", "trust", "relevance")
+    return {"since_year": since, "papers": [{k: p.get(k) for k in keep} for p in papers[:n]],
+            "plain_language": (f"{min(len(papers), n)} recent papers ({since}+) on the trend methods used here."
+                               if papers else ("The literature sources could not be reached." if not ok else
+                                               "No recent method papers found."))}

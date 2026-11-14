@@ -219,3 +219,14 @@ def test_view_has_chart_beast_pelt_and_ai_text(client):
     jid = client.post("/api/active-trends", json={"series_ids": [sid], "ai_review": False}).json()["job_id"]
     tr = wait_job(client, jid, timeout=120)["result"]["trends"][0]
     assert tr["view"]["chart"]["time"] and tr["view"]["recent_window"]
+
+
+def test_printable_card_and_method_papers(client):
+    import xml.etree.ElementTree as ET
+    sid = _upload(client, series(0.05 * T, seed=1).value, "warming <test>")
+    r = client.get(f"/api/view/{sid}/card.svg")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("image/svg+xml")
+    root = ET.fromstring(r.text)                       # valid XML, label escaped
+    assert root.tag.endswith("svg") and "warming &lt;test&gt;" in r.text and "Verdict" in r.text
+    m = client.get("/api/research/methods").json()
+    assert "papers" in m and m["plain_language"]

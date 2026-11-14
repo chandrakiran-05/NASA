@@ -647,3 +647,24 @@ async def series_view(request: Request, series_id: str, alpha: float = Query(0.0
     local model's fact-checked explanation."""
     from ..active.view import build_view
     return _clean(await build_view(S(request), series_id, alpha=alpha, explain=explain))
+
+
+
+@router.get("/research/methods", tags=["research"])
+async def research_methods(request: Request, max_age_years: int = Query(10, ge=1, le=50)):
+    """Recent papers on the methods behind the verdicts: Mann-Kendall, Sen, BEAST, PELT, change points."""
+    from ..research.evidence import method_literature
+    return _clean(await method_literature(S(request).http, max_age_years=max_age_years))
+
+
+# ===================================================================== printable trend card (SVG, no dependencies)
+@router.get("/view/{series_id}/card.svg", tags=["active"])
+async def series_card(request: Request, series_id: str, alpha: float = Query(0.05, gt=0, lt=0.5)):
+    """A one-page printable card: chart (observed, Sen line, BEAST change probability, BEAST/PELT markers),
+    verdict, explanation and limits. Open in a browser and print."""
+    from fastapi.responses import Response
+    from ..active.card import card_svg
+    from ..active.view import build_view
+    v = await build_view(S(request), series_id, alpha=alpha)
+    return Response(card_svg(_clean(v)), media_type="image/svg+xml",
+                    headers={"Content-Disposition": f'inline; filename="{series_id}.svg"'})

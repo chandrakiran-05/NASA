@@ -118,3 +118,36 @@ def simulate_compare(series: dict[str, MonthlySeries], scenario: dict, **kw) -> 
                           "p95": rr["p95"], "threshold": rr.get("threshold")}
         r["delta_p50"] = [round(a - b, 6) for a, b in zip(r["p50"], rr["p50"])]
     return res
+
+
+def backtest(series: dict[str, MonthlySeries], *, holdout_years: int = 10, n_runs: int = 300, seed: int = 2026) -> dict:
+    """Hide the last `holdout_years`, simulate them from the earlier data, and score against what happened:
+    coverage of the 5-95% band (should be ~90%) and mean absolute error of the median."""
+    cut = {}
+    for name, ms in series.items():
+        k = len(ms.time) - holdout_years * 12
+        if k < 24:
+            raise InvalidRequest(f"{name}: too short to hold out {holdout_years} years")
+        cut[name] = MonthlySeries(time=ms.time[:k], value=ms.value[:k], units=ms.units, provenance=ms.provenance,
+                                  label=ms.label)
+    sim = simulate(cut, {}, horizon_years=holdout_years, n_runs=n_runs, seed=seed)
+    out = {}
+    for name, ms in series.items():
+        r = sim["variables"][name]
+        obs = dict(zip(ms.time.strftime("%Y-%m"), ms.value))
+        pairs = [(obs.get(t), lo, md, hi) for t, lo, md, hi in zip(r["time"], r["p05"], r["p50"], r["p95"])
+                 if obs.get(t) is not None and np.isfinite(obs.get(t))]
+        if not pairs:
+            out[name] = {"status": "no_overlap"}
+            continue
+        o, lo, md, hi = map(np.array, zip(*pairs))
+        cov = float(np.mean((o >= lo) & (o <= hi)))
+        out[name] = {"months_scored": len(o), "band_coverage": cov, "target_coverage": 0.90,
+                     "median_abs_error": float(np.mean(np.abs(o - md))), "units": ms.units,
+                     "held_out": [r["time"][0], r["time"][-1]],
+                     "plain_language": (f"Hiding {holdout_years} years and simulating them, {cov:.0%} of the real months "
+                                        f"fell inside the 5-95% band (target about 90%)"
+                                        + ("; the bands look too narrow." if cov < 0.8 else
+                                           "; the bands look too wide." if cov > 0.97 else "."))}
+    return {"holdout_years": holdout_years, "n_runs": n_runs, "seed": seed, "variables": out,
+            "limit": "A backtest checks the baseline model only (no knobs); past skill does not guarantee future skill."}

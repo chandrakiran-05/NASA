@@ -16,7 +16,7 @@ from starlette.concurrency import run_in_threadpool
 
 from ..core.errors import InvalidRequest, NotFound
 from ..timeseries.model import MonthlySeries, Provenance, utc_now_iso
-from .engine import baseline, simulate, simulate_compare
+from .engine import backtest, baseline, simulate, simulate_compare
 
 router = APIRouter(prefix="/api/twin", tags=["digital twin"], default_response_class=ORJSONResponse)
 TWIN_ID = re.compile(r"^t_[0-9a-f]{12}$")            # ids become file names: no path tricks
@@ -205,3 +205,22 @@ async def import_series(request: Request, twin_id: str, body: ImportRequest):
                      time=[d.strftime("%Y-%m") for d in ms.time],
                      value=[None if not np.isfinite(x) else float(x) for x in ms.value])
     return _add(st, twin, [v], f"copy of {body.series_id} ({ms.provenance.source_api})")
+
+
+class BacktestRequest(BaseModel):
+    holdout_years: int = Field(10, ge=2, le=40)
+    n_runs: int = Field(300, ge=50, le=2000)
+    seed: int = 2026
+
+
+@router.post("/{twin_id}/backtest")
+async def run_backtest(request: Request, twin_id: str, body: BacktestRequest):
+    """How trustworthy are this twin's bands? Hide the last years, simulate them, compare with reality."""
+    st = _st(request)
+    twin = _load(st, twin_id)
+    if not twin["variables"]:
+        raise InvalidRequest("Upload data to this twin first")
+    series = {v["name"]: _series(st, v) for v in twin["variables"]}
+    res = await run_in_threadpool(backtest, series, holdout_years=body.holdout_years, n_runs=body.n_runs,
+                                  seed=body.seed)
+    return {"twin_id": twin_id, **res}

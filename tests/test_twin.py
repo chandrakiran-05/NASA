@@ -116,3 +116,13 @@ def test_annual_data_runs_on_a_yearly_grid(client):
     assert b["frequency"] == "annual" and b["lag1_autocorr"] > 0.3
     r = client.post(f"/api/twin/{tid}/simulate", json={"horizon_years": 25, "n_runs": 100}).json()["variables"]["yearly"]
     assert len(r["time"]) == 25 and all(t.endswith("-01") for t in r["time"])
+
+
+def test_backtest_scores_band_coverage(client):
+    tid = _twin(client)
+    _data(client, tid)
+    r = client.post(f"/api/twin/{tid}/backtest", json={"holdout_years": 8, "n_runs": 200}).json()
+    for name in ("temperature", "sea_level"):
+        b = r["variables"][name]
+        assert b["months_scored"] == 96 and 0.75 <= b["band_coverage"] <= 1.0 and b["median_abs_error"] >= 0
+    assert client.post(f"/api/twin/{tid}/backtest", json={"holdout_years": 40}).status_code == 422
