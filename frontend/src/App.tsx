@@ -4,15 +4,12 @@ import {
   ArrowUpRight,
   ArrowDown,
   ArrowLeftRight,
-  Pause,
-  Play,
   FlaskConical,
   Globe2,
   Menu,
   X,
   Upload,
   ChevronDown,
-  RotateCcw,
 } from "lucide-react";
 import { api } from "./api";
 import AirLLM from "./AirLLM";
@@ -47,8 +44,7 @@ export default function App() {
   const [inputMode, setInputMode] = useState<"investigate" | "ask">(
     "investigate",
   );
-  const [paused, setPaused] = useState(false),
-    [menu, setMenu] = useState(false),
+  const [menu, setMenu] = useState(false),
     [changing, setChanging] = useState(false);
   const [observedFocus, setObservedFocus] = useState<Focus | null>(null),
     [scenarioFocus, setScenarioFocus] = useState<Focus | null>(null);
@@ -413,7 +409,7 @@ export default function App() {
             </p>
           </div>
           <div className="hero-title-layer">
-            <h1 id="hero-title"><span>{twin ? "Another Earth" : "Earth"}</span><span className="hero-subtitle">{twin ? "under your assumptions." : "in perspective."}</span></h1>
+            <h1 id="hero-title"><span>{twin ? "Another Earth" : "Earth"}</span><span className="hero-subtitle">{twin ? "a future to explore." : "in perspective."}</span></h1>
           </div>
           <svg className="atlas-orbit" viewBox="0 0 1000 500" aria-hidden="true"><ellipse cx="500" cy="250" rx="475" ry="180" transform="rotate(-12 500 250)"/></svg>
           <div className="hero-globe">
@@ -422,7 +418,6 @@ export default function App() {
             >
               <Globe
                 focus={focus}
-                paused={paused}
                 twin={twin}
                 topic={context.topic}
               />
@@ -445,35 +440,6 @@ export default function App() {
                 : "Visible imagery · topic cue"}
             </small>
             <span className="detail-rule" />
-          </div>
-          <div className="globe-utilities">
-            <button
-              aria-label={
-                paused ? "Resume Earth rotation" : "Pause Earth rotation"
-              }
-              onClick={() => setPaused(!paused)}
-            >
-              {paused ? <Play size={13} /> : <Pause size={13} />}
-            </button>
-            <button
-              aria-label="Reset globe view"
-              onClick={() => {
-                setFocus(null);
-                setPlace("");
-                setLocationNote("");
-                document
-                  .querySelector(".globe-scene")
-                  ?.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                      key: "Home",
-                      bubbles: true,
-                    }),
-                  );
-              }}
-            >
-              <RotateCcw size={13} />
-            </button>
-            <span>ROTATE THE EARTH</span>
           </div>
           <div className="command-dock">
             <label className="command-label" htmlFor="earth-question">
@@ -600,7 +566,8 @@ export default function App() {
             <span>{twin ? "SIMULATED, NOT OBSERVED" : "NASA + NOAA DATA"}</span>
           </div>
         </section>
-        <div hidden={twin}>
+        <div className="earth-continuation" aria-hidden="true" />
+        <div className="earth-content" hidden={twin}>
           {workspace && (
             <ObservedEvidence
               report={report}
@@ -614,10 +581,10 @@ export default function App() {
               onSelectSeries={setSelectedSeriesId}
             />
           )}
-          <AtlasStory onQuestion={(value)=>{setObservedQuestion(value);window.scrollTo({top:0,behavior:'smooth'});document.getElementById('earth-question')?.focus();}} onUpload={(file)=>void upload(file)} busy={busy}/>
+          <AtlasStory onAir={openAir} onQuestion={(value)=>{setObservedQuestion(value);window.scrollTo({top:0,behavior:'smooth'});document.getElementById('earth-question')?.focus();}} onUpload={(file)=>void upload(file)} busy={busy}/>
 
         </div>
-        <div hidden={!twin}>
+        <div className="earth-content" hidden={!twin}>
           <TwinLab
             ref={twinLab}
             active={twin && page !== "airllm"}

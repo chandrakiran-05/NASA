@@ -33,3 +33,14 @@ Three research agents compared immersive, editorial and product directions and s
 ## Goal audit additions
 The globe now crosses the hero bottom; translucent title alpha is0.24. Twin roll and opposite-hemisphere turn both reach pi and reverse to0. Live existing-branch preview data upload/simulation and the500-run browser scenario flow passed. Preview5180 now uses isolated existing backend8001, so its twin capability is available. Full audit: ../docs/design-research/06-goal-completion-audit.md.
 
+## 15 November refinement checkpoint
+
+- Saved initial frontend to GitHub branch `frontend` as `eb2b734` before refinement.
+- Current frontend suite: 15 tests pass, including six geographic cases checking that the selected point faces the camera and geographic north remains above it. TypeScript / Vite build passes.
+- Globe uses explicit north-up latitude/longitude orientation and local-axis idle rotation. One enlarged canvas crosses the hero fold into reserved continuation space. Visible pause/reset box removed; focused globe supports Space to pause automatic rotation and Home to reset its orientation.
+- Browser: India prompt, DigiTwin flip to approximately pi on both presentation axes, return to zero, and one canvas verified. Settled and offscreen render counts each remained unchanged over 650ms.
+- Apple-inspired translucent prompt and star blue accents inspected on desktop and 390px mobile. Mobile hero subtitle moved into clear space above Earth. AirLLM mobile also inspected with reduced motion enabled through the screenshot browser.
+- AirLLM flow animation runs when visible, pauses via its control, and pauses offscreen while the visible layer-loading illustration runs. Hidden-document support and reduced-motion rules are present; continuous illustrations explicitly say they are illustrated processing flow.
+- BEAST, checked local-model reasoning, and optional AirLLM review descriptions checked against existing backend branches. No backend code or endpoint changes.
+- Font findings addressed by replacing the undeclared Manrope heading declaration with documented Newsreader. DM Sans remains documented. No new suppressions added.
+- Remaining build advisory: the lazy Plotly evidence chart is above Vite's 500KB uncompressed chunk threshold. External NASA/NOAA acquisition and actual model inference were not rerun for these frontend refinements.

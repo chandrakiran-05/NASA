@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type AirLLMProps = { onBack: () => void };
 
@@ -21,7 +21,29 @@ function Command({ text, label }: { text: string; label: string }) {
 }
 
 export default function AirLLM({ onBack }: AirLLMProps) {
-  return <main className="local-guide" id="local-guide">
+  const guideRef = useRef<HTMLElement>(null);
+  const [motionPaused, setMotionPaused] = useState(false);
+
+  useEffect(() => {
+    const guide = guideRef.current;
+    if (!guide) return;
+    const surfaces = guide.querySelectorAll<HTMLElement>("[data-flow-surface]");
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => entry.target.classList.toggle("is-flow-visible", entry.isIntersecting));
+    }, { threshold: 0.12 });
+    surfaces.forEach(surface => observer.observe(surface));
+    function syncVisibility() {
+      guide?.classList.toggle("is-document-hidden", document.hidden);
+    }
+    syncVisibility();
+    document.addEventListener("visibilitychange", syncVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", syncVisibility);
+    };
+  }, []);
+
+  return <main ref={guideRef} className="local-guide" id="local-guide" data-flow-paused={motionPaused}>
     <a className="guide-skip" href="#guide-title">Skip to local AI guide</a>
     <header className="guide-masthead">
       <button type="button" className="guide-home" onClick={onBack}><img src="/nasa-logo.svg" width="43" height="37" alt="NASA" /><span>EARTH SYSTEM<br /><strong>TREND DETECTIVE</strong></span><span className="guide-home-return"><Arrow back /> Back to Earth</span></button>
@@ -30,20 +52,21 @@ export default function AirLLM({ onBack }: AirLLMProps) {
 
     <section className="guide-opening" aria-labelledby="guide-title">
       <div className="guide-opening-copy"><h1 id="guide-title">Earth questions.<br /><em>Closer to home.</em></h1><p className="guide-lead">A local assistant for reading the evidence. Your computer runs the model; the science engine checks the numbers.</p><a className="guide-action" href="#guide-setup">Set up local AI <Arrow /></a><p className="guide-runtime-note">Ollama for live answers.<br />Optional AirLLM for deeper review.</p></div>
-      <div className="guide-mechanism" aria-label="Question goes to the backend science engine, then a local model helps explain the results. Numeric checks validate its explanation, with a deterministic fallback if needed.">
-        <div className="guide-diagram-title"><span>THE EXPLANATION PATH</span><span>LOCAL INFERENCE</span></div>
-        <div className="guide-map">
-          <svg viewBox="0 0 480 360" aria-hidden="true" preserveAspectRatio="none"><path d="M164 68V292M164 180H355V292H164" fill="none" stroke="currentColor" strokeWidth="1" /><circle cx="164" cy="180" r="4" fill="currentColor" /></svg>
+      <div className="guide-mechanism" data-flow-surface aria-label="Question goes to the backend science engine, then a local model helps explain the results. Numeric checks validate its explanation, with a deterministic fallback if needed.">
+        <div className="guide-diagram-title"><span>THE EXPLANATION PATH</span><button className="guide-motion-toggle" type="button" aria-pressed={motionPaused} aria-controls="guide-explanation-flow guide-layer-flow" onClick={() => setMotionPaused(paused => !paused)}>{motionPaused ? "Resume motion" : "Pause motion"}<span aria-hidden="true">{motionPaused ? <svg viewBox="0 0 16 16"><path d="m6 4 6 4-6 4Z" fill="currentColor" /></svg> : <svg viewBox="0 0 16 16"><path d="M6 4v8M10 4v8" stroke="currentColor" strokeWidth="1.5" /></svg>}</span></button></div>
+        <div className="guide-map" id="guide-explanation-flow">
+          <svg viewBox="0 0 480 360" aria-hidden="true" preserveAspectRatio="none"><path d="M164 68V292M164 180H355V292H164" fill="none" stroke="currentColor" strokeWidth="1" /><path className="guide-flow-line" pathLength="1" d="M164 68V180H355V292H164" fill="none" strokeWidth="2.5" strokeLinecap="round" /><circle cx="164" cy="180" r="4" fill="currentColor" /></svg>
           <div className="guide-node guide-question"><span>YOUR QUESTION</span><strong>A place. A changing variable.</strong></div>
           <div className="guide-node guide-science"><span>BACKEND</span><strong>Records &amp; trend tests</strong></div>
           <div className="guide-node guide-model"><span>ON YOUR MACHINE</span><strong>Local model</strong><small>Helps explain the results</small></div>
           <div className="guide-node guide-checked"><span>BEFORE THE ANSWER</span><strong>Check every number</strong></div>
         </div>
+        <p className="guide-flow-note">Illustrated processing flow</p>
         <p className="guide-fallback"><span aria-hidden="true" /> No model connected? The deterministic explanation still works.</p>
       </div>
     </section>
 
-    <section className="guide-technology" aria-labelledby="guide-technology-title"><div><h2 id="guide-technology-title">The model explains.<br /><em>The evidence decides.</em></h2></div><div className="guide-technology-copy"><p>AirLLM is an open-source library that loads model layers as they are needed. It reduces GPU memory use, with more disk activity and slower inference.</p><p>The live assistant uses Ollama or an OpenAI-compatible local server. The newer backend also supports AirLLM for optional background reviews. Those reviews are advisory; they never decide a statistical verdict.</p><a className="guide-inline-link" href="https://github.com/lyogavin/airllm" target="_blank" rel="noopener noreferrer">Read how AirLLM works <Arrow /></a></div></section>
+    <section className="guide-technology" aria-labelledby="guide-technology-title"><div><h2 id="guide-technology-title">The model explains.<br /><em>The evidence decides.</em></h2><div className="guide-layer-flow" id="guide-layer-flow" data-flow-surface role="img" aria-label="AirLLM illustration: model layers stay on disk and load into GPU memory as needed, then are released for the next layer."><div className="guide-layer-store"><span>ON DISK</span><div className="guide-layer-stack" aria-hidden="true"><i /><i /><i /></div><strong>Model layers</strong></div><div className="guide-layer-transfer" aria-hidden="true"><span /><span /><span /></div><div className="guide-layer-memory"><span>IN GPU MEMORY</span><div className="guide-layer-slot" aria-hidden="true"><i /></div><strong>Load. Run. Release.</strong></div></div><p className="guide-layer-note">One layer after another. Less memory, more time.</p></div><div className="guide-technology-copy"><p>AirLLM is an open-source library that loads model layers as they are needed. It reduces GPU memory use, with more disk activity and slower inference.</p><p>The live assistant uses Ollama or an OpenAI-compatible local server. The newer backend also supports AirLLM for optional background reviews. Those reviews are advisory; they never decide a statistical verdict.</p><a className="guide-inline-link" href="https://github.com/lyogavin/airllm" target="_blank" rel="noopener noreferrer">Read how AirLLM works <Arrow /></a></div></section>
 
     <section className="guide-setup" id="guide-setup" aria-labelledby="guide-setup-title"><div className="guide-setup-heading"><h2 id="guide-setup-title">From download<br /><em>to first question.</em></h2><a className="guide-outline-action" href="https://ollama.com/download" target="_blank" rel="noopener noreferrer">Get Ollama <Arrow /></a></div>
       <ol className="guide-steps">

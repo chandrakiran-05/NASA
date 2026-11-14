@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { northUpPose } from "./globeOrientation";
 
 export type GlobeFocus = { lat: number; lon: number };
 export type GlobeTopic =
@@ -12,7 +13,7 @@ type GlobeProps = {
   topic?: GlobeTopic;
 };
 const accents: Record<GlobeTopic, string> = {
-  earth: "#a3c2b3",
+  earth: "#4c9dff",
   temperature: "#d98d66",
   rainfall: "#7aacc2",
   vegetation: "#a4bd86",
@@ -60,16 +61,7 @@ export default function Globe({
     const earth = new THREE.Group();
     // A real geographic camera target: Africa, Europe and the Indian Ocean
     // share the opening view instead of starting on an anonymous ocean face.
-    const openingLatitude = THREE.MathUtils.degToRad(20);
-    const openingLongitude = THREE.MathUtils.degToRad(25);
-    const initialPose = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(
-        Math.cos(openingLatitude) * Math.cos(openingLongitude),
-        Math.sin(openingLatitude),
-        -Math.cos(openingLatitude) * Math.sin(openingLongitude),
-      ),
-      new THREE.Vector3(0, 0, 1),
-    );
+    const initialPose = northUpPose(20, 25);
     earth.quaternion.copy(initialPose);
     presentation.add(earth);
     scene.add(presentation);
@@ -90,6 +82,7 @@ export default function Globe({
     let totalDrawCalls = 0;
     let slowFrames = 0;
     let dragging = false;
+    let rotationPaused = false;
     let activePointer: number | null = null;
     let startX = 0;
     let startY = 0;
@@ -102,7 +95,7 @@ export default function Globe({
     let previousTopic = "";
     let previousTwin: boolean | undefined;
     let targetRoll = 0;
-    let targetDistance = 4.1;
+    let targetDistance = 3.85;
     camera.position.z = targetDistance;
     const targetPose = initialPose.clone();
     const targetTint = new THREE.Color(accents.earth);
@@ -282,13 +275,13 @@ export default function Globe({
             current.focus!.lon,
           );
           point.set(...(coords as [number, number, number])).normalize();
-          targetPose.setFromUnitVectors(point, forward);
+          targetPose.copy(northUpPose(current.focus!.lat, current.focus!.lon));
           pin.position.copy(point).multiplyScalar(1.016);
           halo.position.copy(point).multiplyScalar(1.017);
           halo.quaternion.setFromUnitVectors(forward, point);
           aimPending = true;
         }
-        targetDistance = focused ? 3.72 : 4.1;
+        targetDistance = focused ? 3.55 : 3.85;
       }
       if (current.twin !== previousTwin) {
         previousTwin = current.twin;
@@ -367,13 +360,14 @@ export default function Globe({
       const moving = transitioning();
       const idle =
         !props.current.paused &&
+        !rotationPaused &&
         !reducedMotion.matches &&
         !focused &&
         !dragging &&
         !moving;
       if (idle) {
         turn.setFromAxisAngle(axis.set(0, 1, 0), dt * 0.043);
-        earth.quaternion.premultiply(turn);
+        earth.quaternion.multiply(turn);
         clouds.rotation.y += dt * 0.004;
       }
       host!.dataset.renderState = dragging
@@ -382,7 +376,7 @@ export default function Globe({
           ? "transition"
           : idle
             ? "idle"
-            : props.current.paused
+            : props.current.paused || rotationPaused
               ? "paused"
               : "settled";
       if (dirty || moving || wasTransitioning || idle || dragging) {
@@ -463,6 +457,12 @@ export default function Globe({
       invalidate();
     }
     function keyDown(event: KeyboardEvent) {
+      if (event.key === " ") {
+        rotationPaused = !rotationPaused;
+        invalidate();
+        event.preventDefault();
+        return;
+      }
       const step = event.shiftKey ? 0.25 : 0.1;
       if (event.key === "ArrowLeft") rotate(-step, 0);
       else if (event.key === "ArrowRight") rotate(step, 0);
@@ -552,7 +552,7 @@ export default function Globe({
       role="group"
       tabIndex={0}
       aria-roledescription="interactive globe"
-      aria-label={`${twin ? "Scenario" : "Observed"} Earth. Drag to rotate, or use arrow keys. Home resets the view. ${topic} colour is an illustrative topic accent, not measured data.`}
+      aria-label={`${twin ? "Scenario" : "Observed"} Earth. Drag to rotate, or use arrow keys. Space pauses automatic rotation. Home resets the view. ${topic} colour is an illustrative topic accent, not measured data.`}
       style={{
         position: "relative",
         width: "100%",

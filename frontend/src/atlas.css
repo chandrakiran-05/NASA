@@ -36,3 +36,35 @@ body{background:var(--paper)}h1,h2,h3{font-family:'Newsreader',Georgia,serif;let
 @media(max-width:700px){.hero .hero-globe{top:30%;height:95%;width:165vw;max-width:none}.hero .atlas-orbit{top:33%;height:65%;width:170vw}.hero .hero-title-layer{top:185px}.hero .hero-title-layer h1 .hero-subtitle{top:290px}.hero .globe-utilities{bottom:220px}.hero .command-dock{bottom:78px}.hero .hero-bottom{left:12px;right:12px}.hero .dock-under{padding:0 9px}.hero .hero-title-layer h1>span:first-child{color:rgb(39 52 46 / .31)}}
 @media(max-width:380px){.hero .hero-globe{width:185vw;top:32%;height:88%}.hero .hero-title-layer h1 .hero-subtitle{top:270px}}
 .hero .globe-utilities{bottom:255px}.hero .dock-under{background:transparent;padding:0}.hero .connection,.hero .world-switch{background:#eeeae1e8;padding:5px 10px;border-radius:25px}.experience[data-world=twin] .hero .dock-under{background:transparent}.experience[data-world=twin] .hero .connection,.experience[data-world=twin] .hero .world-switch{background:#25232be8}.experience[data-world=twin] .hero .connection{color:var(--muted)}@media(max-width:700px){.hero .globe-utilities{bottom:255px}}
+
+/* A single Earth crosses the fold; the next chapter starts beyond its limb. */
+:root,.experience{--accent:#086bdc}
+.experience:not([data-world=twin]) .hero{--accent:#086bdc}
+.hero{overflow:visible}
+.hero .hero-globe{top:18%;height:120%;width:min(1600px,124vw)}
+.hero .atlas-orbit{top:29%;height:80%;stroke:#4c9dff55}
+.hero .hero-title-layer h1 .hero-subtitle{color:#086bdc}
+.hero .hero-title-layer h1>span:first-child{color:#347bdd36;-webkit-text-stroke:1px #347bdd55}
+.hero .world-light:before{background:radial-gradient(ellipse at 50% 55%,#84b9ff25,transparent 62%)}
+.earth-continuation{height:clamp(270px,34svh,380px);pointer-events:none}
+.earth-content{position:relative;z-index:4}
+.atlas-story{background:linear-gradient(var(--paper),#e4e5d9);border-top:1px solid #34473720}
+.story-lead em,.story-lead .text-link,.method-line>span,.question-index>button>svg{color:#086bdc}
+.hero .command-glass{border:1px solid #ffffffa6;background:linear-gradient(140deg,#ffffff70,#ffffff30);backdrop-filter:blur(22px) saturate(155%);-webkit-backdrop-filter:blur(22px) saturate(155%);box-shadow:inset 0 1px 0 #ffffffc7,inset 0 -1px 0 #ffffff29,0 12px 36px #1128491c;border-radius:40px;padding:7px;min-height:64px}
+.hero .command-send{background:#086bdc;color:white;border-radius:50%;box-shadow:inset 0 1px 0 #ffffff55,0 3px 12px #086bdc30}
+.hero .command-send:disabled{background:#466b9b;color:#fff;opacity:.6}
+.hero .command-mode{background:#ffffff25;border-radius:50%;min-height:44px}
+.hero .command-label{background:#eeeae1d9;backdrop-filter:blur(12px)}
+.hero .world-switch,.hero .connection{background:#eeeae1b8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.hero .world-switch{color:#075cbd;border:1px solid #086bdc25}
+.hero .hero-bottom{background:transparent}
+.hero-bottom>span,.hero-bottom>a{background:#eeeae1d9;padding:6px 8px;border-radius:20px}
+.experience[data-world=twin] .hero .command-glass{background:linear-gradient(140deg,#dab4cb38,#5a425530);border-color:#f7d9e45c;box-shadow:inset 0 1px 0 #ffe9f455,0 12px 36px #0b081c30}
+.experience[data-world=twin] .hero .hero-bottom{background:transparent}
+.experience[data-world=twin] .hero-bottom>span,.experience[data-world=twin] .hero-bottom>a{background:#25232bd9}
+.experience[data-world=twin] .hero .world-switch{border-color:#e9a17f40}
+.experience[data-world=twin] .hero .command-send{background:var(--accent);color:#33242a}
+.experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle{color:#e9a17f}
+.experience[data-world=twin] .hero-title-layer h1 .hero-subtitle{max-width:440px}
+@media(max-width:700px){.hero .hero-globe{top:20%;height:120%;width:185vw}.hero .atlas-orbit{top:30%;height:85%;width:195vw}.earth-continuation{height:180px}.hero .command-glass{min-height:62px}.hero .hero-bottom{gap:5px}.hero-bottom>span,.hero-bottom>a{padding:6px 4px}.hero .hero-title-layer h1 .hero-subtitle{color:#086bdc;top:142px}.experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle{max-width:none;top:140px}}
+@media(max-width:380px){.hero .hero-globe{width:205vw;top:22%}.earth-continuation{height:170px}}

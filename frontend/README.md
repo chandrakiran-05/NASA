@@ -51,4 +51,3 @@ See [VERIFICATION.md](VERIFICATION.md) for measured results and test limits. Ear
 
 ## Current goal preview
 The current preview on port5180 proxies to the already-implemented backend-active-trends snapshot on port8001. The snapshot and its isolated preview data live under ignored frontend/shots/. Main backend files were not modified. See ../docs/design-research/06-goal-completion-audit.md for runtime and full requirement verification.
-

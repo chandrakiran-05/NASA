@@ -431,9 +431,7 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
       <div className="twin-toolbar">
         <div>
           <h2 id="twin-title">
-            A different future.
-            <br />
-            Under your assumptions.
+            Test a different future.
           </h2>
           <p>
             Bring a record, set a scenario, and compare simulated outcomes with
