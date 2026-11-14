@@ -74,3 +74,45 @@ def test_twin_rejects_bad_input(client):
     empty = _twin(client)
     client.post(f"/api/twin/{empty}/data", json=short)
     assert client.post(f"/api/twin/{empty}/simulate", json={}).status_code == 422             # < 24 months
+
+
+def test_judged_upgrades(client):
+    tid = _twin(client)
+    n_before = len(client.get("/api/series").json()["series"])
+    _data(client, tid)
+    # B1: twin data never reaches the shared verified store
+    assert len(client.get("/api/series").json()["series"]) == n_before
+    assert "time" not in client.get("/api/twin").json()["twins"][0]["variables"][0]
+    # A4: crossing curve, one entry per year, never decreasing, ends at probability_by_end
+    th = {"threshold": {"value": 0.3, "direction": "above"}}
+    sl = client.post(f"/api/twin/{tid}/simulate", json={"horizon_years": 40, "n_runs": 200,
+                                                         "scenario": {"sea_level": th}}).json()["variables"]["sea_level"]
+    cur = [c["p"] for c in sl["threshold"]["probability_by_year"]]
+    assert len(cur) == 40 and cur == sorted(cur) and cur[-1] == sl["threshold"]["probability_by_end"]
+    # A1: same noise; empty knobs give zero difference, +1/decade gives about +1 after 10 years
+    body = {"horizon_years": 20, "n_runs": 200, "compare_to_baseline": True, "scenario": {"temperature": {}}}
+    r = client.post(f"/api/twin/{tid}/simulate", json=body).json()["variables"]["temperature"]
+    assert set(r["delta_p50"]) == {0.0} and r["reference"]["label"].startswith("simulated")
+    body["scenario"] = {"temperature": {"trend_add_per_decade": 1.0}}
+    r = client.post(f"/api/twin/{tid}/simulate", json=body).json()["variables"]["temperature"]
+    assert abs(r["delta_p50"][120] - 1.0) < 0.05
+    # B2: one-way import of a main-mode series
+    sid = client.post("/api/timeseries/upload", json={"time": [str(d.date()) for d in IDX],
+                                                       "value": (0.01 * T).tolist(), "units": "m"}).json()["series_id"]
+    tw = client.post(f"/api/twin/{tid}/import", json={"series_id": sid, "name": "official"}).json()
+    assert tw["variables"][-1]["source"].startswith(f"copy of {sid}")
+    assert client.get(f"/api/timeseries/{sid}").status_code == 200
+
+
+def test_annual_data_runs_on_a_yearly_grid(client):
+    tid = _twin(client)
+    rng = np.random.default_rng(1)
+    e = np.zeros(40)
+    for i in range(1, 40):
+        e[i] = 0.6 * e[i - 1] + rng.normal(0, 1)
+    body = {"variables": [{"name": "yearly", "time": [str(1985 + i) for i in range(40)], "value": (0.05 * np.arange(40) + e).tolist()}]}
+    client.post(f"/api/twin/{tid}/data", json=body)
+    b = client.get(f"/api/twin/{tid}").json()["variables"][0]["baseline"]
+    assert b["frequency"] == "annual" and b["lag1_autocorr"] > 0.3
+    r = client.post(f"/api/twin/{tid}/simulate", json={"horizon_years": 25, "n_runs": 100}).json()["variables"]["yearly"]
+    assert len(r["time"]) == 25 and all(t.endswith("-01") for t in r["time"])
