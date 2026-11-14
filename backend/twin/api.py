@@ -16,6 +16,7 @@ from starlette.concurrency import run_in_threadpool
 
 from ..core.errors import InvalidRequest, NotFound
 from ..timeseries.model import MonthlySeries, Provenance, utc_now_iso
+from . import scenarios
 from .engine import backtest, baseline, simulate, simulate_compare
 
 router = APIRouter(prefix="/api/twin", tags=["digital twin"], default_response_class=ORJSONResponse)
@@ -224,3 +225,88 @@ async def run_backtest(request: Request, twin_id: str, body: BacktestRequest):
     res = await run_in_threadpool(backtest, series, holdout_years=body.holdout_years, n_runs=body.n_runs,
                                   seed=body.seed)
     return {"twin_id": twin_id, **res}
+
+
+def _twin_series(st, twin_id: str) -> dict:
+    twin = _load(st, twin_id)
+    if not twin["variables"]:
+        raise InvalidRequest("Upload data to this twin first")
+    return {v["name"]: _series(st, v) for v in twin["variables"]}
+
+
+def _knobs(sc: dict[str, Knobs]) -> dict:
+    return {k: v.model_dump(by_alias=True, exclude_unset=True) for k, v in sc.items()}  # unset = not a knob
+
+
+class Condition(Threshold):
+    variable: str
+
+
+class CompoundRequest(BaseModel):
+    conditions: list[Condition] = Field(..., min_length=1, max_length=5)
+    horizon_years: int = Field(30, ge=1, le=100)
+    n_runs: int = Field(500, ge=50, le=2000)
+    seed: int = 2026
+    scenario: dict[str, Knobs] = {}
+
+
+@router.post("/{twin_id}/compound")
+async def run_compound(request: Request, twin_id: str, body: CompoundRequest):
+    """Share of simulated runs in which all conditions are met in the same year."""
+    series = _twin_series(_st(request), twin_id)
+    res = await run_in_threadpool(scenarios.compound, series, _knobs(body.scenario),
+                                  [c.model_dump() for c in body.conditions], horizon_years=body.horizon_years,
+                                  n_runs=body.n_runs, seed=body.seed)
+    return {"twin_id": twin_id, **res}
+
+
+class ScenarioSetRequest(BaseModel):
+    scenarios: dict[str, dict[str, Knobs]] = Field(..., min_length=1, max_length=6)
+    horizon_years: int = Field(30, ge=1, le=100)
+    n_runs: int = Field(500, ge=50, le=2000)
+    seed: int = 2026
+
+
+@router.post("/{twin_id}/scenarios")
+async def run_scenarios(request: Request, twin_id: str, body: ScenarioSetRequest):
+    """Named scenarios side by side, one shared seed: differences come only from the knobs."""
+    series = _twin_series(_st(request), twin_id)
+    res = await run_in_threadpool(scenarios.scenario_set, series, {k: _knobs(v) for k, v in body.scenarios.items()},
+                                  horizon_years=body.horizon_years, n_runs=body.n_runs, seed=body.seed)
+    return {"twin_id": twin_id, **res}
+
+
+class SensitivityRequest(BaseModel):
+    target: str
+    scenario: dict[str, Knobs]
+    horizon_years: int = Field(30, ge=1, le=100)
+    n_runs: int = Field(300, ge=50, le=2000)
+    seed: int = 2026
+
+
+@router.post("/{twin_id}/sensitivity")
+async def run_sensitivity(request: Request, twin_id: str, body: SensitivityRequest):
+    """Which knob moves the target's crossing probability most (one removed at a time, same seed)."""
+    series = _twin_series(_st(request), twin_id)
+    res = await run_in_threadpool(scenarios.sensitivity, series, _knobs(body.scenario), body.target,
+                                  horizon_years=body.horizon_years, n_runs=body.n_runs, seed=body.seed)
+    return {"twin_id": twin_id, **res}
+
+
+@router.delete("/{twin_id}")
+async def delete_twin(request: Request, twin_id: str):
+    st = _st(request)
+    _load(st, twin_id)                                     # 404 if missing
+    _path(st, twin_id).unlink()
+    return {"deleted": twin_id}
+
+
+@router.delete("/{twin_id}/variables/{name}")
+async def delete_variable(request: Request, twin_id: str, name: str):
+    st = _st(request)
+    twin = _load(st, twin_id)
+    if not any(v["name"] == name for v in twin["variables"]):
+        raise NotFound(f"Variable {name!r} not in twin {twin_id!r}")
+    twin["variables"] = [v for v in twin["variables"] if v["name"] != name]
+    _save(st, twin)
+    return {"deleted": name, "twin_id": twin_id, "variables": [v["name"] for v in twin["variables"]]}

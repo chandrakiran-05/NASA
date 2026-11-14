@@ -134,6 +134,11 @@ through integrity, Trend Court, active-trend checks or BEAST. Each variable gets
 | POST | `/twin/{id}/import` | `{series_id, name?}` | one-way copy of a main-mode series into the twin (original untouched) |
 | POST | `/twin/{id}/data-csv` | multipart `file` (date column, then one numeric column per variable), `source?` | twin |
 | POST | `/twin/{id}/simulate` | `{horizon_years=30, n_runs=500, seed, scenario:{<name>:{trend_multiplier, trend_add_per_decade, shocks:[{year,size}], drivers:[{from, coefficient}], threshold:{value, direction:"above"|"below"}}}}` | `variables.<name>.{time[], p05[], p50[], p95[], baseline, threshold.{probability_by_end, median_first_crossing, earliest_10pct, plain_language}}`, `disclaimer` |
+| POST | `/twin/{id}/compound` | `{conditions:[{variable, value, direction}] (1–5), scenario?, horizon_years, n_runs, seed}` | `probability_same_year[{year, p}]` (share of runs where all conditions are met in the same calendar year), `probability_by_end`, `conditions[].probability_by_end` (equals `/simulate` for that threshold), `plain_language`, `label:"simulated"`, `disclaimer` |
+| POST | `/twin/{id}/scenarios` | `{scenarios:{<label>:{<variable>: knobs}} (1–6), horizon_years, n_runs, seed}` | `scenarios.<label>.<variable>.{time[], p50[], threshold}`; one shared seed, so differences come only from the knobs |
+| POST | `/twin/{id}/sensitivity` | `{target, scenario (target needs a threshold), horizon_years, n_runs=300, seed}` | `probability_with_all_knobs`, `ranking[{variable, knob, item, setting, probability_without, change}]` (one knob removed at a time, same seed, ranked by abs(change)), `note` (knobs interact). Max 10 knobs; each shock/driver counts as one |
+| DELETE | `/twin/{id}` | | `{deleted}` |
+| DELETE | `/twin/{id}/variables/{name}` | | `{deleted, variables[]}` (drivers that pointed at it then fail with 422) |
 
 Twin data lives only in the twin's own file; it never enters the verified series store. Yearly data is detected (`baseline.frequency = "annual"`) and simulated on a yearly grid. `compare_to_baseline: true` adds `reference` (same noise, no knobs) and `delta_p50`; thresholds also return `probability_by_year[{year, p}]` (share of simulated runs crossed by each year).
 
