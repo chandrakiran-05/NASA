@@ -180,6 +180,7 @@ def agreement(data_direction: str, papers: list[dict]) -> dict:
 
 async def research_evidence(http, llm, *, variable_id: str, variable_name: str | None, region_name: str | None,
                             direction: str, max_age_years: int = 10, per_source: int = 15, springer_key: str = "",
+                            semantic_key: str = "", ads_token: str = "",
                             ai_reads: int = 5, min_relevance: float = 2.5) -> dict:
     today = date.today().year
     since = today - max_age_years
@@ -187,7 +188,8 @@ async def research_evidence(http, llm, *, variable_id: str, variable_name: str |
     region = (region_name or "").strip() or None
     query = " ".join(filter(None, [terms[0], region, "trend"]))
     papers, sources = await literature.search(http, query=query, terms=[terms[0], *([region] if region else [])],
-                                              since_year=since, per_source=per_source, springer_key=springer_key)
+                                              since_year=since, per_source=per_source, springer_key=springer_key,
+                                              semantic_key=semantic_key, ads_token=ads_token)
     for p in papers:
         p["relevance"] = relevance(p, terms, region, today)
         p["region_match"] = bool(region and region.lower() in f"{p['title']} {p['abstract']}".lower())

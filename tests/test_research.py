@@ -115,3 +115,45 @@ def test_terms_cover_catalog_families():
     assert ev.terms_for("imerg_precip_monthly", None)[0] == "precipitation"
     assert ev.terms_for("modis_lst_day", None)[0] == "land surface temperature"
     assert ev.terms_for("unknown_var", "Mystery")[0] == "Mystery"
+
+
+def test_crossref_ntrs_semantic_ads_parsers(tmp_path):
+    from backend.research import literature as lit
+
+    def handler(req: httpx.Request):
+        h = req.url.host
+        if h == "api.crossref.org":
+            return httpx.Response(200, json={"message": {"items": [{
+                "DOI": "10.2/c", "title": ["Sahel NDVI greening"], "type": "journal-article",
+                "abstract": f"<jats:p>{ABS_UP}</jats:p>", "issued": {"date-parts": [[2024, 3]]},
+                "container-title": ["RSE"], "author": [{"given": "D", "family": "Doe"}]}]}})
+        if h == "ntrs.nasa.gov":
+            return httpx.Response(200, json={"results": [
+                {"id": 1, "title": "Old report", "abstract": ABS_FLAT, "submittedDate": "2005-01-01",
+                 "publications": [{"publicationDate": "2005-01-01"}]},
+                {"id": 2, "title": "Sahel NDVI decline", "abstract": ABS_DOWN, "submittedDate": "2022-01-01",
+                 "publications": [{"publicationDate": "2022-05-01"}],
+                 "authorAffiliations": [{"meta": {"author": {"name": "E Nasa"}}}]}]})
+        if h == "api.semanticscholar.org":
+            assert req.headers.get("x-api-key") == "k"
+            return httpx.Response(200, json={"data": [{"title": "S2 NDVI", "abstract": ABS_UP, "year": 2023,
+                                                       "externalIds": {"DOI": "10.3/s"}, "authors": [{"name": "F"}],
+                                                       "publicationTypes": ["JournalArticle"]}]})
+        if h == "api.adsabs.harvard.edu":
+            assert req.headers.get("authorization") == "Bearer t"
+            return httpx.Response(200, json={"response": {"docs": [{"title": ["ADS NDVI"], "abstract": ABS_UP,
+                                                                    "year": "2021", "doi": ["10.4/a"], "doctype": "article"}]}})
+        return httpx.Response(404)
+
+    http = ResilientHTTP(Settings(data_dir=tmp_path, http_max_retries=0), transport=httpx.MockTransport(handler))
+    run = asyncio.run
+    c = run(lit.crossref(http, "q", 2016, 5))
+    assert c[0]["doi"] == "10.2/c" and "<jats" not in c[0]["abstract"] and c[0]["peer_reviewed"]
+    n = run(lit.ntrs(http, "q", 2016, 5))
+    assert len(n) == 1 and n[0]["url"].endswith("/2") and n[0]["authors"] == ["E Nasa"]
+    assert run(lit.semantic_scholar(http, "q", 2016, 5, "k"))[0]["doi"] == "10.3/s"
+    assert run(lit.nasa_ads(http, "q", 2016, 5, "t"))[0]["year"] == 2021
+    papers, sources = run(lit.search(http, query="q", terms=["NDVI"], since_year=2016, semantic_key="k", ads_token="t"))
+    ok = {s["source"] for s in sources if s["status"] == "ok"}
+    assert {"Crossref", "NASA NTRS", "Semantic Scholar", "NASA ADS"} <= ok
+    asyncio.run(http.aclose())

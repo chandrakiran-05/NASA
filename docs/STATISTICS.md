@@ -126,7 +126,7 @@ direct answer for each from the modules above (no new numbers).
 After active trends are verified (checks + calibrated BEAST), every VERIFIED/PROBABLE trend is compared
 with recent published research, live:
 
-1. **Search** official APIs only: arXiv API, OpenAlex (open index covering Google Scholar's
+1. **Search** official APIs only: arXiv, OpenAlex, Crossref, Semantic Scholar (key recommended), NASA NTRS, NASA ADS (token), OpenAlex (open index covering Google Scholar's
    papers; Scholar has no API and forbids scraping), Springer Nature Meta API (optional free key
    `SPRINGER_API_KEY`). Last `RESEARCH_MAX_AGE_YEARS` (default 10) years. Cached; a failing source is
    reported, never fatal.

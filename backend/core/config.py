@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     # ---- Research Evidence (live literature search; needs internet, optional) ----
     research_enabled: bool = True
     springer_api_key: str = ""                       # free key: https://dev.springernature.com/
+    semantic_scholar_api_key: str = ""               # free key: https://www.semanticscholar.org/product/api
+    ads_api_token: str = ""                          # free token: https://ui.adsabs.harvard.edu/user/settings/token
     research_max_age_years: int = 10
     research_per_source: int = 15
 

@@ -230,7 +230,8 @@ async def run(st, log: EventLog, progress, *, items: list[dict], region, start, 
                 tr["research"] = await research_evidence(
                     st.http, st.llm, variable_id=tr["variable_id"], variable_name=tr["name"], region_name=place,
                     direction=tr["detect"].get("direction", "flat"), max_age_years=st.settings.research_max_age_years,
-                    per_source=st.settings.research_per_source, springer_key=st.settings.springer_api_key)
+                    per_source=st.settings.research_per_source, springer_key=st.settings.springer_api_key,
+                    semantic_key=st.settings.semantic_scholar_api_key, ads_token=st.settings.ads_api_token)
                 await log.emit("research", variable_id=tr["variable_id"],
                                agreement=tr["research"]["agreement"]["label"],
                                plain_language=tr["research"]["plain_language"])

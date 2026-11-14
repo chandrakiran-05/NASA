@@ -5,6 +5,14 @@ Official, documented APIs only (no scraping):
   * OpenAlex API       https://docs.openalex.org/        (open index of ~250M works; covers the papers
                        Google Scholar indexes. Google Scholar itself has no API and forbids scraping.)
   * Springer Nature    https://dev.springernature.com/   (Meta API v2; needs a free key: SPRINGER_API_KEY)
+  * Crossref           https://api.crossref.org          (every DOI-registered article; no key)
+  * Semantic Scholar   https://api.semanticscholar.org   (no key = shared, often rate-limited pool;
+                       free key SEMANTIC_SCHOLAR_API_KEY recommended)
+  * NASA NTRS          https://ntrs.nasa.gov/api         (NASA Technical Reports Server; no key)
+  * NASA ADS           https://ui.adsabs.harvard.edu     (NASA-funded Astrophysics Data System, incl. Earth
+                       science; free token ADS_API_TOKEN)
+Google Scholar is NOT used: it has no API, its terms forbid automated scraping and it answers bots with
+CAPTCHAs. OpenAlex + Crossref + Semantic Scholar cover the same journal literature through official APIs.
 
 Every source is optional: a failing or unconfigured source is reported in `sources` and skipped.
 Responses go through ResilientHTTP, so they are cached and rate-limit friendly.
@@ -17,6 +25,10 @@ import xml.etree.ElementTree as ET
 ARXIV = "https://export.arxiv.org/api/query"
 OPENALEX = "https://api.openalex.org/works"
 SPRINGER = "https://api.springernature.com/meta/v2/json"
+CROSSREF = "https://api.crossref.org/works"
+SEMANTIC = "https://api.semanticscholar.org/graph/v1/paper/search"
+NTRS = "https://ntrs.nasa.gov/api/citations/search"
+ADS = "https://api.adsabs.harvard.edu/v1/search/query"
 ATOM = {"a": "http://www.w3.org/2005/Atom", "arxiv": "http://arxiv.org/schemas/atom"}
 
 
@@ -93,19 +105,90 @@ async def springer(http, query: str, since_year: int, n: int, api_key: str) -> l
     return out
 
 
+async def crossref(http, query: str, since_year: int, n: int) -> list[dict]:
+    r = await http.request("GET", CROSSREF, params={
+        "query.bibliographic": query, "rows": n,
+        "filter": f"from-pub-date:{since_year}-01-01,has-abstract:true",
+        "select": "DOI,title,abstract,issued,container-title,author,type"})
+    out = []
+    for w in r.json().get("message", {}).get("items", []):
+        y = ((w.get("issued") or {}).get("date-parts") or [[0]])[0][0] or 0
+        out.append({"source": "Crossref", "title": _clean((w.get("title") or [""])[0]),
+                    "abstract": _clean(w.get("abstract")), "year": y, "doi": w.get("DOI"),
+                    "url": f"https://doi.org/{w['DOI']}" if w.get("DOI") else None,
+                    "venue": (w.get("container-title") or [None])[0],
+                    "authors": [" ".join(filter(None, [a.get("given"), a.get("family")])) for a in (w.get("author") or [])][:3],
+                    "peer_reviewed": w.get("type") == "journal-article"})
+    return out
+
+
+async def semantic_scholar(http, query: str, since_year: int, n: int, api_key: str = "") -> list[dict]:
+    r = await http.request("GET", SEMANTIC, params={
+        "query": query, "limit": n, "year": f"{since_year}-",
+        "fields": "title,abstract,year,externalIds,venue,authors,publicationTypes,url"},
+        headers={"x-api-key": api_key} if api_key else None)
+    out = []
+    for w in r.json().get("data", []) or []:
+        doi = (w.get("externalIds") or {}).get("DOI")
+        out.append({"source": "Semantic Scholar", "title": _clean(w.get("title")), "abstract": _clean(w.get("abstract")),
+                    "year": w.get("year") or 0, "doi": doi, "url": f"https://doi.org/{doi}" if doi else w.get("url"),
+                    "venue": w.get("venue"), "authors": [a.get("name") for a in (w.get("authors") or [])][:3],
+                    "peer_reviewed": "JournalArticle" in (w.get("publicationTypes") or [])})
+    return out
+
+
+async def ntrs(http, query: str, since_year: int, n: int) -> list[dict]:
+    r = await http.request("GET", NTRS, params={"q": query, "page.size": n})
+    out = []
+    for w in r.json().get("results", []):
+        pubs = w.get("publications") or [{}]
+        y = int(str(pubs[0].get("publicationDate") or w.get("submittedDate") or "0")[:4] or 0)
+        if y < since_year:
+            continue
+        out.append({"source": "NASA NTRS", "title": _clean(w.get("title")), "abstract": _clean(w.get("abstract")),
+                    "year": y, "doi": pubs[0].get("doi"), "url": f"https://ntrs.nasa.gov/citations/{w.get('id')}",
+                    "venue": pubs[0].get("publicationName") or "NASA Technical Reports Server",
+                    "authors": [((a.get("meta") or {}).get("author") or {}).get("name")
+                                for a in (w.get("authorAffiliations") or [])][:3],
+                    "peer_reviewed": False})
+    return out
+
+
+async def nasa_ads(http, query: str, since_year: int, n: int, token: str) -> list[dict]:
+    r = await http.request("GET", ADS, params={"q": f"{query} year:{since_year}-", "rows": n,
+                                               "fl": "title,abstract,year,doi,pub,author,doctype,bibcode"},
+                           headers={"Authorization": f"Bearer {token}"})
+    out = []
+    for w in r.json().get("response", {}).get("docs", []):
+        doi = (w.get("doi") or [None])[0]
+        out.append({"source": "NASA ADS", "title": _clean((w.get("title") or [""])[0]), "abstract": _clean(w.get("abstract")),
+                    "year": int(w.get("year") or 0), "doi": doi,
+                    "url": f"https://doi.org/{doi}" if doi else f"https://ui.adsabs.harvard.edu/abs/{w.get('bibcode')}",
+                    "venue": w.get("pub"), "authors": (w.get("author") or [])[:3],
+                    "peer_reviewed": w.get("doctype") == "article"})
+    return out
+
+
 def _key(p: dict) -> str:
     return (p.get("doi") or "").lower() or re.sub(r"[^a-z0-9]", "", (p.get("title") or "").lower())[:80]
 
 
 async def search(http, *, query: str, terms: list[str], since_year: int, per_source: int = 15,
-                 springer_key: str = "") -> tuple[list[dict], list[dict]]:
+                 springer_key: str = "", semantic_key: str = "", ads_token: str = "",
+                 timeout: float = 25.0) -> tuple[list[dict], list[dict]]:
     """Returns (papers deduplicated by DOI/title, per-source status)."""
     import asyncio
     calls = {"arXiv": arxiv(http, terms, since_year, per_source),
-             "OpenAlex": openalex(http, query, since_year, per_source)}
+             "OpenAlex": openalex(http, query, since_year, per_source),
+             "Crossref": crossref(http, query, since_year, per_source),
+             "Semantic Scholar": semantic_scholar(http, query, since_year, per_source, semantic_key),
+             "NASA NTRS": ntrs(http, query, since_year, per_source)}
     if springer_key:
         calls["Springer Nature"] = springer(http, query, since_year, per_source, springer_key)
-    results = await asyncio.gather(*calls.values(), return_exceptions=True)
+    if ads_token:
+        calls["NASA ADS"] = nasa_ads(http, query, since_year, per_source, ads_token)
+    # a rate-limited source (e.g. keyless Semantic Scholar answering 429) must not stall the scan
+    results = await asyncio.gather(*(asyncio.wait_for(c, timeout) for c in calls.values()), return_exceptions=True)
     papers, seen, sources = [], set(), []
     for name, res in zip(calls, results):
         if isinstance(res, Exception):
@@ -120,4 +203,7 @@ async def search(http, *, query: str, terms: list[str], since_year: int, per_sou
     if not springer_key:
         sources.append({"source": "Springer Nature", "status": "not_configured",
                         "reason": "set SPRINGER_API_KEY (free) to include Springer journals"})
+    if not ads_token:
+        sources.append({"source": "NASA ADS", "status": "not_configured",
+                        "reason": "set ADS_API_TOKEN (free) to include NASA ADS"})
     return papers, sources
