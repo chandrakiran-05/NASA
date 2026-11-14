@@ -1,0 +1,39 @@
+{
+  "_comment": "Guided demo investigations (challenge: 'a couple of demonstration examples the user could watch'). Run scripts/build_demos.py once with credentials to cache their REAL data; afterwards they are served instantly from the cache.",
+  "demos": [
+    {
+      "id": "chennai-warming",
+      "title": "Is Chennai getting warmer?",
+      "story": "Start simple: air temperature at one point, 1981-2024. Watch how removing the seasonal cycle reveals the trend, and how the tests agree.",
+      "request": {"variable_id": "merra2_t2m", "geometry": {"type": "Point", "coordinates": [80.27, 13.08], "name": "Chennai"},
+                  "start": "1981-01", "end": "2024-12"},
+      "teaches": ["deseasonalize", "ols", "mann_kendall", "sen", "emergence"]
+    },
+    {
+      "id": "tamil-nadu-rainfall",
+      "title": "Is monsoon rainfall in Tamil Nadu changing?",
+      "story": "Rainfall is noisy. Even if a trend exists, it may not be significant yet. The detectability horizon tells you how many more years you would need.",
+      "request": {"variable_id": "imerg_precip_monthly", "geometry": {"type": "BBox", "bbox": [76.2, 8.1, 80.4, 13.6], "name": "Tamil Nadu"},
+                  "start": "2001-01", "end": "2024-12"},
+      "teaches": ["significance", "detectability", "seasonal_mk"]
+    },
+    {
+      "id": "punjab-greening",
+      "title": "Farmland greening in Punjab (MODIS NDVI)",
+      "story": "Satellite vegetation index over intensively irrigated farmland. Look for trend breaks and test robustness with the trend triangle.",
+      "request": {"variable_id": "modis_ndvi_monthly", "geometry": {"type": "BBox", "bbox": [74.5, 30.0, 76.0, 31.5], "name": "Punjab (India)"},
+                  "start": "2001-01", "end": "2024-12"},
+      "teaches": ["breaks", "triangle", "tei"]
+    },
+    {
+      "id": "opposite-rainfall",
+      "title": "Same monsoon, opposite trends?",
+      "story": "Compare rainfall trends in two regions with a multiple-testing correction, the challenge's 'one way here, the opposite way there' case.",
+      "compare": [
+        {"variable_id": "imerg_precip_monthly", "geometry": {"type": "BBox", "bbox": [74.8, 8.2, 77.4, 12.8], "name": "Kerala"}, "start": "2001-01", "end": "2024-12"},
+        {"variable_id": "imerg_precip_monthly", "geometry": {"type": "BBox", "bbox": [69.5, 23.0, 78.3, 30.2], "name": "Rajasthan"}, "start": "2001-01", "end": "2024-12"}
+      ],
+      "teaches": ["fdr", "compare"]
+    }
+  ]
+}

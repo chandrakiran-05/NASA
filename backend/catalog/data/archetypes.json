@@ -1,0 +1,463 @@
+{
+ "_comment": "Editorial knowledge base: region archetypes -> variables likely to show trends, with the reason. Used by the variable recommender and the offline AI (challenge 'SI' suggestion). Example regions are illustrative starting points; users adjust the box on the map.",
+ "archetypes": [
+  {
+   "id": "desert",
+   "name": "Desert / dryland",
+   "keywords": [
+    "desert",
+    "arid",
+    "dryland",
+    "sahara",
+    "thar",
+    "atacama",
+    "dune",
+    "semi-arid",
+    "sahel"
+   ],
+   "variables": [
+    {
+     "id": "modis_lst_day",
+     "why": "Bare ground heats strongly; surface temperature responds quickly to warming and drying."
+    },
+    {
+     "id": "imerg_precip_monthly",
+     "why": "Small changes in scarce rainfall matter a lot; look for drying or wetting."
+    },
+    {
+     "id": "omi_aerosol_index",
+     "why": "Dust storms show up as absorbing aerosol."
+    },
+    {
+     "id": "modis_ndvi_monthly",
+     "why": "Desert edges can green or brown as rainfall shifts."
+    }
+   ],
+   "example_bbox": {
+    "name": "Thar Desert (India/Pakistan)",
+    "bbox": [
+     69.0,
+     24.5,
+     75.0,
+     29.5
+    ]
+   }
+  },
+  {
+   "id": "rainforest",
+   "name": "Tropical rainforest",
+   "keywords": [
+    "rainforest",
+    "amazon",
+    "congo",
+    "jungle",
+    "tropical forest",
+    "borneo",
+    "western ghats"
+   ],
+   "variables": [
+    {
+     "id": "modis_evi_monthly",
+     "why": "EVI keeps responding over dense canopy where NDVI saturates; clearing or drought stress lowers it."
+    },
+    {
+     "id": "modis_gpp",
+     "why": "Photosynthesis responds to drought and temperature stress."
+    },
+    {
+     "id": "imerg_precip_monthly",
+     "why": "Dry-season length and rainfall totals control forest health."
+    },
+    {
+     "id": "modis_lst_day",
+     "why": "Deforested land is hotter than intact forest."
+    }
+   ],
+   "example_bbox": {
+    "name": "Central Amazon",
+    "bbox": [
+     -62.0,
+     -6.0,
+     -56.0,
+     -1.0
+    ]
+   }
+  },
+  {
+   "id": "estuary",
+   "name": "Tidal estuary / river delta / coast",
+   "keywords": [
+    "estuary",
+    "delta",
+    "coast",
+    "coastal",
+    "mangrove",
+    "sundarbans",
+    "tidal",
+    "river mouth",
+    "lagoon"
+   ],
+   "variables": [
+    {
+     "id": "ocean_chlorophyll",
+     "why": "River nutrients raise coastal chlorophyll (the SeaWiFS paper's topic)."
+    },
+    {
+     "id": "imerg_precip_monthly",
+     "why": "Upstream rainfall controls river discharge into the estuary (cf. the SeaWiFS river-plume paper)."
+    },
+    {
+     "id": "gldas_runoff",
+     "why": "Runoff from the catchment carries freshwater and sediment to the coast."
+    },
+    {
+     "id": "modis_ndvi_monthly",
+     "why": "Mangrove and wetland vegetation can be lost or recover."
+    },
+    {
+     "id": "merra2_t2m",
+     "why": "Coastal warming context."
+    }
+   ],
+   "example_bbox": {
+    "name": "Sundarbans (Ganges–Brahmaputra delta)",
+    "bbox": [
+     88.0,
+     21.5,
+     90.0,
+     22.8
+    ]
+   }
+  },
+  {
+   "id": "megacity",
+   "name": "Atmosphere above a large city",
+   "keywords": [
+    "city",
+    "urban",
+    "megacity",
+    "traffic",
+    "pollution",
+    "smog",
+    "delhi",
+    "chennai",
+    "beijing",
+    "metropolitan",
+    "industrial"
+   ],
+   "variables": [
+    {
+     "id": "omi_no2_trop",
+     "why": "NO₂ comes mostly from traffic and power plants; it tracks emissions and clean-air policies."
+    },
+    {
+     "id": "modis_lst_night",
+     "why": "Urban heat islands are strongest at night."
+    },
+    {
+     "id": "omi_aerosol_index",
+     "why": "Smoke and haze episodes."
+    },
+    {
+     "id": "merra2_t2m",
+     "why": "Background regional warming to compare with the city."
+    }
+   ],
+   "example_bbox": {
+    "name": "Delhi NCR",
+    "bbox": [
+     76.8,
+     28.3,
+     77.6,
+     28.9
+    ]
+   }
+  },
+  {
+   "id": "cropland",
+   "name": "Farmland / agricultural region",
+   "keywords": [
+    "farm",
+    "farmland",
+    "agriculture",
+    "crops",
+    "irrigation",
+    "punjab",
+    "corn belt",
+    "wheat",
+    "rice",
+    "harvest"
+   ],
+   "variables": [
+    {
+     "id": "modis_gpp",
+     "why": "Crop productivity changes with irrigation, practices and climate."
+    },
+    {
+     "id": "grace_groundwater",
+     "why": "Irrigation pumping can deplete groundwater (seen by GRACE)."
+    },
+    {
+     "id": "modis_et",
+     "why": "Irrigation raises evapotranspiration."
+    },
+    {
+     "id": "gldas_soilmoist_0_10",
+     "why": "Soil water availability for crops."
+    },
+    {
+     "id": "modis_ndvi_monthly",
+     "why": "Greening from intensification or browning from stress."
+    }
+   ],
+   "example_bbox": {
+    "name": "Indo-Gangetic Plain (Punjab)",
+    "bbox": [
+     74.0,
+     29.5,
+     76.5,
+     31.8
+    ]
+   }
+  },
+  {
+   "id": "arctic",
+   "name": "Arctic / boreal / high latitude",
+   "keywords": [
+    "arctic",
+    "tundra",
+    "boreal",
+    "siberia",
+    "alaska",
+    "permafrost",
+    "greenland",
+    "polar",
+    "canada north"
+   ],
+   "variables": [
+    {
+     "id": "merra2_t2m",
+     "why": "The Arctic warms several times faster than the global average."
+    },
+    {
+     "id": "gldas_swe",
+     "why": "Snowpack timing and amount are changing."
+    },
+    {
+     "id": "modis_ndvi_monthly",
+     "why": "'Arctic greening' as shrubs expand."
+    }
+   ],
+   "example_bbox": {
+    "name": "North Slope, Alaska",
+    "bbox": [
+     -156.0,
+     68.5,
+     -146.0,
+     70.5
+    ]
+   }
+  },
+  {
+   "id": "mountain",
+   "name": "Mountains / snowpack / glaciers",
+   "keywords": [
+    "mountain",
+    "himalaya",
+    "alps",
+    "andes",
+    "rockies",
+    "glacier",
+    "snow",
+    "snowpack",
+    "highland"
+   ],
+   "variables": [
+    {
+     "id": "gldas_swe",
+     "why": "Snowpack is the natural water tower for rivers downstream."
+    },
+    {
+     "id": "merra2_t2m",
+     "why": "Mountains are warming faster than many lowlands (elevation-dependent warming)."
+    },
+    {
+     "id": "gldas_runoff",
+     "why": "Meltwater timing shifts runoff earlier in the year."
+    }
+   ],
+   "example_bbox": {
+    "name": "Western Himalaya",
+    "bbox": [
+     76.0,
+     31.0,
+     79.5,
+     34.5
+    ]
+   }
+  },
+  {
+   "id": "monsoon",
+   "name": "Monsoon region",
+   "keywords": [
+    "monsoon",
+    "india",
+    "south asia",
+    "kerala",
+    "tamil nadu",
+    "bangladesh",
+    "west africa monsoon"
+   ],
+   "variables": [
+    {
+     "id": "imerg_precip_monthly",
+     "why": "Monsoon rainfall amount and extremes."
+    },
+    {
+     "id": "gldas_soilmoist_0_10",
+     "why": "Soil moisture after the monsoon controls the next crop season."
+    },
+    {
+     "id": "merra2_qv2m",
+     "why": "Warmer air carries more moisture into the monsoon."
+    }
+   ],
+   "example_bbox": {
+    "name": "Tamil Nadu",
+    "bbox": [
+     76.2,
+     8.1,
+     80.4,
+     13.6
+    ]
+   }
+  },
+  {
+   "id": "grassland",
+   "name": "Savanna / grassland",
+   "keywords": [
+    "savanna",
+    "grassland",
+    "prairie",
+    "steppe",
+    "rangeland",
+    "pasture",
+    "serengeti"
+   ],
+   "variables": [
+    {
+     "id": "modis_ndvi_monthly",
+     "why": "Grass greenness follows rainfall closely."
+    },
+    {
+     "id": "imerg_precip_monthly",
+     "why": "Rainfall drives grass growth and fire fuel."
+    },
+    {
+     "id": "modis_lst_day",
+     "why": "Surface heating after drying or fires."
+    }
+   ],
+   "example_bbox": {
+    "name": "Serengeti",
+    "bbox": [
+     34.0,
+     -3.5,
+     35.8,
+     -1.5
+    ]
+   }
+  },
+  {
+   "id": "wetland",
+   "name": "Wetland / lake region",
+   "keywords": [
+    "wetland",
+    "lake",
+    "marsh",
+    "swamp",
+    "reservoir",
+    "pantanal",
+    "okavango"
+   ],
+   "variables": [
+    {
+     "id": "gldas_soilmoist_0_10",
+     "why": "Wetland water storage."
+    },
+    {
+     "id": "imerg_precip_monthly",
+     "why": "Inflow from rain."
+    },
+    {
+     "id": "gldas_evap",
+     "why": "Evaporation losses from open water and wet soils."
+    }
+   ],
+   "example_bbox": {
+    "name": "Pantanal",
+    "bbox": [
+     -58.0,
+     -20.0,
+     -55.5,
+     -16.5
+    ]
+   }
+  }
+ ],
+ "topics": {
+  "drought": [
+   "gldas_soilmoist_0_10",
+   "imerg_precip_monthly",
+   "modis_ndvi_monthly",
+   "modis_et",
+   "smap_soil_moisture"
+  ],
+  "heat": [
+   "merra2_t2m",
+   "merra2_t2m_daily_max",
+   "modis_lst_day",
+   "modis_lst_night",
+   "station_tavg"
+  ],
+  "air pollution": [
+   "omi_no2_trop",
+   "omi_aerosol_index"
+  ],
+  "vegetation": [
+   "modis_ndvi_monthly",
+   "modis_evi_monthly",
+   "modis_gpp"
+  ],
+  "water": [
+   "imerg_precip_monthly",
+   "gldas_runoff",
+   "gldas_soilmoist_0_10",
+   "gldas_evap"
+  ],
+  "snow": [
+   "gldas_swe"
+  ],
+  "ozone": [
+   "omi_ozone_total"
+  ],
+  "flood": [
+   "imerg_precip_daily",
+   "gldas_runoff"
+  ],
+  "local validation": [
+   "station_tavg",
+   "station_prcp"
+  ],
+  "groundwater": [
+   "grace_groundwater",
+   "gldas_soilmoist_0_10"
+  ],
+  "ocean": [
+   "ocean_chlorophyll"
+  ],
+  "carbon": [
+   "oco2_xco2"
+  ]
+ }
+}

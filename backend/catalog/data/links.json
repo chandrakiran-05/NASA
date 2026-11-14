@@ -1,0 +1,15 @@
+{
+  "_comment": "Trend Scan coherence links (editorial physical reasoning). expected_sign = +1 means the two trends are expected to have the same sign, -1 opposite. Used ONLY to flag consistency, never to claim causation.",
+  "links": [
+    {"a": "imerg_precip_monthly", "b": "gldas_soilmoist_0_10", "expected_sign": 1, "why": "Less rain usually means drier soil."},
+    {"a": "gldas_soilmoist_0_10", "b": "modis_ndvi_monthly", "expected_sign": 1, "why": "Drier soil usually limits plant growth in water-limited regions."},
+    {"a": "imerg_precip_monthly", "b": "modis_ndvi_monthly", "expected_sign": 1, "why": "In water-limited regions greenness follows rainfall."},
+    {"a": "modis_ndvi_monthly", "b": "modis_lst_day", "expected_sign": -1, "why": "Vegetation cools the surface through transpiration; browning often warms it."},
+    {"a": "merra2_t2m", "b": "modis_lst_day", "expected_sign": 1, "why": "Warmer air and warmer surface usually go together."},
+    {"a": "merra2_t2m", "b": "merra2_qv2m", "expected_sign": 1, "why": "Warmer air can hold more water vapour."},
+    {"a": "merra2_t2m", "b": "gldas_swe", "expected_sign": -1, "why": "Warming reduces snowpack."},
+    {"a": "imerg_precip_monthly", "b": "gldas_runoff", "expected_sign": 1, "why": "More rain means more runoff."},
+    {"a": "modis_ndvi_monthly", "b": "modis_gpp", "expected_sign": 1, "why": "Greener vegetation usually photosynthesises more."},
+    {"a": "gldas_soilmoist_0_10", "b": "gldas_evap", "expected_sign": 1, "why": "Evapotranspiration is limited by soil water in dry regions."}
+  ]
+}

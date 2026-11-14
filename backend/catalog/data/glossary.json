@@ -1,0 +1,85 @@
+{
+ "_comment": "Editorial plain-language glossary of the methods the tool uses (for the offline assistant).",
+ "terms": [
+  {
+   "id": "trend",
+   "term": "Trend",
+   "text": "A steady rise or fall in a variable over many years, after ignoring the regular ups and downs of the seasons. The tool reports it as a rate per decade."
+  },
+  {
+   "id": "significance",
+   "term": "Statistical significance and p-value",
+   "text": "The p-value is the chance of seeing a trend at least this strong if there were really no trend and only random variation. If p is below 0.05 we call the trend significant: random chance alone would rarely produce it. A non-significant trend is not proof that nothing is changing; often the record is just too short."
+  },
+  {
+   "id": "ols",
+   "term": "Linear regression (least squares) and t-test",
+   "text": "Fits the straight line that best follows the data. The slope is the rate of change. A t-test checks whether the slope is clearly different from zero. Because neighbouring months are similar (autocorrelation), the tool corrects the test with an effective sample size, which makes it stricter and more honest."
+  },
+  {
+   "id": "mann_kendall",
+   "term": "Mann-Kendall test",
+   "text": "A rank-based test that asks: do later values tend to be larger (or smaller) than earlier ones? It does not assume a straight line or normal distribution and is not upset by a few extreme values. The Hamed-Rao version corrects for month-to-month persistence."
+  },
+  {
+   "id": "seasonal_mk",
+   "term": "Seasonal Mann-Kendall test",
+   "text": "Runs the Mann-Kendall comparison separately for each calendar month (January with January, February with February...) and combines them, so the seasonal cycle cannot create a false trend."
+  },
+  {
+   "id": "sen",
+   "term": "Sen's slope (Theil-Sen)",
+   "text": "The median of the slopes between every pair of data points. It is a robust rate of change that a few unusual months cannot pull around. The tool uses it as the headline rate."
+  },
+  {
+   "id": "ci",
+   "term": "Confidence interval",
+   "text": "A range that likely contains the true rate of change. A 95% interval that does not include zero means the trend is significant at the 5% level."
+  },
+  {
+   "id": "deseasonalize",
+   "term": "Removing the seasonal cycle (STL)",
+   "text": "Temperature, rain and vegetation all swing with the seasons. STL separates the series into a seasonal part, a slowly changing trend, and leftover noise. Trend tests are run on the series with the seasonal part removed."
+  },
+  {
+   "id": "autocorrelation",
+   "term": "Autocorrelation",
+   "text": "When one month is similar to the next, the data contain less independent information than the number of months suggests. Ignoring this makes trends look more certain than they are; the tool corrects for it."
+  },
+  {
+   "id": "detectability",
+   "term": "Detectability horizon",
+   "text": "Using the noise and persistence in the data, the Weatherhead et al. (1998) formula estimates how many years of data are needed before a trend of the observed size can be detected reliably. It explains why a real trend can still be non-significant in a short record."
+  },
+  {
+   "id": "emergence",
+   "term": "Time of emergence",
+   "text": "The year when the accumulated change becomes larger than the normal year-to-year variability (once or twice the noise level). After that, the change stands out from natural ups and downs."
+  },
+  {
+   "id": "breaks",
+   "term": "Trend breaks (change points)",
+   "text": "The PELT algorithm searches for years where the straight-line trend changes speed or direction, with a penalty that stops it from inventing breaks out of noise."
+  },
+  {
+   "id": "triangle",
+   "term": "Trend-stability triangle",
+   "text": "Shows the trend for every possible start and end year. If most windows agree, the trend is robust; if the answer flips with the chosen years, it is fragile."
+  },
+  {
+   "id": "fdr",
+   "term": "Multiple testing (FDR correction)",
+   "text": "When many regions or grid cells are tested, some will look significant by chance. The Benjamini-Hochberg false discovery rate correction keeps those false alarms under control."
+  },
+  {
+   "id": "tei",
+   "term": "Trend Evidence Index",
+   "text": "A 0-100 summary combining significance, robustness across start/end years, detectability, time of emergence and record-breaking years. Each part is shown so you can see why the score is high or low."
+  },
+  {
+   "id": "forecast",
+   "term": "Projection",
+   "text": "A weighted ensemble of simple statistical models, chosen by how well each one predicted held-back years. The shaded band shows where future values are likely to fall if the past behaviour continues. It is not a physical climate model."
+  }
+ ]
+}

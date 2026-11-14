@@ -1,0 +1,15 @@
+{
+  "_comment": "GES DISC alerts copied from 02-platforms-and-apis.md (verified 2026-11-14). Update when GES DISC posts changes. 'outage_giovanni_prefixes' makes the router skip Giovanni for those variable IDs and use the fallback.",
+  "as_of": "2026-11-14",
+  "source": "https://disc.gsfc.nasa.gov/ (GES DISC alerts, manually transcribed)",
+  "alerts": [
+    {"id": "gic-outage-2026-11", "severity": "warning",
+     "message": "Outage of some cloud Giovanni variables: AIRS3STD 7.0, GLDAS_NOAH025_3H 2.1, IMERG DE/DL/HHE/HHL, OMI daily products, and others.",
+     "outage_giovanni_prefixes": ["AIRS3STD_7_0_", "GLDAS_NOAH025_3H_2_1_", "GPM_3IMERGDE_", "GPM_3IMERGDL_", "GPM_3IMERGHHE_", "GPM_3IMERGHHL_", "OMNO2d_", "OMTO3d_"]},
+    {"id": "land-ocean-mask", "severity": "info",
+     "message": "Ocean grid cells are masked for land-model variables (GLDAS, NLDAS). Choose land regions for these variables."},
+    {"id": "spurious-zeros-fixed", "severity": "info",
+     "message": "A spurious-zeros bug before 2024-01-01 in GLDAS 3H, MERRA-2 and NLDAS series was fixed on 2026-03-26. Cached data retrieved before that date should be refreshed.",
+     "refetch_before": "2026-03-26", "affected_giovanni_prefixes": ["GLDAS_NOAH025_3H_", "M2T1NXSLV_", "NLDAS_"]}
+  ]
+}

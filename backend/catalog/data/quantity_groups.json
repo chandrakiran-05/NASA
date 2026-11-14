@@ -1,0 +1,17 @@
+{
+  "_comment": "F4 Second Opinion: variables measuring the same (or closely related) quantity from independent systems. 'same_units' groups allow a difference-series test; 'sign_only' members are compared on trend sign only.",
+  "groups": [
+    {"id": "air_temperature", "name": "Air temperature", "members": ["merra2_t2m", "gldas_tair", "airs_surface_air_temp", "station_tavg"],
+     "system": {"merra2_t2m": "reanalysis model", "gldas_tair": "land model forcing", "airs_surface_air_temp": "satellite sounder", "station_tavg": "ground station"},
+     "sign_only": ["modis_lst_day", "modis_lst_night"]},
+    {"id": "precipitation", "name": "Precipitation", "members": ["imerg_precip_monthly", "imerg_precip_daily"],
+     "system": {"imerg_precip_monthly": "satellite + gauge", "imerg_precip_daily": "satellite + gauge"},
+     "sign_only": ["station_prcp"]},
+    {"id": "soil_moisture", "name": "Soil moisture", "members": ["gldas_soilmoist_0_10"], "system": {"gldas_soilmoist_0_10": "land model"},
+     "sign_only": ["smap_soil_moisture"]},
+    {"id": "evapotranspiration", "name": "Evapotranspiration", "members": ["gldas_evap"], "system": {"gldas_evap": "land model"},
+     "sign_only": ["modis_et"]},
+    {"id": "vegetation", "name": "Vegetation greenness", "members": ["modis_ndvi_monthly"], "system": {"modis_ndvi_monthly": "satellite"},
+     "sign_only": ["modis_evi_monthly", "modis_gpp"]}
+  ]
+}

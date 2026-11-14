@@ -1,0 +1,13 @@
+[project]
+name = "earth-trend-detective"
+version = "1.0.0"
+description = "Backend for the NASA Space Apps 2026 'Be An Earth System Trend Detective' challenge"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+  "ignore::RuntimeWarning",
+  "ignore::DeprecationWarning",
+  "ignore:ORJSONResponse is deprecated",
+]

@@ -1,0 +1,2115 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Earth System Trend Detective API",
+  "description": "Select Earth-science variables, acquire them for a region from NASA/NOAA services, build monthly time series, and test trends for significance (OLS with autocorrelation correction, Mann-Kendall family, Sen's slope) with novel insights and an offline AI assistant.",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/api/health": {
+   "get": {
+    "tags": [
+     "meta"
+    ],
+    "summary": "Health",
+    "operationId": "health_api_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/sources/status": {
+   "get": {
+    "tags": [
+     "meta"
+    ],
+    "summary": "Sources Status",
+    "operationId": "sources_status_api_sources_status_get",
+    "parameters": [
+     {
+      "name": "check_quota",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Check Quota"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/variables": {
+   "get": {
+    "tags": [
+     "catalog"
+    ],
+    "summary": "List Variables",
+    "operationId": "list_variables_api_variables_get",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Q"
+      }
+     },
+     {
+      "name": "domain",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Domain"
+      }
+     },
+     {
+      "name": "region_type",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Region Type"
+      }
+     },
+     {
+      "name": "source",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Source"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 200,
+       "default": 20,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/variables/{variable_id}": {
+   "get": {
+    "tags": [
+     "catalog"
+    ],
+    "summary": "Get Variable",
+    "operationId": "get_variable_api_variables__variable_id__get",
+    "parameters": [
+     {
+      "name": "variable_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Variable Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/regions/archetypes": {
+   "get": {
+    "tags": [
+     "catalog"
+    ],
+    "summary": "Archetypes",
+    "operationId": "archetypes_api_regions_archetypes_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/regions/search": {
+   "get": {
+    "tags": [
+     "catalog"
+    ],
+    "summary": "Region Search",
+    "operationId": "region_search_api_regions_search_get",
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 2,
+       "title": "Q"
+      }
+     },
+     {
+      "name": "point",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Point"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/timeseries": {
+   "post": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "Create Timeseries",
+    "operationId": "create_timeseries_api_timeseries_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TimeseriesRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/jobs/{job_id}": {
+   "get": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "Get Job",
+    "operationId": "get_job_api_jobs__job_id__get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "wait",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "maximum": 30,
+       "minimum": 0,
+       "default": 0,
+       "title": "Wait"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/series": {
+   "get": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "List Series",
+    "operationId": "list_series_api_series_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 500,
+       "default": 50,
+       "title": "Limit"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/timeseries/{series_id}": {
+   "get": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "Get Timeseries",
+    "operationId": "get_timeseries_api_timeseries__series_id__get",
+    "parameters": [
+     {
+      "name": "series_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Series Id"
+      }
+     },
+     {
+      "name": "view",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(raw|monthly|deseasonalized|anomaly|annual)$",
+       "default": "monthly",
+       "title": "View"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/timeseries/upload": {
+   "post": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "Upload Series",
+    "description": "Bring your own series (e.g. a CSV exported from Giovanni or KNMI Climate Explorer).",
+    "operationId": "upload_series_api_timeseries_upload_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UploadSeries"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/timeseries/upload-csv": {
+   "post": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "Upload Csv",
+    "operationId": "upload_csv_api_timeseries_upload_csv_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_upload_csv_api_timeseries_upload_csv_post"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/export/{series_id}": {
+   "get": {
+    "tags": [
+     "timeseries"
+    ],
+    "summary": "Export Series",
+    "operationId": "export_series_api_export__series_id__get",
+    "parameters": [
+     {
+      "name": "series_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Series Id"
+      }
+     },
+     {
+      "name": "format",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(csv|json)$",
+       "default": "csv",
+       "title": "Format"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/analyze": {
+   "post": {
+    "tags": [
+     "analysis"
+    ],
+    "summary": "Analyze",
+    "operationId": "analyze_api_analyze_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AnalyzeRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/timeseries/{series_id}/integrity": {
+   "get": {
+    "tags": [
+     "novelty"
+    ],
+    "summary": "Integrity",
+    "description": "F1 Seam & Integrity Audit: fit-for-trends badge, coverage strip, flags, seams, trend-or-jump.",
+    "operationId": "integrity_api_timeseries__series_id__integrity_get",
+    "parameters": [
+     {
+      "name": "series_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Series Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/analyze/{series_id}/court": {
+   "get": {
+    "tags": [
+     "novelty"
+    ],
+    "summary": "Court Endpoint",
+    "description": "F3 Method Verdict / Trend Court.",
+    "operationId": "court_endpoint_api_analyze__series_id__court_get",
+    "parameters": [
+     {
+      "name": "series_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Series Id"
+      }
+     },
+     {
+      "name": "alpha",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "exclusiveMaximum": 0.5,
+       "exclusiveMinimum": 0,
+       "default": 0.05,
+       "title": "Alpha"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/analyze/{series_id}/detectability": {
+   "get": {
+    "tags": [
+     "novelty"
+    ],
+    "summary": "Detectability Endpoint",
+    "description": "F2 Evidence Clock: triangle, expanding window, years-to-detect, cherry-pick rank of [start, end].",
+    "operationId": "detectability_endpoint_api_analyze__series_id__detectability_get",
+    "parameters": [
+     {
+      "name": "series_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Series Id"
+      }
+     },
+     {
+      "name": "start",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Start"
+      }
+     },
+     {
+      "name": "end",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "End"
+      }
+     },
+     {
+      "name": "min_years",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 50,
+       "minimum": 3,
+       "default": 10,
+       "title": "Min Years"
+      }
+     },
+     {
+      "name": "alpha",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "number",
+       "exclusiveMaximum": 0.5,
+       "exclusiveMinimum": 0,
+       "default": 0.05,
+       "title": "Alpha"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/analyze/nulls": {
+   "post": {
+    "tags": [
+     "novelty"
+    ],
+    "summary": "Nulls",
+    "description": "F5 Could It Be Chance? block-bootstrap null histogram + lineup.",
+    "operationId": "nulls_api_analyze_nulls_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NullsRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/variables/{variable_id}/second-opinions": {
+   "get": {
+    "tags": [
+     "novelty"
+    ],
+    "summary": "Second Opinion Candidates",
+    "description": "F4: which other products/stations measure the same quantity.",
+    "operationId": "second_opinion_candidates_api_variables__variable_id__second_opinions_get",
+    "parameters": [
+     {
+      "name": "variable_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Variable Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/scan": {
+   "post": {
+    "tags": [
+     "novelty"
+    ],
+    "summary": "Scan",
+    "description": "Trend Scan: many variables, one region; FDR across variables; physical-coherence check.",
+    "operationId": "scan_api_scan_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ScanRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/insights": {
+   "post": {
+    "tags": [
+     "analysis"
+    ],
+    "summary": "Insights",
+    "operationId": "insights_api_insights_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/InsightsRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/compare": {
+   "post": {
+    "tags": [
+     "analysis"
+    ],
+    "summary": "Compare",
+    "operationId": "compare_api_compare_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CompareRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/drivers": {
+   "post": {
+    "tags": [
+     "analysis"
+    ],
+    "summary": "Drivers",
+    "operationId": "drivers_api_drivers_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DriversRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/trendmap": {
+   "post": {
+    "tags": [
+     "analysis"
+    ],
+    "summary": "Trendmap",
+    "operationId": "trendmap_api_trendmap_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TrendMapRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/trendmap/upload": {
+   "post": {
+    "tags": [
+     "analysis"
+    ],
+    "summary": "Trendmap Upload",
+    "description": "Per-pixel trends for a monthly netCDF you already have (e.g. downloaded from Giovanni).",
+    "operationId": "trendmap_upload_api_trendmap_upload_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_trendmap_upload_api_trendmap_upload_post"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/investigate": {
+   "post": {
+    "tags": [
+     "investigate"
+    ],
+    "summary": "Investigate",
+    "operationId": "investigate_api_investigate_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/InvestigateRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demos": {
+   "get": {
+    "tags": [
+     "investigate"
+    ],
+    "summary": "Demos",
+    "operationId": "demos_api_demos_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/demos/{demo_id}/run": {
+   "post": {
+    "tags": [
+     "investigate"
+    ],
+    "summary": "Run Demo",
+    "operationId": "run_demo_api_demos__demo_id__run_post",
+    "parameters": [
+     {
+      "name": "demo_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Demo Id"
+      }
+     }
+    ],
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/ai/status": {
+   "get": {
+    "tags": [
+     "ai"
+    ],
+    "summary": "Ai Status",
+    "operationId": "ai_status_api_ai_status_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/ai/guard": {
+   "post": {
+    "tags": [
+     "ai"
+    ],
+    "summary": "Ai Guard",
+    "operationId": "ai_guard_api_ai_guard_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/ai/plan": {
+   "post": {
+    "tags": [
+     "ai"
+    ],
+    "summary": "Ai Plan",
+    "operationId": "ai_plan_api_ai_plan_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/ai/ask": {
+   "post": {
+    "tags": [
+     "ai"
+    ],
+    "summary": "Ai Ask",
+    "operationId": "ai_ask_api_ai_ask_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/ai/explain": {
+   "post": {
+    "tags": [
+     "ai"
+    ],
+    "summary": "Ai Explain",
+    "operationId": "ai_explain_api_ai_explain_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ExplainRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AnalyzeRequest": {
+    "properties": {
+     "series_id": {
+      "type": "string",
+      "title": "Series Id"
+     },
+     "alpha": {
+      "type": "number",
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0.0,
+      "title": "Alpha",
+      "default": 0.05
+     },
+     "deseasonalize": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "string",
+        "enum": [
+         "stl",
+         "climatology",
+         "none"
+        ]
+       }
+      ],
+      "title": "Deseasonalize",
+      "default": true
+     },
+     "methods": {
+      "items": {
+       "type": "string",
+       "enum": [
+        "ols",
+        "mk",
+        "seasonal_mk",
+        "sen"
+       ]
+      },
+      "type": "array",
+      "title": "Methods",
+      "default": [
+       "ols",
+       "mk",
+       "seasonal_mk",
+       "sen"
+      ]
+     },
+     "mk_variant": {
+      "type": "string",
+      "enum": [
+       "auto",
+       "ess_ar1",
+       "original",
+       "hamed_rao",
+       "yue_wang",
+       "tfpw"
+      ],
+      "title": "Mk Variant",
+      "default": "auto"
+     },
+     "include_series": {
+      "type": "boolean",
+      "title": "Include Series",
+      "default": true
+     },
+     "include_court": {
+      "type": "boolean",
+      "title": "Include Court",
+      "default": true
+     }
+    },
+    "type": "object",
+    "required": [
+     "series_id"
+    ],
+    "title": "AnalyzeRequest"
+   },
+   "Body_trendmap_upload_api_trendmap_upload_post": {
+    "properties": {
+     "file": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "File"
+     },
+     "variable": {
+      "type": "string",
+      "title": "Variable"
+     },
+     "alpha": {
+      "type": "number",
+      "title": "Alpha",
+      "default": 0.05
+     }
+    },
+    "type": "object",
+    "required": [
+     "file",
+     "variable"
+    ],
+    "title": "Body_trendmap_upload_api_trendmap_upload_post"
+   },
+   "Body_upload_csv_api_timeseries_upload_csv_post": {
+    "properties": {
+     "file": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "File"
+     },
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Label"
+     },
+     "units": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Units"
+     }
+    },
+    "type": "object",
+    "required": [
+     "file"
+    ],
+    "title": "Body_upload_csv_api_timeseries_upload_csv_post"
+   },
+   "CompareRequest": {
+    "properties": {
+     "series_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "minItems": 2,
+      "title": "Series Ids"
+     },
+     "alpha": {
+      "type": "number",
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0.0,
+      "title": "Alpha",
+      "default": 0.05
+     },
+     "mode": {
+      "type": "string",
+      "enum": [
+       "regions",
+       "product_agreement"
+      ],
+      "title": "Mode",
+      "default": "regions"
+     }
+    },
+    "type": "object",
+    "required": [
+     "series_ids"
+    ],
+    "title": "CompareRequest"
+   },
+   "DriversRequest": {
+    "properties": {
+     "target_series_id": {
+      "type": "string",
+      "title": "Target Series Id"
+     },
+     "driver_series_ids": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Driver Series Ids"
+     },
+     "max_lag": {
+      "type": "integer",
+      "maximum": 24.0,
+      "minimum": 0.0,
+      "title": "Max Lag",
+      "default": 6
+     },
+     "alpha": {
+      "type": "number",
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0.0,
+      "title": "Alpha",
+      "default": 0.05
+     }
+    },
+    "type": "object",
+    "required": [
+     "target_series_id",
+     "driver_series_ids"
+    ],
+    "title": "DriversRequest"
+   },
+   "ExplainRequest": {
+    "properties": {
+     "series_id": {
+      "type": "string",
+      "title": "Series Id"
+     },
+     "include_insights": {
+      "type": "boolean",
+      "title": "Include Insights",
+      "default": true
+     }
+    },
+    "type": "object",
+    "required": [
+     "series_id"
+    ],
+    "title": "ExplainRequest"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "InsightsRequest": {
+    "properties": {
+     "series_id": {
+      "type": "string",
+      "title": "Series Id"
+     },
+     "which": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Which",
+      "default": [
+       "detectability",
+       "emergence",
+       "records",
+       "breaks",
+       "triangle",
+       "forecast"
+      ]
+     },
+     "alpha": {
+      "type": "number",
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0.0,
+      "title": "Alpha",
+      "default": 0.05
+     },
+     "forecast_horizon": {
+      "type": "integer",
+      "maximum": 120.0,
+      "minimum": 1.0,
+      "title": "Forecast Horizon",
+      "default": 60
+     },
+     "triangle_min_years": {
+      "type": "integer",
+      "maximum": 50.0,
+      "minimum": 3.0,
+      "title": "Triangle Min Years",
+      "default": 10
+     },
+     "min_segment_years": {
+      "type": "number",
+      "maximum": 20.0,
+      "minimum": 2.0,
+      "title": "Min Segment Years",
+      "default": 4.0
+     }
+    },
+    "type": "object",
+    "required": [
+     "series_id"
+    ],
+    "title": "InsightsRequest"
+   },
+   "InvestigateRequest": {
+    "properties": {
+     "question": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Question",
+      "examples": [
+       "Is rainfall changing in Tamil Nadu since 2001?"
+      ]
+     },
+     "variable_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Variable Id"
+     },
+     "geometry": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Geometry"
+     },
+     "start": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start"
+     },
+     "end": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End"
+     },
+     "insights": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Insights",
+      "default": [
+       "detectability",
+       "emergence",
+       "records",
+       "breaks",
+       "triangle",
+       "forecast"
+      ]
+     },
+     "explain": {
+      "type": "boolean",
+      "title": "Explain",
+      "default": true
+     },
+     "max_regions": {
+      "type": "integer",
+      "maximum": 5.0,
+      "minimum": 1.0,
+      "title": "Max Regions",
+      "default": 3
+     }
+    },
+    "type": "object",
+    "title": "InvestigateRequest"
+   },
+   "NullsRequest": {
+    "properties": {
+     "series_id": {
+      "type": "string",
+      "title": "Series Id"
+     },
+     "n_null": {
+      "type": "integer",
+      "maximum": 5000.0,
+      "minimum": 100.0,
+      "title": "N Null",
+      "default": 1000
+     },
+     "n_panels": {
+      "type": "integer",
+      "maximum": 39.0,
+      "minimum": 1.0,
+      "title": "N Panels",
+      "default": 19
+     },
+     "block": {
+      "type": "integer",
+      "maximum": 60.0,
+      "minimum": 1.0,
+      "title": "Block",
+      "default": 12
+     },
+     "seed": {
+      "type": "integer",
+      "title": "Seed",
+      "default": 2026
+     }
+    },
+    "type": "object",
+    "required": [
+     "series_id"
+    ],
+    "title": "NullsRequest"
+   },
+   "ScanRequest": {
+    "properties": {
+     "geometry": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Geometry"
+     },
+     "start": {
+      "type": "string",
+      "title": "Start"
+     },
+     "end": {
+      "type": "string",
+      "title": "End"
+     },
+     "variable_ids": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array",
+        "maxItems": 12
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Variable Ids",
+      "description": "default: recommended variables for region_type, else a core set"
+     },
+     "region_type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Region Type"
+     },
+     "alpha": {
+      "type": "number",
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0.0,
+      "title": "Alpha",
+      "default": 0.05
+     }
+    },
+    "type": "object",
+    "required": [
+     "geometry",
+     "start",
+     "end"
+    ],
+    "title": "ScanRequest"
+   },
+   "TextRequest": {
+    "properties": {
+     "question": {
+      "type": "string",
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Question"
+     }
+    },
+    "type": "object",
+    "required": [
+     "question"
+    ],
+    "title": "TextRequest"
+   },
+   "TimeseriesRequest": {
+    "properties": {
+     "variable_id": {
+      "type": "string",
+      "title": "Variable Id",
+      "examples": [
+       "merra2_t2m"
+      ]
+     },
+     "geometry": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Geometry",
+      "description": "GeoJSON Point/Polygon, or {type: 'BBox', bbox: [w,s,e,n]}",
+      "examples": [
+       {
+        "coordinates": [
+         80.27,
+         13.08
+        ],
+        "type": "Point"
+       }
+      ]
+     },
+     "start": {
+      "type": "string",
+      "title": "Start",
+      "description": "YYYY, YYYY-MM or YYYY-MM-DD",
+      "examples": [
+       "2001-01"
+      ]
+     },
+     "end": {
+      "type": "string",
+      "title": "End",
+      "examples": [
+       "2024-12"
+      ]
+     },
+     "options": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Options",
+      "description": "stations, max_stations, min_valid_fraction"
+     },
+     "refresh": {
+      "type": "boolean",
+      "title": "Refresh",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "variable_id",
+     "geometry",
+     "start",
+     "end"
+    ],
+    "title": "TimeseriesRequest"
+   },
+   "TrendMapRequest": {
+    "properties": {
+     "variable_id": {
+      "type": "string",
+      "title": "Variable Id"
+     },
+     "geometry": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Geometry"
+     },
+     "start": {
+      "type": "string",
+      "title": "Start"
+     },
+     "end": {
+      "type": "string",
+      "title": "End"
+     },
+     "alpha": {
+      "type": "number",
+      "exclusiveMaximum": 0.5,
+      "exclusiveMinimum": 0.0,
+      "title": "Alpha",
+      "default": 0.05
+     }
+    },
+    "type": "object",
+    "required": [
+     "variable_id",
+     "geometry",
+     "start",
+     "end"
+    ],
+    "title": "TrendMapRequest"
+   },
+   "UploadSeries": {
+    "properties": {
+     "time": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Time"
+     },
+     "value": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Value"
+     },
+     "units": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Units"
+     },
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Label"
+     }
+    },
+    "type": "object",
+    "required": [
+     "time",
+     "value"
+    ],
+    "title": "UploadSeries"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}

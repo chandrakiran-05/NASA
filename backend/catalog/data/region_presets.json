@@ -1,0 +1,567 @@
+{
+ "_comment": "Editorial, APPROXIMATE bounding boxes [west, south, east, north] for regions the offline gazetteer lacks (sub-national units, basins, deserts). Shown to users as approximate; they can adjust the box on the map.",
+ "regions": [
+  {
+   "name": "Tamil Nadu",
+   "aliases": [
+    "tamilnadu",
+    "tn"
+   ],
+   "bbox": [
+    76.2,
+    8.1,
+    80.4,
+    13.6
+   ]
+  },
+  {
+   "name": "Kerala",
+   "aliases": [],
+   "bbox": [
+    74.8,
+    8.2,
+    77.4,
+    12.8
+   ]
+  },
+  {
+   "name": "Karnataka",
+   "aliases": [],
+   "bbox": [
+    74.0,
+    11.5,
+    78.6,
+    18.5
+   ]
+  },
+  {
+   "name": "Andhra Pradesh",
+   "aliases": [
+    "andhra"
+   ],
+   "bbox": [
+    76.7,
+    12.6,
+    84.8,
+    19.2
+   ]
+  },
+  {
+   "name": "Telangana",
+   "aliases": [],
+   "bbox": [
+    77.2,
+    15.8,
+    81.4,
+    19.9
+   ]
+  },
+  {
+   "name": "Maharashtra",
+   "aliases": [],
+   "bbox": [
+    72.6,
+    15.6,
+    80.9,
+    22.1
+   ]
+  },
+  {
+   "name": "Gujarat",
+   "aliases": [],
+   "bbox": [
+    68.1,
+    20.1,
+    74.5,
+    24.7
+   ]
+  },
+  {
+   "name": "Rajasthan",
+   "aliases": [],
+   "bbox": [
+    69.5,
+    23.0,
+    78.3,
+    30.2
+   ]
+  },
+  {
+   "name": "Punjab (India)",
+   "aliases": [
+    "punjab"
+   ],
+   "bbox": [
+    73.8,
+    29.5,
+    77.0,
+    32.5
+   ]
+  },
+  {
+   "name": "Uttar Pradesh",
+   "aliases": [
+    "up"
+   ],
+   "bbox": [
+    77.0,
+    23.8,
+    84.7,
+    30.4
+   ]
+  },
+  {
+   "name": "Bihar",
+   "aliases": [],
+   "bbox": [
+    83.3,
+    24.3,
+    88.3,
+    27.5
+   ]
+  },
+  {
+   "name": "West Bengal",
+   "aliases": [
+    "bengal"
+   ],
+   "bbox": [
+    85.8,
+    21.5,
+    89.9,
+    27.3
+   ]
+  },
+  {
+   "name": "Odisha",
+   "aliases": [
+    "orissa"
+   ],
+   "bbox": [
+    81.4,
+    17.8,
+    87.5,
+    22.6
+   ]
+  },
+  {
+   "name": "Madhya Pradesh",
+   "aliases": [
+    "mp"
+   ],
+   "bbox": [
+    74.0,
+    21.1,
+    82.8,
+    26.9
+   ]
+  },
+  {
+   "name": "Assam",
+   "aliases": [],
+   "bbox": [
+    89.7,
+    24.1,
+    96.0,
+    28.0
+   ]
+  },
+  {
+   "name": "Himachal Pradesh",
+   "aliases": [
+    "himachal"
+   ],
+   "bbox": [
+    75.6,
+    30.4,
+    79.0,
+    33.3
+   ]
+  },
+  {
+   "name": "Uttarakhand",
+   "aliases": [],
+   "bbox": [
+    77.6,
+    28.7,
+    81.1,
+    31.5
+   ]
+  },
+  {
+   "name": "Jammu and Kashmir",
+   "aliases": [
+    "kashmir"
+   ],
+   "bbox": [
+    73.3,
+    32.3,
+    76.8,
+    35.0
+   ]
+  },
+  {
+   "name": "Ladakh",
+   "aliases": [],
+   "bbox": [
+    75.3,
+    32.3,
+    80.3,
+    36.0
+   ]
+  },
+  {
+   "name": "Western Ghats",
+   "aliases": [],
+   "bbox": [
+    73.0,
+    8.3,
+    77.5,
+    21.0
+   ]
+  },
+  {
+   "name": "Indo-Gangetic Plain",
+   "aliases": [
+    "gangetic plain"
+   ],
+   "bbox": [
+    74.0,
+    24.0,
+    89.0,
+    31.0
+   ]
+  },
+  {
+   "name": "Sundarbans",
+   "aliases": [],
+   "bbox": [
+    88.0,
+    21.5,
+    90.0,
+    22.8
+   ]
+  },
+  {
+   "name": "Thar Desert",
+   "aliases": [
+    "thar"
+   ],
+   "bbox": [
+    69.0,
+    24.5,
+    75.0,
+    29.5
+   ]
+  },
+  {
+   "name": "Tibetan Plateau",
+   "aliases": [
+    "tibet"
+   ],
+   "bbox": [
+    78.0,
+    27.5,
+    103.0,
+    39.0
+   ]
+  },
+  {
+   "name": "Sahara",
+   "aliases": [
+    "sahara desert"
+   ],
+   "bbox": [
+    -15.0,
+    16.0,
+    33.0,
+    30.0
+   ]
+  },
+  {
+   "name": "Sahel",
+   "aliases": [],
+   "bbox": [
+    -17.0,
+    11.0,
+    38.0,
+    17.0
+   ]
+  },
+  {
+   "name": "Amazon Basin",
+   "aliases": [
+    "amazon",
+    "amazon rainforest",
+    "amazonia"
+   ],
+   "bbox": [
+    -75.0,
+    -15.0,
+    -48.0,
+    3.0
+   ]
+  },
+  {
+   "name": "Congo Basin",
+   "aliases": [
+    "congo rainforest"
+   ],
+   "bbox": [
+    12.0,
+    -6.0,
+    30.0,
+    5.0
+   ]
+  },
+  {
+   "name": "Borneo",
+   "aliases": [],
+   "bbox": [
+    108.8,
+    -4.2,
+    119.3,
+    7.1
+   ]
+  },
+  {
+   "name": "Great Plains (USA)",
+   "aliases": [
+    "great plains",
+    "corn belt"
+   ],
+   "bbox": [
+    -104.0,
+    33.0,
+    -94.0,
+    49.0
+   ]
+  },
+  {
+   "name": "California Central Valley",
+   "aliases": [
+    "central valley"
+   ],
+   "bbox": [
+    -122.6,
+    35.0,
+    -118.6,
+    40.6
+   ]
+  },
+  {
+   "name": "Mediterranean Basin",
+   "aliases": [
+    "mediterranean"
+   ],
+   "bbox": [
+    -6.0,
+    30.0,
+    36.0,
+    46.0
+   ]
+  },
+  {
+   "name": "Alps",
+   "aliases": [
+    "swiss alps"
+   ],
+   "bbox": [
+    5.5,
+    44.0,
+    16.5,
+    48.0
+   ]
+  },
+  {
+   "name": "Andes (central)",
+   "aliases": [
+    "andes"
+   ],
+   "bbox": [
+    -75.0,
+    -25.0,
+    -65.0,
+    -10.0
+   ]
+  },
+  {
+   "name": "Siberia (west)",
+   "aliases": [
+    "siberia"
+   ],
+   "bbox": [
+    60.0,
+    55.0,
+    90.0,
+    70.0
+   ]
+  },
+  {
+   "name": "Greenland",
+   "aliases": [],
+   "bbox": [
+    -73.0,
+    59.0,
+    -11.0,
+    84.0
+   ]
+  },
+  {
+   "name": "Arctic (north of 66.5°N)",
+   "aliases": [
+    "arctic circle"
+   ],
+   "bbox": [
+    -180.0,
+    66.5,
+    180.0,
+    90.0
+   ]
+  },
+  {
+   "name": "Murray-Darling Basin",
+   "aliases": [
+    "murray darling"
+   ],
+   "bbox": [
+    138.5,
+    -38.0,
+    152.5,
+    -24.5
+   ]
+  },
+  {
+   "name": "Lake Chad region",
+   "aliases": [
+    "lake chad"
+   ],
+   "bbox": [
+    12.5,
+    12.0,
+    15.5,
+    14.5
+   ]
+  },
+  {
+   "name": "Aral Sea region",
+   "aliases": [
+    "aral sea"
+   ],
+   "bbox": [
+    58.0,
+    43.5,
+    62.0,
+    46.8
+   ]
+  },
+  {
+   "name": "Pantanal",
+   "aliases": [],
+   "bbox": [
+    -58.0,
+    -20.0,
+    -55.5,
+    -16.5
+   ]
+  },
+  {
+   "name": "Okavango Delta",
+   "aliases": [
+    "okavango"
+   ],
+   "bbox": [
+    22.0,
+    -20.5,
+    24.0,
+    -18.3
+   ]
+  },
+  {
+   "name": "Nile Delta",
+   "aliases": [],
+   "bbox": [
+    29.5,
+    30.0,
+    32.5,
+    31.7
+   ]
+  },
+  {
+   "name": "Mekong Delta",
+   "aliases": [],
+   "bbox": [
+    104.4,
+    8.5,
+    106.9,
+    11.0
+   ]
+  },
+  {
+   "name": "Yangtze River Delta",
+   "aliases": [],
+   "bbox": [
+    118.0,
+    29.5,
+    122.5,
+    33.0
+   ]
+  },
+  {
+   "name": "Antarctica",
+   "aliases": [
+    "antarctic",
+    "south pole"
+   ],
+   "bbox": [
+    -180.0,
+    -90.0,
+    180.0,
+    -60.0
+   ]
+  },
+  {
+   "name": "Bay of Bengal",
+   "aliases": [],
+   "bbox": [
+    80.0,
+    5.0,
+    95.0,
+    22.5
+   ]
+  },
+  {
+   "name": "Arabian Sea",
+   "aliases": [],
+   "bbox": [
+    55.0,
+    5.0,
+    77.0,
+    25.0
+   ]
+  },
+  {
+   "name": "Gulf of Mexico",
+   "aliases": [],
+   "bbox": [
+    -98.0,
+    18.0,
+    -80.5,
+    31.0
+   ]
+  },
+  {
+   "name": "Mississippi River plume (SeaWiFS paper region)",
+   "aliases": [
+    "mississippi delta",
+    "mississippi plume"
+   ],
+   "bbox": [
+    -91.5,
+    28.0,
+    -88.0,
+    30.0
+   ]
+  }
+ ]
+}

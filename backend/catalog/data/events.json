@@ -1,0 +1,30 @@
+{
+  "_comment": "F1 seam events. The ONLY hand-curated data file; every entry carries its source. Dates are the month the change takes effect. 'applies_to' matches catalog dataset short_name prefixes or AppEEARS product prefixes. Entries marked verify=true were cited from the team's research (docs/05-novelty-features.md) with only abstract/metadata seen.",
+  "events": [
+    {"id": "imerg-trmm-gpm", "date": "2014-06", "type": "instrument_era",
+     "applies_to": ["GPM_3IMERG"],
+     "description": "IMERG calibration changes from the TRMM era to the GPM era; trend agreement with gauges drops from 86.7% (GPM era) to 75.3% (TRMM era).",
+     "citation": "Zhu et al., Environ. Res. Lett. 20:014064", "url": "https://doi.org/10.1088/1748-9326/ad984e", "verify": true},
+    {"id": "merra2-ssmi", "date": "1987-07", "type": "observing_system",
+     "applies_to": ["M2T1NXSLV", "M2TMNXSLV", "M2T"],
+     "description": "SSM/I radiances enter the MERRA-2 observing system; reported to introduce unphysical precipitation/moisture changes.",
+     "citation": "Gelaro et al. 2017, J. Climate", "url": "https://doi.org/10.1175/JCLI-D-16-0758.1", "verify": false},
+    {"id": "merra2-amsu", "date": "1998-11", "type": "observing_system",
+     "applies_to": ["M2T1NXSLV", "M2TMNXSLV", "M2T"],
+     "description": "AMSU radiances enter the MERRA-2 observing system; a known source of discontinuities in moisture-related fields.",
+     "citation": "Gelaro et al. 2017, J. Climate", "url": "https://doi.org/10.1175/JCLI-D-16-0758.1", "verify": false},
+    {"id": "terra-drift", "date": "2020-02", "type": "orbit",
+     "applies_to": ["MOD"],
+     "description": "Terra begins orbital drift (earlier overpass time), which can bias MODIS Terra land products such as LST and vegetation indices.",
+     "citation": "NASA NTRS 20240001409; Science of Remote Sensing 2023", "url": "https://ntrs.nasa.gov/citations/20240001409", "verify": true},
+    {"id": "terra-exit", "date": "2022-10", "type": "orbit",
+     "applies_to": ["MOD"],
+     "description": "Terra exits its constellation orbit; overpass-time drift continues.",
+     "citation": "Team research, docs/05-novelty-features.md (F1)", "url": "https://ntrs.nasa.gov/citations/20240001409", "verify": true},
+    {"id": "giovanni-zeros-fix", "date": "2026-03", "type": "data_pipeline_fix",
+     "applies_to": ["GLDAS_NOAH025_3H", "M2T1NXSLV", "NLDAS"],
+     "description": "Cloud Giovanni inserted spurious blocks of zeros in some hydrology/reanalysis collections for data before 2024; fixed 2026-03-26. Series retrieved before the fix must be re-fetched.",
+     "citation": "NASA Earthdata alert", "url": "https://www.earthdata.nasa.gov/data/alerts-outages/reprocessed-hydrology-products-available-from-cloud-giovanni",
+     "retrieval_fix_date": "2026-03-26", "affects_data_before": "2024-01-01", "verify": false}
+  ]
+}
