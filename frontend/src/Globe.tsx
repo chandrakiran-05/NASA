@@ -1,0 +1,584 @@
+import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
+
+export type GlobeFocus = { lat: number; lon: number };
+export type GlobeTopic =
+  "earth" | "temperature" | "rainfall" | "vegetation" | "weather";
+type GlobeProps = {
+  focus?: GlobeFocus | null;
+  paused?: boolean;
+  className?: string;
+  twin?: boolean;
+  topic?: GlobeTopic;
+};
+const accents: Record<GlobeTopic, string> = {
+  earth: "#a3c2b3",
+  temperature: "#d98d66",
+  rainfall: "#7aacc2",
+  vegetation: "#a4bd86",
+  weather: "#a0b8bd",
+};
+
+/** Illustrative satellite imagery. The grid and topic colours are navigation cues, not measured data. */
+export default function Globe({
+  focus = null,
+  paused = false,
+  className = "",
+  twin = false,
+  topic = "earth",
+}: GlobeProps) {
+  const container = useRef<HTMLDivElement>(null);
+  const props = useRef({ focus, paused, twin, topic });
+  const update = useRef<(() => void) | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+  props.current = { focus, paused, twin, topic };
+
+  useEffect(() => {
+    const host = container.current;
+    if (!host) return;
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: "low-power",
+      });
+    } catch {
+      setUnavailable(true);
+      return;
+    }
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0, 0);
+    const canvas = renderer.domElement;
+    canvas.setAttribute("aria-hidden", "true");
+    canvas.style.cssText =
+      "display:block;width:100%;height:100%;pointer-events:none;";
+    host.appendChild(canvas);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 40);
+    const presentation = new THREE.Group();
+    const earth = new THREE.Group();
+    // A real geographic camera target: Africa, Europe and the Indian Ocean
+    // share the opening view instead of starting on an anonymous ocean face.
+    const openingLatitude = THREE.MathUtils.degToRad(20);
+    const openingLongitude = THREE.MathUtils.degToRad(25);
+    const initialPose = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(
+        Math.cos(openingLatitude) * Math.cos(openingLongitude),
+        Math.sin(openingLatitude),
+        -Math.cos(openingLatitude) * Math.sin(openingLongitude),
+      ),
+      new THREE.Vector3(0, 0, 1),
+    );
+    earth.quaternion.copy(initialPose);
+    presentation.add(earth);
+    scene.add(presentation);
+    const sphere = new THREE.SphereGeometry(1, 64, 32);
+    const textures: THREE.Texture[] = [];
+    let disposed = false;
+    let frame = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let visible = false;
+    let width = 1;
+    let height = 1;
+    let dpr = 1;
+    let qualityCap = 1.25;
+    let dirty = true;
+    let rendering = false;
+    let lastRender = 0;
+    let renderCount = 0;
+    let totalDrawCalls = 0;
+    let slowFrames = 0;
+    let dragging = false;
+    let activePointer: number | null = null;
+    let startX = 0;
+    let startY = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+    let gesture: "pending" | "rotate" | "scroll" = "pending";
+    let focused = false;
+    let aimPending = false;
+    let previousFocus = "";
+    let previousTopic = "";
+    let previousTwin: boolean | undefined;
+    let targetRoll = 0;
+    let targetDistance = 4.1;
+    camera.position.z = targetDistance;
+    const targetPose = initialPose.clone();
+    const targetTint = new THREE.Color(accents.earth);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const targetLight = new THREE.Vector3(-3.6, 2.8, 5);
+    const forward = new THREE.Vector3(0, 0, 1);
+    const turn = new THREE.Quaternion();
+    const axis = new THREE.Vector3();
+    const point = new THREE.Vector3();
+
+    function cancelScheduled() {
+      if (frame) cancelAnimationFrame(frame);
+      if (timer !== null) clearTimeout(timer);
+      frame = 0;
+      timer = null;
+    }
+    function canRender() {
+      return !disposed && visible && !document.hidden;
+    }
+    function invalidate() {
+      dirty = true;
+      if (!canRender() || rendering || frame || timer !== null) return;
+      frame = requestAnimationFrame(render);
+    }
+    function load(name: string, color = false) {
+      const texture = new THREE.TextureLoader().load(
+        `/textures/${name}`,
+        () => {
+          if (disposed) texture.dispose();
+          else invalidate();
+        },
+        undefined,
+        () => {
+          if (!disposed && name === "earth-day.jpg") setUnavailable(true);
+        },
+      );
+      if (color) texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(
+        2,
+        renderer.capabilities.getMaxAnisotropy(),
+      );
+      textures.push(texture);
+      return texture;
+    }
+    const surface = new THREE.MeshPhongMaterial({
+      map: load("earth-day.jpg", true),
+      specularMap: load("earth-specular.jpg"),
+      specular: new THREE.Color("#547981"),
+      shininess: 8,
+      color: new THREE.Color("#fffdf2"),
+    });
+    earth.add(new THREE.Mesh(sphere, surface));
+    const cloudMaterial = new THREE.MeshPhongMaterial({
+      map: load("earth-clouds.png", true),
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false,
+      shininess: 0,
+    });
+    const clouds = new THREE.Mesh(sphere, cloudMaterial);
+    clouds.scale.setScalar(1.005);
+    earth.add(clouds);
+    scene.add(new THREE.AmbientLight("#d7e3d7", 0.86));
+    const sunlight = new THREE.DirectionalLight("#fff4df", 2.35);
+    sunlight.position.copy(targetLight);
+    scene.add(sunlight);
+    const rimLight = new THREE.DirectionalLight("#bad7cd", 0.48);
+    rimLight.position.set(3, 1, -3);
+    scene.add(rimLight);
+    const atmosphereMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      uniforms: { tint: { value: targetTint.clone() } },
+      vertexShader: `varying vec3 vNormal; varying vec3 vPosition;
+        void main(){vec4 p=modelViewMatrix*vec4(position,1.0);vPosition=p.xyz;
+        vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*p;}`,
+      fragmentShader: `uniform vec3 tint; varying vec3 vNormal; varying vec3 vPosition;
+        void main(){float rim=pow(1.0-abs(dot(normalize(vNormal),normalize(-vPosition))),3.7);
+        gl_FragColor=vec4(tint,rim*0.48);}`,
+    });
+    const atmosphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1.025, 48, 24),
+      atmosphereMaterial,
+    );
+    presentation.add(atmosphere);
+
+    // One geographic grid draw call. Surface depth hides the far-side lines.
+    const gridVertices: number[] = [];
+    function geographic(lat: number, lon: number) {
+      const phi = THREE.MathUtils.degToRad(lat);
+      const theta = THREE.MathUtils.degToRad(lon);
+      return [
+        Math.cos(phi) * Math.cos(theta) * 1.009,
+        Math.sin(phi) * 1.009,
+        -Math.cos(phi) * Math.sin(theta) * 1.009,
+      ];
+    }
+    for (let lon = -180; lon < 180; lon += 30) {
+      for (let i = 0; i < 48; i++)
+        gridVertices.push(
+          ...geographic(-90 + (i * 180) / 48, lon),
+          ...geographic(-90 + ((i + 1) * 180) / 48, lon),
+        );
+    }
+    for (let lat = -60; lat <= 60; lat += 30) {
+      for (let i = 0; i < 96; i++)
+        gridVertices.push(
+          ...geographic(lat, -180 + (i * 360) / 96),
+          ...geographic(lat, -180 + ((i + 1) * 360) / 96),
+        );
+    }
+    const gridGeometry = new THREE.BufferGeometry();
+    gridGeometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(gridVertices, 3),
+    );
+    const gridMaterial = new THREE.LineBasicMaterial({
+      color: "#d3ddd0",
+      transparent: true,
+      opacity: 0.14,
+      depthWrite: false,
+    });
+    earth.add(new THREE.LineSegments(gridGeometry, gridMaterial));
+    const pinGeometry = new THREE.SphereGeometry(0.009, 10, 8);
+    const pinMaterial = new THREE.MeshBasicMaterial({ color: "#f3e8ba" });
+    const pin = new THREE.Mesh(pinGeometry, pinMaterial);
+    pin.visible = false;
+    earth.add(pin);
+    const haloGeometry = new THREE.RingGeometry(0.019, 0.022, 32);
+    const haloMaterial = new THREE.MeshBasicMaterial({
+      color: "#d3e9b3",
+      transparent: true,
+      opacity: 0.85,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+    const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+    halo.visible = false;
+    earth.add(halo);
+
+    function resize() {
+      const rect = host!.getBoundingClientRect();
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      // Physical pixel ceiling matters more than CSS dimensions on a large retina display.
+      dpr = Math.min(
+        window.devicePixelRatio || 1,
+        qualityCap,
+        Math.sqrt(1_600_000 / (width * height)),
+      );
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.zoom = Math.min(1, camera.aspect);
+      camera.updateProjectionMatrix();
+      host!.dataset.dpr = dpr.toFixed(2);
+      invalidate();
+    }
+    function syncProps() {
+      const current = props.current;
+      const validFocus =
+        current.focus &&
+        Number.isFinite(current.focus.lat) &&
+        Number.isFinite(current.focus.lon);
+      const key = validFocus
+        ? `${current.focus!.lat},${current.focus!.lon}`
+        : "";
+      if (key !== previousFocus) {
+        previousFocus = key;
+        focused = Boolean(validFocus);
+        pin.visible = halo.visible = focused;
+        if (focused) {
+          const coords = geographic(
+            THREE.MathUtils.clamp(current.focus!.lat, -90, 90),
+            current.focus!.lon,
+          );
+          point.set(...(coords as [number, number, number])).normalize();
+          targetPose.setFromUnitVectors(point, forward);
+          pin.position.copy(point).multiplyScalar(1.016);
+          halo.position.copy(point).multiplyScalar(1.017);
+          halo.quaternion.setFromUnitVectors(forward, point);
+          aimPending = true;
+        }
+        targetDistance = focused ? 3.72 : 4.1;
+      }
+      if (current.twin !== previousTwin) {
+        previousTwin = current.twin;
+        targetRoll = current.twin ? Math.PI : 0;
+      }
+      if (previousTopic !== `${current.twin}-${current.topic}`) {
+        previousTopic = `${current.twin}-${current.topic}`;
+        targetTint.set(current.twin ? "#d6a7a4" : accents[current.topic]);
+      }
+      invalidate();
+    }
+    update.current = syncProps;
+
+    function transitioning() {
+      const tint = atmosphereMaterial.uniforms.tint.value as THREE.Color;
+      return (
+        (aimPending && earth.quaternion.angleTo(targetPose) > 0.001) ||
+        Math.abs(presentation.rotation.z - targetRoll) > 0.0005 ||
+        Math.abs(presentation.rotation.y - targetRoll) > 0.0005 ||
+        Math.abs(camera.position.z - targetDistance) > 0.0005 ||
+        Math.abs(tint.r - targetTint.r) +
+          Math.abs(tint.g - targetTint.g) +
+          Math.abs(tint.b - targetTint.b) >
+          0.002
+      );
+    }
+    function render(now: number) {
+      frame = 0;
+      if (!canRender()) return;
+      rendering = true;
+      const dt = Math.min(
+        lastRender ? (now - lastRender) / 1000 : 1 / 60,
+        0.06,
+      );
+      const wasTransitioning = transitioning();
+      if ((wasTransitioning || dragging) && lastRender && now - lastRender > 38)
+        slowFrames++;
+      else slowFrames = Math.max(0, slowFrames - 1);
+      if (slowFrames > 18 && qualityCap > 1) {
+        qualityCap = 1;
+        slowFrames = 0;
+        resize();
+      }
+      lastRender = now;
+      const ease = reducedMotion.matches ? 1 : 1 - Math.exp(-dt * 8);
+      if (aimPending) {
+        earth.quaternion.slerp(targetPose, ease);
+        if (earth.quaternion.angleTo(targetPose) < 0.001) {
+          earth.quaternion.copy(targetPose);
+          aimPending = false;
+        }
+      }
+      presentation.rotation.z = THREE.MathUtils.lerp(
+        presentation.rotation.z,
+        targetRoll,
+        ease,
+      );
+      // Roll north/south while turning to the opposite hemisphere. Both axes
+      // reverse from their current pose if the world switch is interrupted.
+      presentation.rotation.y = THREE.MathUtils.lerp(
+        presentation.rotation.y,
+        targetRoll,
+        ease,
+      );
+      host!.dataset.worldTurn = presentation.rotation.y.toFixed(3);
+      host!.dataset.worldRoll = presentation.rotation.z.toFixed(3);
+      camera.position.z = THREE.MathUtils.lerp(
+        camera.position.z,
+        targetDistance,
+        ease,
+      );
+      (atmosphereMaterial.uniforms.tint.value as THREE.Color).lerp(
+        targetTint,
+        ease,
+      );
+      const moving = transitioning();
+      const idle =
+        !props.current.paused &&
+        !reducedMotion.matches &&
+        !focused &&
+        !dragging &&
+        !moving;
+      if (idle) {
+        turn.setFromAxisAngle(axis.set(0, 1, 0), dt * 0.043);
+        earth.quaternion.premultiply(turn);
+        clouds.rotation.y += dt * 0.004;
+      }
+      host!.dataset.renderState = dragging
+        ? "dragging"
+        : moving
+          ? "transition"
+          : idle
+            ? "idle"
+            : props.current.paused
+              ? "paused"
+              : "settled";
+      if (dirty || moving || wasTransitioning || idle || dragging) {
+        renderer.render(scene, camera);
+        renderCount++;
+        totalDrawCalls += renderer.info.render.calls;
+        host!.dataset.renderCount = String(renderCount);
+        host!.dataset.drawCalls = String(totalDrawCalls);
+        dirty = false;
+      }
+      rendering = false;
+      if (moving) frame = requestAnimationFrame(render);
+      else if (idle)
+        timer = setTimeout(
+          () => {
+            timer = null;
+            if (canRender()) frame = requestAnimationFrame(render);
+          },
+          Math.max(0, 1000 / 30 - (performance.now() - now) - 4),
+        );
+      // Gestures schedule their own frames. Static, paused and focused states stop here.
+    }
+
+    function rotate(dx: number, dy: number) {
+      aimPending = false;
+      const roll = presentation.rotation.z;
+      turn.setFromAxisAngle(axis.set(Math.sin(roll), Math.cos(roll), 0), dx);
+      earth.quaternion.premultiply(turn);
+      turn.setFromAxisAngle(axis.set(Math.cos(roll), -Math.sin(roll), 0), dy);
+      earth.quaternion.premultiply(turn);
+      invalidate();
+    }
+    function hitGlobe(event: PointerEvent) {
+      const rect = host!.getBoundingClientRect();
+      const radius = Math.min(rect.height * 0.43, rect.width * 0.49);
+      return (
+        Math.hypot(
+          event.clientX - rect.left - rect.width / 2,
+          event.clientY - rect.top - rect.height / 2,
+        ) <= radius
+      );
+    }
+    function pointerDown(event: PointerEvent) {
+      if (!event.isPrimary || event.button !== 0 || !hitGlobe(event)) return;
+      activePointer = event.pointerId;
+      startX = pointerX = event.clientX;
+      startY = pointerY = event.clientY;
+      gesture = event.pointerType === "touch" ? "pending" : "rotate";
+      dragging = gesture === "rotate";
+      host!.setPointerCapture(event.pointerId);
+      host!.style.cursor = "grabbing";
+      host!.focus({ preventScroll: true });
+    }
+    function pointerMove(event: PointerEvent) {
+      if (event.pointerId !== activePointer) return;
+      if (gesture === "pending") {
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+        if (Math.hypot(dx, dy) < 6) return;
+        gesture = Math.abs(dx) > Math.abs(dy) ? "rotate" : "scroll";
+        dragging = gesture === "rotate";
+      }
+      if (gesture !== "rotate") return;
+      rotate(
+        (event.clientX - pointerX) * 0.005,
+        (event.clientY - pointerY) * 0.005,
+      );
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+    }
+    function pointerUp(event: PointerEvent) {
+      if (event.pointerId !== activePointer) return;
+      if (host!.hasPointerCapture(event.pointerId))
+        host!.releasePointerCapture(event.pointerId);
+      activePointer = null;
+      dragging = false;
+      host!.style.cursor = "grab";
+      invalidate();
+    }
+    function keyDown(event: KeyboardEvent) {
+      const step = event.shiftKey ? 0.25 : 0.1;
+      if (event.key === "ArrowLeft") rotate(-step, 0);
+      else if (event.key === "ArrowRight") rotate(step, 0);
+      else if (event.key === "ArrowUp") rotate(0, -step);
+      else if (event.key === "ArrowDown") rotate(0, step);
+      else if (event.key === "Home") {
+        targetPose.copy(initialPose);
+        aimPending = true;
+        invalidate();
+      } else return;
+      event.preventDefault();
+    }
+    function visibilityChange() {
+      cancelScheduled();
+      lastRender = 0;
+      if (document.hidden) host!.dataset.renderState = "hidden";
+      else invalidate();
+    }
+    function motionChange() {
+      invalidate();
+    }
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(host);
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        cancelScheduled();
+        lastRender = 0;
+        if (visible) invalidate();
+        else host.dataset.renderState = "offscreen";
+      },
+      { threshold: 0 },
+    );
+    intersectionObserver.observe(host);
+    host.addEventListener("pointerdown", pointerDown);
+    host.addEventListener("pointermove", pointerMove);
+    host.addEventListener("pointerup", pointerUp);
+    host.addEventListener("pointercancel", pointerUp);
+    host.addEventListener("keydown", keyDown);
+    document.addEventListener("visibilitychange", visibilityChange);
+    reducedMotion.addEventListener("change", motionChange);
+    resize();
+    syncProps();
+    return () => {
+      disposed = true;
+      update.current = null;
+      cancelScheduled();
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+      host.removeEventListener("pointerdown", pointerDown);
+      host.removeEventListener("pointermove", pointerMove);
+      host.removeEventListener("pointerup", pointerUp);
+      host.removeEventListener("pointercancel", pointerUp);
+      host.removeEventListener("keydown", keyDown);
+      document.removeEventListener("visibilitychange", visibilityChange);
+      reducedMotion.removeEventListener("change", motionChange);
+      textures.forEach((texture) => texture.dispose());
+      [
+        sphere,
+        atmosphere.geometry,
+        gridGeometry,
+        pinGeometry,
+        haloGeometry,
+      ].forEach((geometry) => geometry.dispose());
+      [
+        surface,
+        cloudMaterial,
+        atmosphereMaterial,
+        gridMaterial,
+        pinMaterial,
+        haloMaterial,
+      ].forEach((material) => material.dispose());
+      renderer.dispose();
+      renderer.forceContextLoss();
+      canvas.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    update.current?.();
+  }, [focus?.lat, focus?.lon, paused, twin, topic]);
+
+  return (
+    <div
+      className={`globe-scene ${className}`}
+      ref={container}
+      role="group"
+      tabIndex={0}
+      aria-roledescription="interactive globe"
+      aria-label={`${twin ? "Scenario" : "Observed"} Earth. Drag to rotate, or use arrow keys. Home resets the view. ${topic} colour is an illustrative topic accent, not measured data.`}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        minHeight: 240,
+        touchAction: "pan-y",
+        cursor: "grab",
+      }}
+    >
+      {unavailable && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: "min(72%, 65vh)",
+            aspectRatio: "1",
+            left: "50%",
+            top: "50%",
+            transform: `translate(-50%,-50%) rotate(${twin ? 180 : 0}deg)`,
+            borderRadius: "50%",
+            background: "url(/textures/earth-day.jpg) center / cover",
+            boxShadow: `inset -50px -20px 70px #02070fe0, 0 0 28px ${twin ? "#d8a0af44" : "#227caf40"}`,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+    </div>
+  );
+}
