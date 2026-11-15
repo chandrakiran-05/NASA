@@ -1,0 +1,21 @@
+# Hugging Face terminates HTTPS; Caddy only serves plain HTTP on the Space port.
+{
+	auto_https off
+	admin off
+}
+
+:7860 {
+	encode gzip
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8010 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		root * /home/user/app/frontend/dist
+		try_files {path} /index.html
+		file_server
+	}
+}
