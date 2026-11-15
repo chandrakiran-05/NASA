@@ -1755,3 +1755,29 @@ dd {
 @media(max-width:700px){.hero-title-layer{top:21%}.hero-title-layer h1{font-size:17vw;line-height:1.05}.hero-title-layer h1>span:last-child{margin-top:245px}.hero-globe{top:22%;height:51%;width:100%;max-width:520px}.globe-side{top:66%}.globe-utilities{bottom:217px}}@media(max-width:380px){.hero-title-layer{top:22%}.hero-title-layer h1>span:last-child{margin-top:250px}.hero-globe{top:24%;height:47%;width:100%}.hero-title-layer h1{font-size:17vw}}
 .nav-air{white-space:nowrap;flex-shrink:0}@media(max-width:700px){.globe-side{display:none}}@media(max-width:380px){.main-nav>a{display:none}}
 @media(min-width:701px) and (max-width:900px) and (min-height:900px){.hero-title-layer{top:21%}.hero-title-layer h1>span:last-child{margin-top:calc(46svh - 106px)}}
+.twin-tools {
+  display: grid;
+  gap: 35px;
+}
+.twin-tool {
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.twin-tool h4 {
+  margin-bottom: 8px;
+}
+.twin-variables li {
+  list-style: none;
+  font-size: 12px;
+}
+.twin-json {
+  margin: 15px 0;
+}
+.twin-lab textarea {
+  width: 100%;
+  font: 12px/1.4 ui-monospace, monospace;
+  background: #41343c;
+  color: #fff0df;
+  border: 1px solid #dcbca13b;
+  border-radius: 2px;
+}

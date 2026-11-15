@@ -462,7 +462,207 @@ export async function investigate(
   return pollJob<InvestigationReport>(started.job_id, options);
 }
 
+// ===================================================================== active trends (live, verified)
+export interface ActiveEvent {
+  seq: number;
+  type: string;
+  t?: number;
+  variable_id?: string;
+  [key: string]: any;
+}
+export interface ActiveTrendsRequest {
+  geometry?: Geometry;
+  start?: string;
+  end?: string;
+  criteria?: string[];
+  variable_ids?: string[];
+  series_ids?: string[];
+  region_name?: string;
+}
+export interface WhereToLook {
+  name: string;
+  url: string;
+}
+export interface Skipped {
+  criterion?: string;
+  variable_id?: string;
+  reason?: string;
+  where_to_look?: WhereToLook[];
+}
+export interface ActiveTrendsStart {
+  job_id: string;
+  reused: boolean;
+  variables?: string[];
+  skipped?: Skipped[];
+}
+export interface Criterion {
+  id: string;
+  n: number;
+  name: string;
+  status: "live" | "proxy" | "short_record" | "not_trendable";
+  definition?: string;
+  note?: string;
+  variables: { id: string; name: string; short_definition?: string }[];
+  where_to_look?: WhereToLook[];
+}
+export type ViewMarkerKind = "beast_confirmed" | "beast_possible" | "beast_weak" | "pelt_break";
+export interface SeriesView {
+  series_id: string;
+  label?: string | null;
+  units?: string | null;
+  chart: {
+    time: string[];
+    observed?: (number | null)[];
+    deseasonalized?: (number | null)[];
+    sen_line?: (number | null)[];
+    ols_line?: (number | null)[];
+    beast_trend?: (number | null)[];
+    change_probability?: (number | null)[];
+  };
+  markers: { date: string; kind: ViewMarkerKind | string; interval?: string[] | null; probability?: number | null }[];
+  recent_window?: { start: string; end: string } | null;
+  caption?: string | null;
+  limits?: string[];
+  explanation?: { text: string; source: string; label: string };
+}
+export interface Paper {
+  title: string;
+  year?: number;
+  venue?: string;
+  authors?: string[];
+  doi?: string | null;
+  url?: string | null;
+  trust?: string;
+}
+export interface ResearchBlock {
+  status?: string;
+  reason?: string;
+  papers?: Paper[];
+  agreement?: { label: string };
+  plain_language?: string;
+  limits?: string[];
+}
+export interface ActiveTrend {
+  variable_id: string | null;
+  name: string;
+  series_id: string;
+  detect: { state: string; plain_language?: string; rate_per_decade?: number; units?: string; recent_window?: { start: string; end: string } };
+  checks: { check: string; status: string; plain_language?: string }[];
+  beast?: { status: string; plain_language?: string; active_since?: { date?: string; interval90?: string[] } | null };
+  verdict: { label: "VERIFIED" | "PROBABLE" | "NOT VERIFIED"; why?: string; plain_language?: string; limit?: string };
+  ai_review?: { status: string; plain_language?: string };
+  research?: ResearchBlock;
+  view?: SeriesView;
+}
+export interface ActiveTrendsResult {
+  trends: ActiveTrend[];
+  not_active?: { variable_id?: string; name?: string; plain_language?: string; state?: string }[];
+  failed?: Record<string, string>;
+  skipped?: Skipped[];
+  summary?: Record<string, number>;
+  plain_language?: string;
+  limits?: string[];
+  best_trend?: { best?: { variable_id?: string; name?: string; label?: string } | null; plain_language?: string; explanation?: string };
+}
+export interface MethodsLiterature {
+  since_year?: number;
+  papers: Paper[];
+  plain_language?: string;
+}
+
+/** Splits an SSE text buffer into complete `data:` JSON events and the unfinished remainder. */
+export function parseSSE(buffer: string): { events: ActiveEvent[]; rest: string } {
+  const blocks = buffer.replace(/\r\n/g, "\n").split("\n\n");
+  const rest = blocks.pop() ?? "";
+  const events: ActiveEvent[] = [];
+  for (const block of blocks) {
+    const data = block.split("\n").filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trimStart()).join("\n");
+    if (!data) continue; // keep-alive comment
+    try {
+      events.push(JSON.parse(data));
+    } catch {
+      /* malformed block skipped; the long-poll fallback replays by seq */
+    }
+  }
+  return { events, rest };
+}
+
+const isEnd = (ev: ActiveEvent) => ev.type === "done" || ev.type === "error";
+
+/** Live events: SSE first, long-poll `/events` from the last seen seq if the stream is unavailable or breaks. */
+export async function followActiveTrends(
+  jobId: string,
+  onEvent: (ev: ActiveEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  let after = 0;
+  const emit = (ev: ActiveEvent) => {
+    if (typeof ev.seq === "number") {
+      if (ev.seq < after) return false;
+      after = ev.seq + 1;
+    }
+    onEvent(ev);
+    return isEnd(ev);
+  };
+  try {
+    const res = await fetch(`${apiBase()}/active-trends/${idPath(jobId)}/stream?after=0`, {
+      signal, credentials: "same-origin", redirect: "error", headers: { Accept: "text/event-stream" },
+    });
+    if (res.ok && res.body) {
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const parsed = parseSSE(buffer + value);
+        buffer = parsed.rest;
+        for (const ev of parsed.events) if (emit(ev)) { void reader.cancel(); return; }
+      }
+    }
+  } catch {
+    if (signal?.aborted) throw new DOMException("Request cancelled", "AbortError");
+  }
+  for (;;) {
+    let page: { events: ActiveEvent[]; next: number; done: boolean };
+    try {
+      page = await request(`/active-trends/${idPath(jobId)}/events?after=${after}&wait=25`, undefined, signal);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return; // log gone: the final result is at /jobs/{id}
+      throw error;
+    }
+    for (const ev of page.events) if (emit(ev)) return;
+    after = Math.max(after, page.next);
+    if (page.done) return;
+  }
+}
+
+export const startActiveTrends = (body: ActiveTrendsRequest, signal?: AbortSignal) =>
+  request<ActiveTrendsStart>("/active-trends", body, signal);
+
+/** Start → live events → final job result. */
+export async function runActiveTrends(
+  body: ActiveTrendsRequest,
+  options: { signal?: AbortSignal; onStart?: (s: ActiveTrendsStart) => void; onEvent: (ev: ActiveEvent) => void },
+): Promise<ActiveTrendsResult> {
+  const started = await startActiveTrends(body, options.signal);
+  options.onStart?.(started);
+  await followActiveTrends(started.job_id, options.onEvent, options.signal);
+  return pollJob<ActiveTrendsResult>(started.job_id, { signal: options.signal });
+}
+
+export const getCriteria = (signal?: AbortSignal) =>
+  request<{ criteria: Criterion[] }>("/criteria", undefined, signal);
+export const getView = (seriesId: string, signal?: AbortSignal) =>
+  request<SeriesView>(`/view/${idPath(seriesId)}`, undefined, signal);
+export const cardURL = (seriesId: string) => `${apiBase()}/view/${idPath(seriesId)}/card.svg`;
+export const getResearchMethods = (signal?: AbortSignal) =>
+  request<MethodsLiterature>("/research/methods", undefined, signal);
+
 export const api = {
+  activeTrends: runActiveTrends,
+  criteria: getCriteria,
+  view: getView,
+  researchMethods: getResearchMethods,
   plan: planQuestion,
   ask: askQuestion,
   status: getAIStatus,

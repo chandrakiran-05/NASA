@@ -1,0 +1,35 @@
+.active-trends { border-top: 1px solid var(--e-line); }
+.active-trends .active-summary,
+.active-trends .active-best { margin-top: 26px; font-size: 15px; line-height: 1.6; max-width: 70ch; }
+.active-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 18px; margin-top: 30px; }
+.active-card { border: 1px solid var(--e-line); padding: 18px 20px; display: grid; gap: 10px; font-size: 13px; line-height: 1.55; }
+.active-card header { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.active-card h4 { margin: 0; font-family: "Newsreader", Georgia, serif; font-size: 21px; font-weight: 400; overflow-wrap: anywhere; }
+.active-stage, .active-state, .active-provisional, .criteria-status, .trend-source { color: var(--e-mute); font-size: 11px; letter-spacing: .02em; }
+.active-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.active-checks li { display: grid; grid-template-columns: 74px 1fr; gap: 2px 10px; }
+.active-checks li span:last-child { grid-column: 2; color: var(--e-mute); }
+.check-mark { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; text-transform: uppercase; grid-row: span 2; }
+.check-mark.is-pass { color: #3c6b4f; }
+.check-mark.is-warn { color: #9a6a12; }
+.check-mark.is-fail { color: var(--e-accent); }
+.check-mark.is-skipped { color: var(--e-mute); }
+.active-label { display: inline-block; margin: 0; padding: 3px 10px; border: 1.5px solid currentColor; font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+.active-label.is-verified { color: #3c6b4f; }
+.active-label.is-probable { color: #9a6a12; }
+.active-label.is-not-verified { color: var(--e-mute); }
+.active-verdict { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--e-line); }
+.active-limit, .trend-legend-note { color: var(--e-mute); font-size: 12px; line-height: 1.55; }
+.trend-detail { margin-top: 44px; padding-top: 30px; border-top: 1px solid var(--e-line); display: grid; gap: 14px; }
+.trend-detail .record-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.trend-detail .record-heading h3 { font-family: "Newsreader", Georgia, serif; font-size: 28px; font-weight: 400; }
+.trend-explanation { border-left: 2px solid var(--e-accent); padding-left: 14px; display: grid; gap: 6px; }
+.trend-research, .active-skipped, .criteria-picker { margin-top: 18px; font-size: 13px; line-height: 1.55; }
+.trend-research summary, .active-skipped summary, .criteria-picker summary { cursor: pointer; min-height: 32px; }
+.trend-research ul, .active-skipped ul, .criteria-picker ul { padding-left: 18px; display: grid; gap: 8px; }
+.active-skipped a, .criteria-picker a { margin-left: 6px; color: var(--e-accent); }
+.criteria-picker ul { list-style: none; padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.criteria-picker li.is-off { opacity: .72; }
+.criteria-picker li p { color: var(--e-mute); font-size: 12px; margin: 2px 0 0 24px; }
+.active-trends .record-download { justify-self: start; }
+.active-limits { margin-top: 24px; color: var(--e-mute); font-size: 12px; }

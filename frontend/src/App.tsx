@@ -18,6 +18,7 @@ import { api } from "./api";
 import AirLLM from "./AirLLM";
 import ObservedEvidence from "./ObservedEvidence";
 import ChatPage from "./ChatPage";
+import ActiveTrends, { type ActiveRun } from "./ActiveTrends";
 import { loadNavigationGeometry, navigationStateFocus } from "./navigationGeometry";
 import type { GlobeGeometry } from "./Globe";
 import AtlasStory from "./AtlasStory";
@@ -68,6 +69,7 @@ export default function App() {
   const setGeometry = twin ? setScenarioGeometry : setObservedGeometry;
   const currentWorld = useRef({ twin, page });
   currentWorld.current = { twin, page };
+  const [activeRun, setActiveRun] = useState<ActiveRun | null>(null);
   const [plan, setPlan] = useState<Data | null>(null),
     [report, setReport] = useState<Data | null>(null);
   const [busy, setBusy] = useState(false),
@@ -272,6 +274,20 @@ export default function App() {
         setPlace(region.name);
       }
       setWorkspace(true);
+      // A known region + period also starts the live "what is changing now?" scan.
+      if (region && nextPlan.period?.start && nextPlan.period?.end)
+        setActiveRun({
+          id: Date.now(),
+          title: region.name,
+          body: {
+            geometry: region.geometry,
+            start: nextPlan.period.start,
+            end: nextPlan.period.end,
+            region_name: region.name,
+            ...(nextPlan.variables?.length ? { variable_ids: nextPlan.variables.map((v) => v.id) } : {}),
+          },
+        });
+      else setActiveRun(null);
       setProgress({
         progress: 0.05,
         message: "Acquiring the regional record…",
@@ -336,6 +352,7 @@ export default function App() {
     active.current = controller;
     try {
       const series = await api.uploadCSV(file, controller.signal);
+      setActiveRun({ id: Date.now(), title: file.name, body: { series_ids: [series.series_id] } });
       const analysis = await api.analyze(series.series_id, controller.signal);
       setReport({ results: [{ series, analysis }] });
       if (!currentWorld.current.twin && currentWorld.current.page === "earth") {
@@ -595,6 +612,7 @@ export default function App() {
               onSelectSeries={setSelectedSeriesId}
             />
           )}
+          {activeRun && <ActiveTrends key={activeRun.id} run={activeRun} />}
           <AtlasStory onAir={openAir} onQuestion={(value)=>{setObservedQuestion(value);window.scrollTo({top:0,behavior:'smooth'});document.getElementById('earth-question')?.focus();}} onUpload={(file)=>void upload(file)} busy={busy}/>
 
         </div>

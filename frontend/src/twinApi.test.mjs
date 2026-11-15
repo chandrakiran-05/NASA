@@ -69,3 +69,59 @@ test('digital twin adapter uses the branch contract and preserves simulation inp
   controller.abort();
   await assert.rejects(twinApi.list(controller.signal), error => error.name === 'AbortError');
 });
+
+test('digital twin engineer tools send the backend shapes and validate before requesting', async t => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, options });
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const id = 't_123456789abc';
+  const last = () => ({ url: calls.at(-1).url, method: calls.at(-1).options.method, body: calls.at(-1).options.body && JSON.parse(calls.at(-1).options.body) });
+  const scenario = { temp: { trend_multiplier: 2, fit_since_year: 'auto', threshold: { value: 30, direction: 'above' } } };
+
+  await twinApi.backtest(id, { holdout_years: 10, n_runs: 300, seed: 2026 });
+  assert.deepEqual(last(), { url: `/api/twin/${id}/backtest`, method: 'POST', body: { holdout_years: 10, n_runs: 300, seed: 2026 } });
+
+  const conditions = [{ variable: 'temp', value: 30, direction: 'above' }, { variable: 'rain', value: 1, direction: 'below' }];
+  await twinApi.compound(id, { conditions, scenario, horizon_years: 30, n_runs: 500, seed: 2026 });
+  assert.deepEqual(last(), { url: `/api/twin/${id}/compound`, method: 'POST', body: { conditions, scenario, horizon_years: 30, n_runs: 500, seed: 2026 } });
+
+  const scenarios = { low: { temp: { trend_multiplier: .5 } }, mid: { temp: {} }, high: { temp: { trend_multiplier: 2 } } };
+  await twinApi.scenarios(id, { scenarios, horizon_years: 20 });
+  assert.deepEqual(last(), { url: `/api/twin/${id}/scenarios`, method: 'POST', body: { scenarios, horizon_years: 20 } });
+
+  await twinApi.sensitivity(id, { target: 'temp', scenario, n_runs: 300 });
+  assert.deepEqual(last(), { url: `/api/twin/${id}/sensitivity`, method: 'POST', body: { target: 'temp', scenario, n_runs: 300 } });
+
+  const data = { source: 'chatbot team', variables: [{ name: 'temp', units: 'degC', time: ['2001-01', '2001-02'], value: [1, null] }] };
+  await twinApi.uploadData(id, data);
+  assert.deepEqual(last(), { url: `/api/twin/${id}/data`, method: 'POST', body: data });
+
+  await twinApi.importSeries(id, ' s_real ', undefined, ' My copy ');
+  assert.deepEqual(last().body, { series_id: 's_real', name: 'My copy' });
+
+  await twinApi.remove(id);
+  assert.deepEqual(last(), { url: `/api/twin/${id}`, method: 'DELETE', body: undefined });
+  await twinApi.removeVariable(id, 'sea level/m');
+  assert.deepEqual(last(), { url: `/api/twin/${id}/variables/sea%20level%2Fm`, method: 'DELETE', body: undefined });
+
+  const before = calls.length;
+  assert.throws(() => twinApi.backtest(id, { holdout_years: 1 }), /2 to 40/);
+  assert.throws(() => twinApi.compound(id, { conditions: [] }), /1 to 5/);
+  assert.throws(() => twinApi.compound(id, { conditions: [{ variable: 'temp', value: NaN, direction: 'above' }] }), /finite level/);
+  assert.throws(() => twinApi.scenarios(id, { scenarios: {} }), /1 to 6/);
+  assert.throws(() => twinApi.scenarios(id, { scenarios: Object.fromEntries('abcdefg'.split('').map(k => [k, {}])) }), /1 to 6/);
+  assert.throws(() => twinApi.sensitivity(id, { target: 'temp', scenario: { temp: { trend_multiplier: 2 } } }), /threshold/);
+  assert.throws(() => twinApi.simulate(id, { horizon_years: 30, scenario: { temp: { fit_since_year: 1999.5 } } }), /whole year/);
+  assert.throws(() => twinApi.simulate(id, { horizon_years: 30, n_runs: 10, scenario: {} }), /50 to 2,000/);
+  assert.throws(() => twinApi.uploadData(id, { variables: [] }), /1 to 50/);
+  assert.throws(() => twinApi.uploadData(id, { variables: [{ name: 'x', time: ['2001-01'], value: [] }] }), /same length/);
+  assert.throws(() => twinApi.uploadData(id, { variables: [{ name: 'x', time: ['2001-01'], value: ['1'] }] }), /numbers or null/);
+  assert.throws(() => twinApi.importSeries(id, '  '), /series id/);
+  assert.throws(() => twinApi.removeVariable(id, ''), /1 to 80/);
+  assert.throws(() => twinApi.remove('t_bad'), /valid digital twin/);
+  assert.equal(calls.length, before, 'invalid inputs must not issue requests');
+});

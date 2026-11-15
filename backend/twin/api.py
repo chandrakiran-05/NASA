@@ -61,6 +61,7 @@ class Knobs(BaseModel):
     shocks: list[Shock] = []
     drivers: list[Driver] = []
     threshold: Threshold | None = None
+    fit_since_year: int | str | None = Field(None, description='fit the trend from this year, or "auto" (last PELT break)')
 
 
 class SimulateRequest(BaseModel):

@@ -8,9 +8,11 @@ import {
 import type { FormEvent } from "react";
 import { ApiError } from "./api";
 import { twinApi } from "./twinApi";
+import { ProbabilityCurve, TwinTools } from "./TwinTools";
 import type {
   Twin,
   TwinKnobs,
+  TwinScenario,
   TwinSimulation,
   TwinSimulationVariable,
 } from "./twinApi";
@@ -92,6 +94,15 @@ function CurveChart({
     else finish();
   });
   finish();
+  const ref = curve.reference;
+  const refBand =
+    ref &&
+    ref.p05.every(Number.isFinite) &&
+    ref.p95.every(Number.isFinite) &&
+    `${ref.p05.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(" ")} ${ref.p95
+      .map((v, i) => `L${x(i)},${y(v)}`)
+      .reverse()
+      .join(" ")} Z`;
   return (
     <div className="twin-chart">
       <svg
@@ -126,6 +137,7 @@ function CurveChart({
         {bands.map((d, i) => (
           <path key={i} d={d} fill="#f5b773" opacity=".16" />
         ))}
+        {refBand && <path d={refBand} fill="#c2d7e5" opacity=".12" />}
         {curve.reference && (
           <path
             d={line(curve.reference.p50)}
@@ -160,7 +172,12 @@ function CurveChart({
       <div className="twin-legend">
         <span>— Simulated scenario median</span>
         <span>Shaded: simulated 5th–95th percentiles</span>
-        {curve.reference && <span>┄ Simulated reference, no changes</span>}
+        {curve.reference && (
+          <span>
+            ┄ Simulated reference median, no changes (blue shading: its
+            5th–95th)
+          </span>
+        )}
       </div>
       <details>
         <summary>Read simulated values</summary>
@@ -172,6 +189,7 @@ function CurveChart({
                 <th scope="col">5th percentile</th>
                 <th scope="col">Median</th>
                 <th scope="col">95th percentile</th>
+                {curve.delta_p50 && <th scope="col">Median minus reference</th>}
               </tr>
             </thead>
             <tbody>
@@ -181,6 +199,7 @@ function CurveChart({
                   <td>{curve.p05[i]}</td>
                   <td>{curve.p50[i]}</td>
                   <td>{curve.p95[i]}</td>
+                  {curve.delta_p50 && <td>{curve.delta_p50[i]}</td>}
                 </tr>
               ))}
             </tbody>
@@ -204,6 +223,11 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
   const [addition, setAddition] = useState("0");
   const [threshold, setThreshold] = useState("");
   const [direction, setDirection] = useState<"above" | "below">("above");
+  const [fitSince, setFitSince] = useState("");
+  const [compare, setCompare] = useState(true);
+  const [seriesId, setSeriesId] = useState(importSeriesId ?? "");
+  const [importName, setImportName] = useState("");
+  const [json, setJson] = useState("");
   const [prompt, setPrompt] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -322,7 +346,11 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
     setAddition("0");
     setThreshold("");
     setDirection("above");
+    setFitSince("");
   }, [twin?.id, variable]);
+  useEffect(() => {
+    if (importSeriesId) setSeriesId(importSeriesId);
+  }, [importSeriesId]);
 
   function create(event: FormEvent) {
     event.preventDefault();
@@ -372,12 +400,12 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
     );
   }
   function importObserved() {
-    if (!twin || !importSeriesId) return;
+    if (!twin) return;
     const id = twin.id;
     void perform(
       (signal) =>
         refreshAfter(
-          (s) => twinApi.importSeries(id, importSeriesId, s),
+          (s) => twinApi.importSeries(id, seriesId, s, importName),
           signal,
         ),
       (next) => {
@@ -386,15 +414,82 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
       },
     );
   }
-  function simulate(event: FormEvent) {
-    event.preventDefault();
-    if (!twin || !variable) return;
+  function uploadJSON() {
+    if (!twin) return;
+    const id = twin.id;
+    void perform(
+      (signal) => {
+        let body;
+        try {
+          body = JSON.parse(json);
+        } catch {
+          throw new ApiError({
+            code: "invalid_json",
+            message: "The JSON could not be read.",
+          });
+        }
+        return refreshAfter((s) => twinApi.uploadData(id, body, s), signal);
+      },
+      (next) => {
+        setResult(null);
+        adopt(next);
+        setJson("");
+      },
+    );
+  }
+  function removeTwin() {
+    if (
+      !twin ||
+      !window.confirm(
+        `Delete twin "${twin.name}" and all its data? This cannot be undone.`,
+      )
+    )
+      return;
+    const id = twin.id;
+    void perform(
+      (signal) => twinApi.remove(id, signal),
+      () => {
+        selected.current = null;
+        setTwin(null);
+        setVariable("");
+        setResult(null);
+        setTwins((all) => all.filter((t) => t.id !== id));
+      },
+    );
+  }
+  function removeVariable(name: string) {
+    if (
+      !twin ||
+      !window.confirm(`Remove "${name}" from this twin? This cannot be undone.`)
+    )
+      return;
+    const id = twin.id;
+    void perform(
+      async (signal) => {
+        await twinApi.removeVariable(id, name, signal);
+        return twinApi.get(id, signal);
+      },
+      (next) => {
+        setResult(null);
+        adopt(next);
+      },
+    );
+  }
+  function currentScenario(): TwinScenario {
     const knobs: TwinKnobs = {
       trend_multiplier: Number(multiplier),
       trend_add_per_decade: Number(addition),
     };
     if (threshold.trim())
       knobs.threshold = { value: Number(threshold), direction };
+    const fit = fitSince.trim().toLowerCase();
+    if (fit) knobs.fit_since_year = fit === "auto" ? "auto" : Number(fit);
+    return { [variable]: knobs };
+  }
+  function simulate(event: FormEvent) {
+    event.preventDefault();
+    if (!twin || !variable) return;
+    const scenario = currentScenario();
     setResult(null);
     void perform(
       (signal) =>
@@ -404,8 +499,8 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
             horizon_years: Number(horizon),
             n_runs: 500,
             seed: 2026,
-            compare_to_baseline: true,
-            scenario: { [variable]: knobs },
+            compare_to_baseline: compare,
+            scenario,
           },
           signal,
         ),
@@ -521,12 +616,78 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
                       at least 24 valid observations per variable to simulate.
                     </small>
                   </label>
-                  {importSeriesId && (
-                    <button type="button" onClick={importObserved}>
-                      Copy current observed series
-                    </button>
-                  )}
+                  <label className="twin-field">
+                    Copy a main-mode series (series id)
+                    <input
+                      value={seriesId}
+                      onChange={(event) => setSeriesId(event.target.value)}
+                      placeholder="e.g. s_…"
+                    />
+                  </label>
+                  <label className="twin-field">
+                    Name in twin (optional)
+                    <input
+                      value={importName}
+                      maxLength={80}
+                      onChange={(event) => setImportName(event.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={importObserved}
+                    disabled={!seriesId.trim()}
+                  >
+                    Copy series
+                  </button>
                 </div>
+                <details className="twin-json">
+                  <summary>Upload research data as JSON</summary>
+                  <label className="twin-field">
+                    {
+                      '{"source": "…", "variables": [{"name": "…", "units": "…", "time": ["2001-01", …], "value": [1.2, null, …]}]}'
+                    }
+                    <textarea
+                      rows={5}
+                      value={json}
+                      onChange={(event) => setJson(event.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={uploadJSON}
+                    disabled={!json.trim()}
+                  >
+                    Upload JSON
+                  </button>
+                </details>
+                {twin.variables.length > 0 && (
+                  <ul
+                    className="twin-variables"
+                    aria-label="Variables in this twin"
+                  >
+                    {twin.variables.map((v) => (
+                      <li key={v.name}>
+                        {v.name}
+                        {v.units ? ` (${v.units})` : ""}{" "}
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => removeVariable(v.name)}
+                          aria-label={`Remove ${v.name}`}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={removeTwin}
+                >
+                  Delete this twin
+                </button>
                 <p className="twin-note">
                   A copy leaves the original record unchanged. Re-uploading a
                   variable name replaces its data in this twin.
@@ -604,6 +765,25 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
                         <option value="below">At or below</option>
                       </select>
                     </label>
+                    <label className="twin-field">
+                      Fit trend since (year or "auto", optional)
+                      <input
+                        value={fitSince}
+                        onChange={(event) => setFitSince(event.target.value)}
+                        placeholder="Full record"
+                      />
+                      <small>"auto" fits after the last detected break.</small>
+                    </label>
+                    <label className="twin-field">
+                      <span>
+                        <input
+                          type="checkbox"
+                          checked={compare}
+                          onChange={(event) => setCompare(event.target.checked)}
+                        />{" "}
+                        Compare to a simulated reference (no changes)
+                      </span>
+                    </label>
                     {baseline && (
                       <p className="twin-summary">
                         Fitted rate:{" "}
@@ -635,8 +815,8 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
                         Run scenario
                       </button>
                       <span>
-                        500 simulated runs · fixed seed 2026 · reference
-                        included
+                        500 simulated runs · fixed seed 2026
+                        {compare ? " · reference included" : ""}
                       </span>
                     </div>
                   </form>
@@ -676,7 +856,9 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
             Run settings: trend × {curve.scenario.trend_multiplier ?? 1}; added
             rate {curve.scenario.trend_add_per_decade ?? 0}{" "}
             {curve.baseline.units ?? "units"}/decade. {result.horizon_years}{" "}
-            years after {curve.baseline.last_observed}; seed {result.seed}.
+            years after {curve.baseline.last_observed}; seed {result.seed};
+            trend fitted since{" "}
+            {curve.scenario.fit_since_year ?? "start of record"}.
           </p>
           {finalDelta !== undefined && Number.isFinite(finalDelta) && (
             <p className="twin-summary">
@@ -699,22 +881,44 @@ const TwinLab = forwardRef<TwinLabHandle, TwinLabProps>(function TwinLab(
                 {curve.threshold.median_first_crossing ?? "No runs crossed"}.
                 This is a scenario level, not a detected tipping point.
               </p>
-              <details>
-                <summary>Read cumulative crossing probabilities</summary>
-                <ul>
-                  {curve.threshold.probability_by_year.map((row) => (
-                    <li key={row.year}>
-                      {row.year}:{" "}
-                      {(row.p * 100).toLocaleString(undefined, {
-                        maximumFractionDigits: 1,
-                      })}
-                      % of simulated runs
-                    </li>
-                  ))}
-                </ul>
-              </details>
+              <ProbabilityCurve
+                rows={curve.threshold.probability_by_year}
+                title="Share of simulated runs crossed by each year"
+                lines={[
+                  {
+                    label: "Scenario (simulated)",
+                    values: curve.threshold.probability_by_year.map((r) => r.p),
+                  },
+                  ...(curve.reference?.threshold
+                    ? [
+                        {
+                          label: "Reference, no changes (simulated)",
+                          dashed: true,
+                          values: curve.threshold.probability_by_year.map(
+                            (r) =>
+                              curve.reference?.threshold?.probability_by_year.find(
+                                (q) => q.year === r.year,
+                              )?.p ?? null,
+                          ),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
             </div>
           )}
+        </article>
+      )}
+      {twin && twin.variables.length > 0 && variable && !unavailable && (
+        <article className="twin-result" aria-label="Engineer tools">
+          <div className="section-label">SIMULATED / ENGINEER TOOLS</div>
+          <TwinTools
+            twin={twin}
+            variable={variable}
+            scenario={currentScenario}
+            horizon={() => Number(horizon)}
+            perform={(op, apply) => void perform(op, apply)}
+          />
         </article>
       )}
     </section>
