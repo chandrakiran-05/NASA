@@ -1,5 +1,5 @@
 {
- "_comment": "Keyless global monthly grids (no NASA Earthdata token): NOAA PSL datasets mirrored on the NOAA upwell ERDDAP (source erddap, same entry shape as seed_catalog_ocean_atmos.json). All four grids use 0..360 longitudes (erddap_lon360) and north-to-south latitudes. GPCP v2.3, CMAP and PREC/L are on the same server but their precip variable carries a wrong 'seconds since 1970' unit there and every value comes back empty (checked 2026-11-15), so precipitation uses NCEP/DOE Reanalysis 2. No sea-level-anomaly grid with 30+ years exists on a NOAA ERDDAP (checked 2026-11-15), so global_sea_level_anomaly is not included. erddap_alt_dataset_ids lists identical copies of a grid on the same server, tried when the first returns an error.",
+ "_comment": "Keyless global monthly grids (no NASA Earthdata token): NOAA PSL datasets mirrored on the NOAA upwell ERDDAP (source erddap, same entry shape as seed_catalog_ocean_atmos.json). All four grids use 0..360 longitudes (erddap_lon360) and north-to-south latitudes. GPCP v2.3, CMAP and PREC/L are on the same server but their precip variable carries a wrong 'seconds since 1970' unit there and every value comes back empty (checked 2026-11-15), so precipitation uses NCEP/DOE Reanalysis 2. No sea-level-anomaly grid with 30+ years exists on a NOAA ERDDAP (checked 2026-11-15), so global_sea_level_anomaly is not included. erddap_alt_dataset_ids lists identical copies of a grid on the same server, tried when the first returns an error. Since 2026-11-15 the upwell copy of NCEP/DOE R2 prate (noaa_psl_6974_55ee_1b93) answers 404 and no identical copy is listed, so global_precip_chirps (CHIRPS v2.0 on the CoastWatch ERDDAP, a stable id) is the keyless precipitation grid for sweeps and the last fallback of the precipitation criterion.",
  "variables": [
   {
    "id": "global_t2m",
@@ -46,7 +46,7 @@
    "convert": {
     "factor": 1.0,
     "offset": -273.15,
-    "units": "\u00b0C"
+    "units": "°C"
    },
    "coverage_start": "1948-01",
    "coverage_source": "erddap",
@@ -209,6 +209,55 @@
    "erddap_alt_dataset_ids": [
     "noaa_psl_cc61_dd96_0a45"
    ]
+  },
+  {
+   "id": "global_precip_chirps",
+   "name": "Rainfall over land, 50°S-50°N (CHIRPS v2.0, satellite + rain gauges)",
+   "domain": "atmosphere",
+   "family": "precipitation",
+   "short_definition": "How much rain falls each month, in millimetres, on land between 50°S and 50°N since 1981, from CHIRPS (satellite images blended with rain-gauge data; no login needed).",
+   "definition": "Monthly rainfall totals from the Climate Hazards Group InfraRed Precipitation with Station data (CHIRPS v2.0), made by UCSB and USGS from infrared satellite images, a long-term rainfall climatology and rain-gauge measurements, on a 0.05 degree grid (about 5 km) over land between 50°S and 50°N. Oceans have no value. It is built for long rainfall trends and drought monitoring; where gauges are sparse (much of Africa, mountains) the satellite estimate carries more weight and local amounts are less certain. Large boxes are sampled on a coarser stride of grid cells to keep requests small.",
+   "keywords": [
+    "rain",
+    "rainfall",
+    "precipitation",
+    "monsoon",
+    "drought",
+    "wet",
+    "dry",
+    "chirps",
+    "land",
+    "global"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-15: axis and data queries on https://coastwatch.pfeg.noaa.gov/erddap/griddap/chirps20GlobalMonthlyP05 (time axis 1981-01 to 2025-02, 0.05 degree grid, -179.975..179.975 longitudes, units mm/month, ocean cells NaN)",
+   "erddap_base": "https://coastwatch.pfeg.noaa.gov/erddap",
+   "dataset_id": "chirps20GlobalMonthlyP05",
+   "erddap_variable": "precip",
+   "dataset": {
+    "short_name": "CHIRPS v2.0 monthly 0.05 degree",
+    "version": "2.0",
+    "variable": "precip",
+    "doi": "10.1038/sdata.2015.66",
+    "url": "https://www.chc.ucsb.edu/data/chirps",
+    "citation": "Funk, C. et al. (2015): The climate hazards infrared precipitation with stations - a new environmental record for monitoring extremes. Scientific Data, 2, 150066. Served by NOAA CoastWatch ERDDAP."
+   },
+   "native_resolution": "monthly",
+   "units": "mm/month",
+   "units_source": "erddap",
+   "convert": {
+    "factor": 1.0,
+    "offset": 0.0,
+    "units": "mm/month"
+   },
+   "coverage_start": "1981-01",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": true
   }
  ]
 }

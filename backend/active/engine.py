@@ -32,12 +32,14 @@ from scipy import stats
 
 from ..analysis.deseason import deseasonalize
 from ..analysis.trend import mann_kendall, ols_trend, sens_slope
+from ..core.wording import TEST_NOTE, data_note
 from ..timeseries.model import MonthlySeries
 
 MIN_YEARS = 15
 ACTIVE_STATES = ("active", "accelerating", "emerging", "reversed")
 LIMIT = ("VERIFIED means the trend survived these checks on this data. It does not show what causes it, "
-         "and it does not mean the trend will continue.")
+         "and it does not mean the trend will continue. PROBABLE or NOT VERIFIED means the trend is not clear "
+         "enough to pass every check; the data themselves are still real measurements or model output.")
 
 
 def window_years(n_years: float) -> int:
@@ -62,13 +64,19 @@ def _span(ms: MonthlySeries, i: int, j: int) -> str:
     return f"{ms.time[i].year}–{ms.time[j - 1].year}"
 
 
+def _note(ms: MonthlySeries) -> str:
+    p = ms.provenance
+    return data_note(getattr(p, "source_api", None), ms.n, ms.n_valid, getattr(p, "dataset_short_name", None))
+
+
 def detect(ms: MonthlySeries, alpha: float = 0.05) -> dict:
     n = ms.n
     n_years = n / 12
     if n_years < MIN_YEARS or ms.n_valid < MIN_YEARS * 12 * 0.7:
-        return {"state": "too_short", "active": False,
+        return {"state": "too_short", "active": False, "data_note": _note(ms),
                 "plain_language": f"Active-trend detection needs at least {MIN_YEARS} years of mostly complete "
-                                  f"monthly data; this record has {ms.n_valid} valid months."}
+                                  f"monthly data; this record has {ms.n_valid} months with a value. The data are "
+                                  f"real; there are just not enough months yet for this test."}
     a = deseasonalize(ms, "stl").deseasonalized
     t = ms.t_years()
     W = window_years(n_years)
@@ -106,7 +114,7 @@ def detect(ms: MonthlySeries, alpha: float = 0.05) -> dict:
             "rate_per_decade": r, "units": ms.units, "window_years": W,
             "recent_window": {"start": ms.time[k].strftime("%Y-%m"), "end": ms.time[-1].strftime("%Y-%m")},
             "recent": recent, "before": before, "full": full, "p_slope_change": p_change,
-            "effect_sd_per_decade": abs(r) / sd if sd > 0 else None, "plain_language": txt}
+            "effect_sd_per_decade": abs(r) / sd if sd > 0 else None, "plain_language": txt, "data_note": _note(ms)}
 
 
 # ------------------------------------------------------------------ stage B: single-series checks
@@ -123,7 +131,8 @@ def check_integrity(ms: MonthlySeries, det: dict) -> dict:
     jump_recent = (jump.get("best_model") == "jump" and jump.get("pettitt_p", 1) < 0.05
                    and (jump.get("pettitt_date") or "") >= ws)
     if aud["badge"] == "NOT_FIT":
-        return make_check("integrity", "fail", "The data are not fit for trend testing: " + " ".join(aud["reasons"]),
+        return make_check("integrity", "fail", "Not ready for a trend test (this is about the test, not whether the data are real): "
+                          + " ".join(aud["reasons"]),
                       badge=aud["badge"])
     if seams:
         return make_check("integrity", "warn", f"Possible instrument effect at {seams[0]['date']} "
@@ -141,9 +150,10 @@ def check_court(ms: MonthlySeries, det: dict, alpha: float) -> dict:
     sen = next(j for j in c["jurors"] if j["id"] == "sen_ci")["slope_per_decade"]
     if c["stamp"] != "SIGNIFICANT":
         return make_check("court", "fail", f"Trend Court on the recent window: NOT PROVEN ({c['jurors_significant']} of "
-                      f"{len(c['jurors'])} tests significant).", stamp=c["stamp"], chosen_test=c["chosen_test"])
+                      f"{len(c['jurors'])} tests significant). The recent trend is not clear enough yet; "
+                      f"the data are still real.", stamp=c["stamp"], chosen_test=c["chosen_test"])
     if np.sign(sen) != np.sign(det["rate_per_decade"]):
-        return make_check("court", "fail", "Trend Court finds the opposite direction.", stamp=c["stamp"])
+        return make_check("court", "fail", "Trend Court finds the opposite direction on the recent window, so the direction is unclear.", stamp=c["stamp"])
     return make_check("court", "warn" if c["flips"] else "pass",
                   f"Trend Court on the recent window: SIGNIFICANT ({c['jurors_significant']} of {len(c['jurors'])} "
                   f"tests agree; chosen test {c['chosen_test']}).", stamp=c["stamp"], flips=c["flips"])
@@ -268,7 +278,7 @@ def label(det: dict, checks: list[dict], beast: dict | None) -> dict:
     seam = bool(beast and (beast.get("active_since") or {}).get("near_seam"))
     if fails or (beast and beast["status"] == "disagrees"):
         lab = "NOT VERIFIED"
-        why = f"failed: {', '.join(fails or ['BEAST direction'])}"
+        why = f"did not pass: {', '.join(fails or ['BEAST direction'])}"
     elif beast and beast["agrees"] and len(passes) >= 3 and not seam and "integrity" not in warns and "fdr" not in warns:
         lab = "VERIFIED"
         why = f"passed {len(passes)} of {len(deterministic)} checks and BEAST agrees"
@@ -278,4 +288,5 @@ def label(det: dict, checks: list[dict], beast: dict | None) -> dict:
                                       "BEAST " + (beast["status"] if beast else "not run") if not (beast and beast["agrees"]) else "",
                                       "regime starts at a possible instrument effect" if seam else ""])) or "too few checks passed"
     return {"label": lab, "why": why, "passed": passes, "warnings": warns, "failed": fails,
-            "plain_language": f"{lab}: {det['plain_language']} ({why}).", "limit": LIMIT}
+            "plain_language": f"{lab}: {det['plain_language']} ({why}).", "limit": LIMIT,
+            "test_note": TEST_NOTE, "data_note": det.get("data_note")}

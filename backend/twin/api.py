@@ -311,3 +311,21 @@ async def delete_variable(request: Request, twin_id: str, name: str):
     twin["variables"] = [v for v in twin["variables"] if v["name"] != name]
     _save(st, twin)
     return {"deleted": name, "twin_id": twin_id, "variables": [v["name"] for v in twin["variables"]]}
+
+
+class WhatIfRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=500,
+                          examples=["If global temperature rises 5 °C, how does the trend change in Chennai and California?"])
+
+
+@router.post("/whatif", status_code=202)
+async def start_whatif(request: Request, body: WhatIfRequest):
+    """A what-if for every place named: real records (NASA first) simulated forward with and without the change.
+    Poll GET /api/jobs/{job_id}. Output is simulated, never a prediction."""
+    from .whatif import parse_change, run_whatif
+    st = _st(request)
+    if not parse_change(body.question):
+        raise InvalidRequest("Say what changes and by how much, for example '+2 °C by 2050', '+20% rainfall' or "
+                             "'if warming doubled'.")
+    jid = st.jobs.submit("twin_whatif", body.model_dump(), lambda progress: run_whatif(st, body.question, progress))
+    return {"job_id": jid, "status_url": f"/api/jobs/{jid}"}

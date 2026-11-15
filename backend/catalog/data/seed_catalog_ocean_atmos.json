@@ -106,6 +106,50 @@
    "land_only": false
   },
   {
+   "id": "seawifs_chlorophyll",
+   "name": "Ocean chlorophyll-a (SeaWiFS satellite, monthly, 1997-2010)",
+   "domain": "ocean",
+   "family": "ocean_biology",
+   "short_definition": "How green the sea was from 1997 to 2010: chlorophyll-a seen by NASA's SeaWiFS, the sensor used in the challenge's SeaWiFS river-plume paper.",
+   "definition": "SeaWiFS (on the OrbView-2 satellite) measured ocean colour from September 1997 to December 2010. These are NASA monthly 9 km maps (reprocessing R2018.0) served by NOAA CoastWatch ERDDAP. It is the same sensor, resolution and time step used by Acker et al. in the challenge's SeaWiFS river-outflow paper. Clouds and land leave gaps, and those stay as missing months. Near coasts, coloured dissolved organic matter and river sediment can make the estimate too high.",
+   "keywords": [
+    "chlorophyll",
+    "chlorophyll-a",
+    "seawifs",
+    "orbview",
+    "historical",
+    "ocean colour",
+    "river plume",
+    "phytoplankton"
+   ],
+   "source": "erddap",
+   "verified": true,
+   "verified_note": "verified live 2026-11-15: .das of https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSW2018chlamday (variable 'chlorophyll', mg m^-3, time 1997-09-16 to 2010-12-16, 0.083 deg grid, product DOI 10.5067/ORBVIEW-2/SEAWIFS/L3M/CHL/2018). SeaWiFS chlorophyll is not among Giovanni-in-the-Cloud configured variables (checked the same day), so ERDDAP is the route.",
+   "erddap_base": "https://coastwatch.pfeg.noaa.gov/erddap",
+   "dataset_id": "erdSW2018chlamday",
+   "erddap_variable": "chlorophyll",
+   "erddap_lon360": false,
+   "dataset": {
+    "short_name": "SEASTAR_SEAWIFS_GAC_L3m_CHL",
+    "version": "R2018.0",
+    "variable": "chlor_a",
+    "doi": "10.5067/ORBVIEW-2/SEAWIFS/L3M/CHL/2018",
+    "url": "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdSW2018chlamday.html",
+    "citation": "NASA Ocean Biology Processing Group: SeaWiFS Level-3 Mapped Chlorophyll Data, Version R2018.0. NASA OB.DAAC. doi:10.5067/ORBVIEW-2/SEAWIFS/L3M/CHL/2018"
+   },
+   "native_resolution": "monthly",
+   "units": "mg m-3",
+   "units_source": "erddap",
+   "coverage_start": "1997-09",
+   "coverage_end": "2010-12",
+   "coverage_source": "erddap",
+   "spatial_modes": [
+    "point",
+    "area"
+   ],
+   "land_only": false
+  },
+  {
    "id": "seaice_extent",
    "name": "Sea-ice extent (whole hemisphere, NSIDC Sea Ice Index)",
    "domain": "polar",

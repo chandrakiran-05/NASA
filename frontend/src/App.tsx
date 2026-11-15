@@ -16,18 +16,27 @@ import {
 } from "lucide-react";
 import { api } from "./api";
 import AirLLM from "./AirLLM";
-import ObservedEvidence from "./ObservedEvidence";
 import ChatPage from "./ChatPage";
-import ActiveTrends, { type ActiveRun } from "./ActiveTrends";
+import DiscoveryChat from "./DiscoveryChat";
+import DiscoveryHow from "./DiscoveryHow";
+import { seriesIdOf, type Report } from "./report";
 import { loadNavigationGeometry, navigationStateFocus } from "./navigationGeometry";
 import type { GlobeGeometry } from "./Globe";
 import AtlasStory from "./AtlasStory";
+import PaperReplication from "./PaperReplication";
+import CursorFollower from "./CursorFollower";
 import TwinLab from "./TwinLab";
 import type { TwinLabHandle } from "./TwinLab";
 import { inferPromptContext } from "./promptContext";
 const Globe = lazy(() => import("./Globe"));
 type Data = Record<string, any>;
 type Focus = { lat: number; lon: number };
+function pageFromPath(path: string) {
+  if (path.startsWith("/airllm")) return "airllm";
+  if (path.startsWith("/chat")) return "chat";
+  if (path.startsWith("/digitwin/discover")) return "discover";
+  return "earth";
+}
 function geometryCenter(g: Data): Focus | null {
   if (g.type === "Point")
     return { lon: g.coordinates[0], lat: g.coordinates[1] };
@@ -39,15 +48,14 @@ function geometryCenter(g: Data): Focus | null {
   return null;
 }
 export default function App() {
-  const [page, setPage] = useState(
-    location.pathname.startsWith("/airllm") ? "airllm" : location.pathname.startsWith("/chat") ? "chat" : "earth",
-  );
+  const [page, setPage] = useState(pageFromPath(location.pathname));
   const [twin, setTwin] = useState(location.pathname.startsWith("/digitwin"));
   const [observedQuestion, setObservedQuestion] = useState(""),
     [twinQuestion, setTwinQuestion] = useState("");
   const question = twin ? twinQuestion : observedQuestion;
   const setQuestion = twin ? setTwinQuestion : setObservedQuestion;
   const [chatLaunch, setChatLaunch] = useState<{id:number; question:string}|null>(null);
+  const [discoveryLaunch, setDiscoveryLaunch] = useState<{id:number; question:string}|null>(null);
   const [motionPaused, setMotionPaused] = useState(false);
   const [menu, setMenu] = useState(false),
     [changing, setChanging] = useState(false);
@@ -69,17 +77,10 @@ export default function App() {
   const setGeometry = twin ? setScenarioGeometry : setObservedGeometry;
   const currentWorld = useRef({ twin, page });
   currentWorld.current = { twin, page };
-  const [activeRun, setActiveRun] = useState<ActiveRun | null>(null);
-  const [plan, setPlan] = useState<Data | null>(null),
-    [report, setReport] = useState<Data | null>(null);
-  const [busy, setBusy] = useState(false),
-    [twinBusy, setTwinBusy] = useState(false),
-    [error, setError] = useState("");
-  const [workspace, setWorkspace] = useState(false),
-    [progress, setProgress] = useState({ progress: 0, message: "" });
+  const [report, setReport] = useState<Report | null>(null);
+  const [twinBusy, setTwinBusy] = useState(false);
   const [connection, setConnection] = useState("Checking connection");
-  const active = useRef<AbortController | null>(null),
-    twinLab = useRef<TwinLabHandle>(null),
+  const twinLab = useRef<TwinLabHandle>(null),
     transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cursor = useRef<HTMLDivElement>(null),
     pointerFrame = useRef(0);
@@ -100,17 +101,10 @@ export default function App() {
     motion.addEventListener("change", syncScroll);
     return () => {window.removeEventListener("scroll", syncScroll);motion.removeEventListener("change", syncScroll);cancelAnimationFrame(frame);};
   }, [page, motionPaused]);
-  const currentAnalysis = report?.results?.[0]?.analysis;
-  const [selectedSeriesId, setSelectedSeriesId] = useState<
-    string | undefined
-  >();
-  useEffect(
-    () => setSelectedSeriesId(report?.results?.[0]?.analysis?.series_id),
-    [report],
-  );
+  const selectedSeriesId = seriesIdOf(report);
   useEffect(() => {
     document.title =
-      page === "chat" ? "Earth conversations - Living Atlas" : page === "airllm"
+      page === "chat" ? "Earth conversations - Living Atlas" : page === "discover" ? "Discovery mode — DigiTwin" : page === "airllm"
         ? "Local AI — Earth System Trend Detective"
         : twin
           ? "DigiTwin — A possible Earth"
@@ -118,7 +112,7 @@ export default function App() {
   }, [page, twin]);
   useEffect(() => {
     const pop = () => {
-      setPage(location.pathname.startsWith("/airllm") ? "airllm" : location.pathname.startsWith("/chat") ? "chat" : "earth");
+      setPage(pageFromPath(location.pathname));
       setTwin(location.pathname.startsWith("/digitwin"));
       setMenu(false);
     };
@@ -139,7 +133,6 @@ export default function App() {
       });
     return () => {
       controller.abort();
-      active.current?.abort();
       if (transitionTimer.current) clearTimeout(transitionTimer.current);
       cancelAnimationFrame(pointerFrame.current);
     };
@@ -226,148 +219,38 @@ export default function App() {
     setPage("earth");
     window.scrollTo(0, 0);
   }
-  function launchChat() {
-    if (!question.trim()) return;
-    const enter = () => {
-      history.pushState({}, "", "/chat");
-      setChatLaunch({id:Date.now(),question:question.trim()});
-      setPage("chat");
-      window.scrollTo({top:0,behavior:"instant"});
-    };
-    if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const transition = document.startViewTransition(() => flushSync(enter));
-      void transition.finished.catch(() => {});
-    } else enter();
+  function openChat() {
+    history.pushState({}, "", "/chat");
+    setChatLaunch(null);
+    setPage("chat");
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
-  async function submit(value = question) {
+  /** The hero question opens the chat page; each answer there is the full evidence report. */
+  function submit(value = question) {
     const q = value.trim();
-    if (!q || (twin ? twinBusy : busy)) return;
-    if (twin) {
-      twinLab.current?.submitPrompt(q);
-      return;
-    }
-    setObservedQuestion(q);
-    setError("");
-    setReport(null);
-    setBusy(true);
-    setProgress({ progress: 0.02, message: "Reading your question…" });
-    active.current?.abort();
-    const controller = new AbortController();
-    active.current = controller;
-    try {
-      const nextPlan = await api.plan(q, controller.signal);
-      setPlan(nextPlan);
-      if (nextPlan.on_topic === false)
-        throw new Error(nextPlan.message || "Ask about Earth-system data.");
-      if (nextPlan.needs_user_input?.length)
-        throw new Error(
-          `Add ${nextPlan.needs_user_input.join(" and ")} to your question.`,
-        );
-      if (nextPlan.regions?.some((r) => r.needs_confirmation))
-        throw new Error(
-          "Use a recognized city or country to confirm the estimated location.",
-        );
-      const region = nextPlan.regions?.[0];
-      if (region) {
-        const target = geometryCenter(region.geometry);
-        if (target) setFocus(target);
-        setPlace(region.name);
-      }
-      setWorkspace(true);
-      // A known region + period also starts the live "what is changing now?" scan.
-      if (region && nextPlan.period?.start && nextPlan.period?.end)
-        setActiveRun({
-          id: Date.now(),
-          title: region.name,
-          body: {
-            geometry: region.geometry,
-            start: nextPlan.period.start,
-            end: nextPlan.period.end,
-            region_name: region.name,
-            ...(nextPlan.variables?.length ? { variable_ids: nextPlan.variables.map((v) => v.id) } : {}),
-          },
-        });
-      else setActiveRun(null);
-      setProgress({
-        progress: 0.05,
-        message: "Acquiring the regional record…",
-      });
-      const nextReport = await api.investigate(
-        nextPlan.wishes?.compare
-          ? { question: q }
-          : {
-              question: q,
-              variable_id: nextPlan.variables?.[0]?.id,
-              geometry: region?.geometry,
-              start: nextPlan.period?.start || undefined,
-              end: nextPlan.period?.end || undefined,
-            },
-        {
-          signal: controller.signal,
-          onProgress: (job) =>
-            setProgress({ progress: job.progress || 0, message: job.message }),
-        },
-      );
-      if (nextReport.on_topic === false || nextReport.needs_user_input?.length)
-        throw new Error(
-          nextReport.message || "Add a place and a variable to continue.",
-        );
-      setReport(nextReport);
-      if (nextReport.plan) setPlan(nextReport.plan);
-      setProgress({ progress: 1, message: "Evidence ready" });
-      if (!currentWorld.current.twin && currentWorld.current.page === "earth")
-        document
-          .getElementById("workspace")
-          ?.scrollIntoView({
-            behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-              ? "auto"
-              : "smooth",
-          });
-    } catch (e) {
-      if (!controller.signal.aborted)
-        setError(
-          e instanceof Error
-            ? e.message
-            : "The investigation could not finish.",
-        );
-    } finally {
-      if (active.current === controller) setBusy(false);
-    }
+    if (!q || (twin && twinBusy)) return;
+    if (!twin) setObservedQuestion(q);
+    // Observed world: the evidence chat. DigiTwin: what-if / discovery questions open Discovery mode.
+    const enter = twin ? () => {
+      history.pushState({}, "", "/digitwin/discover");
+      setDiscoveryLaunch({ id: Date.now(), question: q });
+      setPage("discover");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } : () => {
+      history.pushState({}, "", "/chat");
+      setChatLaunch({ id: Date.now(), question: q });
+      setPage("chat");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    };
+    if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches)
+      void document.startViewTransition(() => flushSync(enter)).finished.catch(() => {});
+    else enter();
   }
-  function cancel() {
-    active.current?.abort();
-    setBusy(false);
-    setError("Stopped waiting. The backend job may continue.");
-  }
-  async function upload(file: File) {
-    if (busy) return;
-    setWorkspace(true);
-    setBusy(true);
-    setError("");
-    setPlan(null);
-    setReport(null);
-    setProgress({ progress: 0.1, message: "Reading monthly observations…" });
-    const controller = new AbortController();
-    active.current?.abort();
-    active.current = controller;
-    try {
-      const series = await api.uploadCSV(file, controller.signal);
-      setActiveRun({ id: Date.now(), title: file.name, body: { series_ids: [series.series_id] } });
-      const analysis = await api.analyze(series.series_id, controller.signal);
-      setReport({ results: [{ series, analysis }] });
-      if (!currentWorld.current.twin && currentWorld.current.page === "earth") {
-        document
-          .getElementById("workspace")
-          ?.scrollIntoView({ behavior: "smooth" });
-      }
-    } catch (e) {
-      if (!controller.signal.aborted)
-        setError(
-          e instanceof Error ? e.message : "The CSV could not be analyzed.",
-        );
-    } finally {
-      if (active.current === controller) setBusy(false);
-    }
+  function showReport(next: Report) {
+    setReport(next);
+    const target = next.plan.geometry ? geometryCenter(next.plan.geometry) : null;
+    if (target) setObservedFocus(target);
+    if (next.plan.region_name) setObservedPlace(next.plan.region_name);
   }
   function pointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (
@@ -400,11 +283,13 @@ export default function App() {
       onPointerMove={pointerMove}
     >
       <div ref={cursor} className="cursor-light" aria-hidden="true" />
+      <CursorFollower />
       <div className="ambient-field" aria-hidden="true"><i/><i/></div>
-      <ChatPage active={page === "chat"} launch={chatLaunch} onExit={returnEarth} onInvestigate={q=>{returnEarth();void submit(q);}}/>
+      <ChatPage active={page === "chat"} launch={chatLaunch} onExit={returnEarth} onReport={showReport}/>
+      {(page === "discover" || discoveryLaunch) && <DiscoveryChat active={page === "discover"} launch={discoveryLaunch} onExit={returnEarth}/>}
       {page === "airllm" ? (
         <AirLLM onBack={returnEarth} />
-      ) : page !== "chat" ? (
+      ) : page !== "chat" && page !== "discover" ? (
         <>
           <a className="skip-link" href="#main">
             Skip to content
@@ -518,7 +403,7 @@ export default function App() {
               style={{viewTransitionName:page === "earth" ? "earth-composer" : undefined}}
               onSubmit={(e) => {
                 e.preventDefault();
-                if (twin) void submit(); else launchChat();
+                void submit();
               }}
             >
               <span className="command-mode" aria-label={twin ? "DigiTwin scenario" : "Earth conversation"}>
@@ -533,39 +418,24 @@ export default function App() {
                 autoComplete="off"
                 placeholder={
                   twin
-                    ? "What if warming in Chennai doubled?"
+                    ? "Find unreported changes in the South Asia monsoon"
                     : "Ask about temperature in India…"
                 }
               />
-              {!twin && busy ? (
-                <button
-                  type="button"
-                  className="command-send"
-                  aria-label="Stop waiting"
-                  onClick={cancel}
-                >
-                  <X size={19} />
-                </button>
-              ) : (
-                <button
-                  className="command-send"
-                  type="submit"
-                  disabled={!question.trim() || (twin ? twinBusy : busy)}
-                  aria-label={
-                    twin
-                      ? "Prepare DigiTwin scenario"
-                      : "Start Earth conversation"
-                  }
-                >
-                  <ArrowUp size={21} />
-                </button>
-              )}
+              <button
+                className="command-send"
+                type="submit"
+                disabled={!question.trim() || (twin && twinBusy)}
+                aria-label={twin ? "Start a Discovery run or a DigiTwin scenario" : "Build the evidence report"}
+              >
+                <ArrowUp size={21} />
+              </button>
             </form>
             <div className="dock-under">
               <span className="connection">
                 <i />
                 {twin
-                  ? "DigiTwin input selected"
+                  ? <>Discovery mode · <a href="#twin-discovery">how it works</a></>
                   : connection}
               </span>
               <button
@@ -577,16 +447,6 @@ export default function App() {
                 <ArrowLeftRight size={12} />
               </button>
             </div>
-            {!twin && busy && (
-              <p className="dock-feedback" role="status">
-                {progress.message}
-              </p>
-            )}
-            {!twin && error && (
-              <p className="dock-feedback error" role="alert">
-                {error}
-              </p>
-            )}
           </div>
           <div className="hero-bottom">
             <span>NASA SPACE APPS 2026</span>
@@ -599,21 +459,8 @@ export default function App() {
         </section>
         <div className="earth-continuation" aria-hidden="true" />
         <div className="earth-content" hidden={twin}>
-          {workspace && (
-            <ObservedEvidence
-              report={report}
-              plan={plan}
-              busy={busy}
-              progress={progress}
-              error={error}
-              onUpload={(file) => void upload(file)}
-              onCancel={cancel}
-              onRegion={(g) => setFocus(geometryCenter(g))}
-              onSelectSeries={setSelectedSeriesId}
-            />
-          )}
-          {activeRun && <ActiveTrends key={activeRun.id} run={activeRun} />}
-          <AtlasStory onAir={openAir} onQuestion={(value)=>{setObservedQuestion(value);window.scrollTo({top:0,behavior:'smooth'});document.getElementById('earth-question')?.focus();}} onUpload={(file)=>void upload(file)} busy={busy}/>
+          <AtlasStory onAir={openAir} onQuestion={(value)=>{setObservedQuestion(value);window.scrollTo({top:0,behavior:'smooth'});document.getElementById('earth-question')?.focus();}}/>
+          <PaperReplication />
 
         </div>
         <div className="earth-content" hidden={!twin}>
@@ -621,7 +468,7 @@ export default function App() {
             ref={twinLab}
             active={twin && page !== "airllm"}
             place={place}
-            importSeriesId={selectedSeriesId || currentAnalysis?.series_id}
+            importSeriesId={selectedSeriesId}
             onBusyChange={setTwinBusy}
           />
           <section className="twin-how" id="twin-how">
@@ -655,6 +502,11 @@ export default function App() {
                 <p>Compare the scenario with a simulated reference.</p>
               </div>
             </div>
+            <DiscoveryHow onTry={(example) => {
+              setQuestion(example);
+              window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+              document.getElementById("earth-question")?.focus({ preventScroll: true });
+            }} />
             <details className="data-structure">
               <summary>
                 The data behind this world <ChevronDown size={14} />

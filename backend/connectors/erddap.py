@@ -51,7 +51,8 @@ class ERDDAPGrid(Connector):
         r = await self.http.request("GET", self._url(v, "csv0", f"{axis}[0:1:last]"), use_cache=use_cache)
         return r.text.split()
 
-    async def fetch(self, req: FetchRequest, progress: ProgressFn = _noop) -> RawSeries:
+    async def _download(self, req: FetchRequest, progress: ProgressFn):
+        """Shared by fetch and fetch_cube: axes -> index ranges -> chunked csv requests -> wide frame."""
         v = req.variable
         var = v["erddap_variable"]
         await progress(0.02, "Reading the ERDDAP grid axes")
@@ -109,6 +110,10 @@ class ERDDAPGrid(Connector):
         if v.get("erddap_lon360"):
             df["longitude"] = (df["longitude"] + 180.0) % 360.0 - 180.0
         cube = df.set_index(["time", "latitude", "longitude"])[var].unstack(["latitude", "longitude"]).sort_index()
+        return v, var, cube, parsed, queries, resps, stride
+
+    async def fetch(self, req: FetchRequest, progress: ProgressFn = _noop) -> RawSeries:
+        v, var, cube, parsed, queries, resps, stride = await self._download(req, progress)
         la = cube.columns.get_level_values("latitude").to_numpy(float)
         lo = cube.columns.get_level_values("longitude").to_numpy(float)
         vals = cube.to_numpy(float)
@@ -150,3 +155,26 @@ class ERDDAPGrid(Connector):
             from_cache=all(r.from_cache for r in resps))
         return RawSeries(cube.index.to_numpy("datetime64[ns]"), series, v.get("native_resolution", "monthly"), prov,
                          ValueMeta(units=parsed[0][1] or v.get("units")))
+
+    async def fetch_cube(self, req: FetchRequest, progress: ProgressFn = _noop):
+        """Area requests only: -> (times, cube[t, lat, lon], lat, lon, units, Provenance).
+
+        Same download as fetch (same stride budget and chunking); values are the dataset's native units
+        (no conversion), latitudes and longitudes ascending, land/missing cells NaN. Polygons are reduced
+        to their bounding box (cells outside are kept; the caller may mask them)."""
+        if req.region.is_point:
+            raise InvalidRequest("A trend map needs an area (box or polygon), not a point")
+        v, var, cube, parsed, queries, resps, stride = await self._download(req, progress)
+        la = np.unique(cube.columns.get_level_values("latitude").to_numpy(float))
+        lo = np.unique(cube.columns.get_level_values("longitude").to_numpy(float))
+        full = cube.reindex(columns=pd.MultiIndex.from_product([la, lo], names=["latitude", "longitude"]))
+        vals = full.to_numpy(float).reshape(len(full.index), len(la), len(lo))
+        ds = v.get("dataset") or {}
+        prov = Provenance(
+            source_api="erddap.griddap", variable=var, geometry=req.region.as_dict(),
+            dataset_short_name=v["dataset_id"], version=ds.get("version"), doi=ds.get("doi"),
+            request_url=self._url(v, "csv", queries[0]), citation=ds.get("citation"),
+            notes=[f"ERDDAP server {v['erddap_base']}", f"{len(queries)} request chunk(s)",
+                   f"grid cube {len(la)} x {len(lo)} cells (1 of every {stride} cells along each axis)"],
+            from_cache=all(r.from_cache for r in resps))
+        return (full.index.to_numpy("datetime64[ns]"), vals, la, lo, parsed[0][1] or v.get("units"), prov)

@@ -21,6 +21,7 @@ from .ai.llm import LocalLLM
 from .ai.deep_llm import DeepLLM
 from .api.routes import router
 from .twin.api import router as twin_router
+from .discovery.api import router as discovery_router
 from .api.state import AppState
 from .catalog.catalog import load_catalog
 from .core.config import Settings, get_settings
@@ -109,6 +110,11 @@ def create_app(settings: Settings | None = None, transport: httpx.AsyncBaseTrans
 
     app.include_router(router)
     app.include_router(twin_router)                # digital twin: separate mode, no verification gate
+    app.include_router(discovery_router)           # discovery mode: sweep -> verify -> literature gap -> brief
+    from .harness.api import router as harness_router
+    app.include_router(harness_router)             # harness: plug-in model config, probe
+    from .replication.api import router as replication_router
+    app.include_router(replication_router)         # replicate the challenge's SeaWiFS river-outflow paper
     return app
 
 

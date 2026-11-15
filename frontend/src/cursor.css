@@ -1,0 +1,11 @@
+/* Cursor ring: trails the pointer, grows over buttons and links, narrows to a caret over text fields. */
+.cursor-ring,.cursor-dot{position:fixed;left:0;top:0;pointer-events:none;z-index:200;opacity:0;transition:opacity .4s}
+.has-cursor .cursor-ring,.has-cursor .cursor-dot{opacity:1}
+.cursor-ring i{display:block;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid var(--cursor,#086bdc);background:transparent;transition:width .45s cubic-bezier(.32,.72,0,1),height .45s cubic-bezier(.32,.72,0,1),margin .45s cubic-bezier(.32,.72,0,1),background-color .45s,border-radius .45s,transform .2s cubic-bezier(.32,.72,0,1),opacity .3s;opacity:.55}
+.cursor-ring[data-mode="press"] i{width:56px;height:56px;margin:-28px 0 0 -28px;background:color-mix(in srgb,var(--cursor,#086bdc) 12%,transparent);opacity:.9}
+.cursor-ring[data-mode="text"] i{width:4px;height:26px;margin:-13px 0 0 -2px;border-radius:2px;background:var(--cursor,#086bdc);border-color:transparent;opacity:.5}
+.cursor-ring.is-down i{transform:scale(.82)}
+.cursor-dot{width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--cursor,#086bdc)}
+.experience[data-world=twin]{--cursor:#f0b48f}
+.local-guide{--cursor:#0069d8}
+@media (pointer:coarse),(prefers-reduced-motion:reduce){.cursor-ring,.cursor-dot{display:none}}

@@ -240,7 +240,7 @@ def test_coops_station_override_and_windows(settings):
 
 # ------------------------------------------------------------------ catalog
 def test_ocean_atmos_catalog_entries():
-    assert {"sst", "modis_chlorophyll", "seaice_extent", "tide_gauge_msl", "merra2_wind_speed", "merra2_aod",
+    assert {"sst", "modis_chlorophyll", "seawifs_chlorophyll", "seaice_extent", "tide_gauge_msl", "merra2_wind_speed", "merra2_aod",
             "airs_total_ozone", "merra2_tropopause_temp", "merra2_skin_temp"} == set(CAT)
     official = set(parse_configured_variables((REC / "giovanni_configured_variables.json").read_text()))
     for v in CAT.values():

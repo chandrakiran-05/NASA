@@ -460,12 +460,24 @@ async def ai_guard(request: Request, body: TextRequest):
 
 @router.post("/ai/plan", tags=["ai"])
 async def ai_plan(request: Request, body: TextRequest):
-    return await S(request).ai.plan(body.question)
+    """With `conversation_id`, a follow-up ("what about Kerala?") inherits the variable, place and years it
+    does not name from the conversation's last plan; `context.inherited` and `message` say what was kept."""
+    from ..ai.memory import new_id
+    cid = body.conversation_id or new_id()
+    out = await S(request).ai.plan(body.question, conversation_id=cid)
+    out["conversation_id"] = cid
+    return out
 
 
 @router.post("/ai/ask", tags=["ai"])
 async def ai_ask(request: Request, body: TextRequest):
-    return await S(request).ai.ask(body.question)
+    """With `conversation_id`, the last few turns are given to the local LLM as context (answers are still
+    verified) and missing variable / place / years are inherited from the conversation."""
+    from ..ai.memory import new_id
+    cid = body.conversation_id or new_id()
+    out = await S(request).ai.ask(body.question, conversation_id=cid)
+    out["conversation_id"] = cid
+    return out
 
 
 @router.post("/ai/explain", tags=["ai"])
@@ -668,3 +680,98 @@ async def series_card(request: Request, series_id: str, alpha: float = Query(0.0
     v = await build_view(S(request), series_id, alpha=alpha)
     return Response(card_svg(_clean(v)), media_type="image/svg+xml",
                     headers={"Content-Disposition": f'inline; filename="{series_id}.svg"'})
+
+
+# ===================================================================== student report (continuous, sectioned)
+from pydantic import BaseModel as _BaseModel, Field as _Field  # noqa: E402
+
+
+class ReportRequest(_BaseModel):
+    question: str = _Field(..., min_length=3, max_length=500)
+    start: str | None = _Field(None, description="YYYY-MM; default: from the question, else the last 20 full years")
+    end: str | None = _Field(None, description="YYYY-MM")
+    variable_id: str | None = None
+    geometry: dict | None = None
+    conversation_id: str | None = _Field(None, max_length=64, pattern=r"^[A-Za-z0-9_-]{1,64}$",
+                                         description="follow-up memory (see /ai/plan); the result gets a "
+                                                     "`conversation` block")
+    refresh: bool = _Field(False, description="ignore the cached report for the same variables, region and period")
+
+
+# job_id -> latest partial report (deterministic first, then AI wording / research section by section)
+_REPORT_PARTIALS: dict[str, dict] = {}
+
+
+@router.post("/report", status_code=202, tags=["investigate"])
+async def report(request: Request, body: ReportRequest):
+    """A full student report for one question. Poll /api/jobs/{job_id}; result:
+    {question, plan, headline, sections[{id, title, kind, text, text_source, ai_status, data}], glossary, provenance,
+    limits, ai{used, label, status: writing|done, pending[], research}, timing}.
+    The deterministic report is ready long before the job ends: poll GET /api/report/{job_id}/partial and show
+    it; sections with ai_status 'pending' get their AI wording (number-checked) later, one by one.
+    Section ids in order: answer, data, series, how_much, is_it_real, when, seasons, map, context, limits.
+    kind data shapes: table {columns[], rows[][]}; chart = /api/view object (+events, pelt_breaks for 'when');
+    checks {verdict, why, checks[{check,status,text}], beast, court{stamp,...}, limit};
+    bars {labels[12], values[], ci_low[], ci_high[], ci_excludes_zero[], units};
+    map {lat[], lon[], slope_per_decade[][], significant[][], units, area_fraction_rising, area_fraction_falling,
+    field_significance, n_cells, bbox, provenance, label:'exploratory'}; text {}."""
+    st = S(request)
+    g = st.ai.guard(body.question)
+    if not g["on_topic"]:
+        from ..ai.guard import REFUSAL
+        raise InvalidRequest(REFUSAL, detail={"guard": g})
+    from ..report import build_report
+
+    cid = body.conversation_id
+    start, end, variable_id, geometry = body.start, body.end, body.variable_id, body.geometry
+    conv = None
+    if cid and st.ai.memory.get_plan(cid):
+        # fill what the follow-up leaves out from the conversation (deterministic; nothing is stored yet)
+        ctx_plan = st.ai.apply_memory(st.ai._deterministic_plan(body.question), body.question, cid, remember=False)
+        conv = ctx_plan["context"]
+        inh = conv["inherited"]
+        if "variable" in inh and not variable_id and ctx_plan.get("variables"):
+            variable_id = ctx_plan["variables"][0].get("id")
+        if "region" in inh and not geometry and ctx_plan.get("regions"):
+            geometry = dict(ctx_plan["regions"][0].get("geometry") or {}) or None
+            if geometry and ctx_plan["regions"][0].get("name"):
+                geometry.setdefault("name", ctx_plan["regions"][0]["name"])
+        if "period" in inh and not body.start and not body.end and conv.get("period"):
+            start, end = ctx_plan["period"].get("start"), ctx_plan["period"].get("end")
+        conv = {**conv, "message": ctx_plan.get("message")}
+
+    async def job(progress):
+        def on_partial(rep):
+            _REPORT_PARTIALS[holder["id"]] = rep
+        result = await build_report(st, question=body.question, start=start, end=end, variable_id=variable_id,
+                                    geometry=geometry, progress=progress, on_partial=on_partial,
+                                    refresh=body.refresh)
+        if cid and isinstance(result, dict):
+            st.ai.remember_report(cid, body.question, result)
+            from ..ai.memory import summary_of
+            result["conversation"] = {"conversation_id": cid, **(conv or {"inherited": []}),
+                                      "summary": summary_of(st.ai.memory.get_plan(cid))}
+        return result
+
+    holder: dict = {}
+    jid = st.jobs.submit("report", body.model_dump(), job)
+    holder["id"] = jid
+    while len(_REPORT_PARTIALS) > 32:
+        _REPORT_PARTIALS.pop(next(iter(_REPORT_PARTIALS)))
+    return {"job_id": jid, "status_url": f"/api/jobs/{jid}", "partial_url": f"/api/report/{jid}/partial"}
+
+
+@router.get("/report/{job_id}/partial", tags=["investigate"])
+async def report_partial(request: Request, job_id: str):
+    """The report as far as it is built: `ready` turns true as soon as the deterministic report (every number,
+    template text) exists; later polls carry AI-written sections as they pass the number check. When the job
+    is done this is the final result."""
+    st = S(request)
+    j = st.db.get_job(job_id)
+    if not j or j.get("kind") != "report":
+        raise NotFound(f"report job {job_id} not found")
+    rep = j.get("result") if j["status"] == "done" else _REPORT_PARTIALS.get(job_id)
+    if j["status"] in ("done", "error"):
+        _REPORT_PARTIALS.pop(job_id, None)
+    return {"job_id": job_id, "status": j["status"], "progress": j["progress"], "message": j["message"],
+            "ready": rep is not None, "report": rep, "error": j.get("error")}

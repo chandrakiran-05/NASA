@@ -1,0 +1,2753 @@
+[
+ {
+  "n": 1,
+  "question": "Is it getting hotter in Chennai since 1990?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m_daily_max",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Chennai",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.6,
+  "failed_fetch": {
+   "merra2_t2m_daily_max": "Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_t2m_daily_max: Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 2,
+  "question": "Has the air temperature in Delhi increased since 1985?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Delhi",
+  "period": [
+   "1985-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.4,
+  "failed_fetch": {
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_aod": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_aod: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 3,
+  "question": "Is Lagos warming?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "modis_lst_night",
+  "variable_criteria": [
+   "land_surface_conditions"
+  ],
+  "criterion_match": false,
+  "region": "Lagos",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.4,
+  "failed_fetch": {
+   "modis_lst_night": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_lst_night: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 4,
+  "question": "Is temperature rising in Moscow since 1980?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_tropopause_temp",
+  "variable_criteria": [
+   "atmospheric_temperature"
+  ],
+  "criterion_match": false,
+  "region": "Moscow",
+  "period": [
+   "1980-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.6,
+  "failed_fetch": {
+   "merra2_tropopause_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_tropopause_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_skin_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 5,
+  "question": "Has Phoenix, Arizona become hotter since 1990?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m_daily_max",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Phoenix",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 2.6,
+  "failed_fetch": {
+   "merra2_t2m_daily_max": "Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_t2m_daily_max: Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 6,
+  "question": "Is Sydney getting warmer?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_qv2m",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Sydney",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.4,
+  "failed_fetch": {
+   "merra2_qv2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_qv2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 7,
+  "question": "Is the air temperature changing in Buenos Aires since 1985?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Buenos Aires",
+  "period": [
+   "1985-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "merra2_t2m_daily_max": "Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_t2m_daily_max: Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 8,
+  "question": "Is Reykjavik warming since 1990?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Reykjav\u00edk",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 8.8,
+  "failed_fetch": {
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "sst",
+    "state": "stalled",
+    "text": "The full record trends (+0.197 degree_C per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | The full record trends (+0.197 degree_C per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+ },
+ {
+  "n": 9,
+  "question": "Is rainfall changing in Nairobi since 2001?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_daily",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Nairobi",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.7,
+  "failed_fetch": {
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_daily": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_daily: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 10,
+  "question": "Is the Amazon rainforest getting less rain since 2000?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_monthly",
+  "variable_criteria": [
+   "precipitation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Amazon Basin",
+  "period": [
+   "2000-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.7,
+  "failed_fetch": {
+   "imerg_precip_daily": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: imerg_precip_daily: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 11,
+  "question": "Is monsoon rainfall in Kerala changing?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_monthly",
+  "variable_criteria": [
+   "precipitation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Kerala",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_daily": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_daily: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 12,
+  "question": "Is precipitation decreasing in Cape Town since 2000?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_monthly",
+  "variable_criteria": [
+   "precipitation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Cape Town",
+  "period": [
+   "2000-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "station_prcp": "Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: station_prcp: Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 13,
+  "question": "Is it raining more in London since 2000?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_monthly",
+  "variable_criteria": [
+   "precipitation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "London",
+  "period": [
+   "2000-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "station_prcp": "Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: station_prcp: Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 14,
+  "question": "Has rainfall in the Sahel increased since 1998?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_monthly",
+  "variable_criteria": [
+   "precipitation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Sahel",
+  "period": [
+   "1998-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_daily": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_daily: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 15,
+  "question": "Is precipitation changing in Jakarta?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_monthly",
+  "variable_criteria": [
+   "precipitation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Jakarta",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "station_prcp": "Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: station_prcp: Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 16,
+  "question": "Is sea surface temperature rising near the Maldives since 1990?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "sst",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Maldives",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 7.6,
+  "failed_fetch": {
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "sst",
+    "state": "stalled",
+    "text": "The full record trends (+0.191 degree_C per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | The full record trends (+0.191 degree_C per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+ },
+ {
+  "n": 17,
+  "question": "Is the ocean warming near the Great Barrier Reef since 1985?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": false,
+  "region": null,
+  "period": [
+   "1985-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 18,
+  "question": "Is sea surface temperature increasing in the Mediterranean Sea?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "sst",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Mediterranean Basin",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 12.4,
+  "failed_fetch": {
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [
+   {
+    "variable": "sst",
+    "label": "VERIFIED",
+    "state": "active",
+    "text": "Rising now: +0.671 degree_C per decade over 2016\u20132025, continuing the trend of 2001\u20132015 (+0.508).",
+    "beast": "agrees",
+    "checks": {
+     "integrity": "pass",
+     "court": "pass",
+     "chance": "pass",
+     "stability": "pass",
+     "fdr": "pass"
+    }
+   }
+  ],
+  "not_active": [],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "VERIFIED | Rising now: +0.671 degree_C per decade over 2016\u20132025, continuing the trend of 2001\u20132015 (+0.508)."
+ },
+ {
+  "n": 19,
+  "question": "Is the North Atlantic sea surface warming since 1980?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": false,
+  "region": "North Salt Lake",
+  "period": [
+   "1980-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 7.0,
+  "failed_fetch": {
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "sst": "The source returned no valid values after quality control"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; sst: The source returned no valid values after quality control",
+  "ok": false
+ },
+ {
+  "n": 20,
+  "question": "Is the sea getting warmer off the coast of Peru since 1990?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "sst",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Peru",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 11.6,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "sst",
+    "state": "none",
+    "text": "No detectable trend over 2014\u20132025 or over the full record."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | No detectable trend over 2014\u20132025 or over the full record."
+ },
+ {
+  "n": 21,
+  "question": "Is the Bay of Bengal sea surface temperature rising?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "sst",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Bay of Bengal",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 11.8,
+  "failed_fetch": {
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "sst",
+    "state": "stalled",
+    "text": "The full record trends (+0.18 degree_C per decade), but no trend is detectable over the last 10 years (2016\u20132025)."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | The full record trends (+0.18 degree_C per decade), but no trend is detectable over the last 10 years (2016\u20132025)."
+ },
+ {
+  "n": 22,
+  "question": "Is the Gulf of Mexico warming since 1985?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": false,
+  "region": "Gulf of Mexico",
+  "period": [
+   "1985-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 8.7,
+  "failed_fetch": {
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [
+   {
+    "variable": "sst",
+    "label": "PROBABLE",
+    "state": "accelerating",
+    "text": "Rising faster now: +0.495 degree_C per decade over 2012\u20132025, against +0.135 over 1985\u20132011.",
+    "beast": "uncertain",
+    "checks": {
+     "integrity": "pass",
+     "chance": "pass",
+     "court": "pass",
+     "stability": "pass",
+     "fdr": "pass"
+    }
+   }
+  ],
+  "not_active": [],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "PROBABLE | Rising faster now: +0.495 degree_C per decade over 2012\u20132025, against +0.135 over 1985\u20132011."
+ },
+ {
+  "n": 23,
+  "question": "Is evaporation increasing in Spain since 2000?",
+  "expected_criterion": "evaporation",
+  "planner": "deterministic",
+  "variable": "gldas_evap",
+  "variable_criteria": [
+   "evaporation"
+  ],
+  "criterion_match": true,
+  "region": "Spain",
+  "period": [
+   "2000-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 5.6,
+  "failed_fetch": {
+   "modis_et": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "gldas_evap": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_et: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; gldas_evap: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 24,
+  "question": "Is evapotranspiration changing in the Murray-Darling Basin?",
+  "expected_criterion": "evaporation",
+  "planner": "deterministic",
+  "variable": "modis_et",
+  "variable_criteria": [
+   "evaporation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Murray-Darling Basin",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 5.3,
+  "failed_fetch": {
+   "modis_et": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "gldas_evap": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_et: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; gldas_evap: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 25,
+  "question": "Is evaporation rising in Texas since 2000?",
+  "expected_criterion": "evaporation",
+  "planner": "deterministic",
+  "variable": "gldas_evap",
+  "variable_criteria": [
+   "evaporation"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2000-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 26,
+  "question": "Is the Potomac River streamflow changing since 1990?",
+  "expected_criterion": "streamflow",
+  "planner": "deterministic",
+  "variable": "nldas_streamflow",
+  "variable_criteria": [
+   "streamflow"
+  ],
+  "criterion_match": true,
+  "region": "Potomac",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 11.6,
+  "failed_fetch": {
+   "nldas_streamflow": "River streamflow, modelled (NLDAS, US only) is only available for points"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "usgs_streamflow",
+    "state": "none",
+    "text": "No detectable trend over 2014\u20132025 or over the full record."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | No detectable trend over 2014\u20132025 or over the full record."
+ },
+ {
+  "n": 27,
+  "question": "Is the Colorado River flow decreasing since 1990?",
+  "expected_criterion": "streamflow",
+  "planner": "deterministic",
+  "variable": "usgs_streamflow",
+  "variable_criteria": [
+   "streamflow"
+  ],
+  "criterion_match": true,
+  "region": "Colorado",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 2.1,
+  "failed_fetch": {
+   "nldas_streamflow": "River streamflow, modelled (NLDAS, US only) is only available for points",
+   "usgs_streamflow": "Could not retrieve River streamflow at a USGS stream gauge (US): No USGS gauge with daily river streamflow at a usgs stream gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: nldas_streamflow: River streamflow, modelled (NLDAS, US only) is only available for points; usgs_streamflow: Could not retrieve River streamflow at a USGS stream gauge (US): No USGS gauge with daily river streamflow at a usgs stream gauge (us) data inside this box for the chosen period (USGS gauges ",
+  "ok": false
+ },
+ {
+  "n": 28,
+  "question": "Is streamflow in the Mississippi River changing?",
+  "expected_criterion": "streamflow",
+  "planner": "deterministic",
+  "variable": "nldas_streamflow",
+  "variable_criteria": [
+   "streamflow"
+  ],
+  "criterion_match": true,
+  "region": "Sundarbans (Ganges\u2013Brahmaputra delta)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.8,
+  "failed_fetch": {
+   "nldas_streamflow": "River streamflow, modelled (NLDAS, US only) is only available for points",
+   "usgs_streamflow": "Could not retrieve River streamflow at a USGS stream gauge (US): No USGS gauge with daily river streamflow at a usgs stream gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: nldas_streamflow: River streamflow, modelled (NLDAS, US only) is only available for points; usgs_streamflow: Could not retrieve River streamflow at a USGS stream gauge (US): No USGS gauge with daily river streamflow at a usgs stream gauge (us) data inside this box for the chosen period (USGS gauges ",
+  "ok": false
+ },
+ {
+  "n": 29,
+  "question": "Is river runoff in the Ganges basin changing since 2001?",
+  "expected_criterion": "streamflow",
+  "planner": "deterministic",
+  "variable": "gldas_runoff",
+  "variable_criteria": [
+   "streamflow"
+  ],
+  "criterion_match": true,
+  "region": "Sundarbans (Ganges\u2013Brahmaputra delta)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.1,
+  "failed_fetch": {
+   "gldas_runoff": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "gldas_baseflow": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_runoff: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; gldas_baseflow: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 30,
+  "question": "Is the Sacramento River discharge declining since 1990?",
+  "expected_criterion": "streamflow",
+  "planner": "deterministic",
+  "variable": "usgs_streamflow",
+  "variable_criteria": [
+   "streamflow"
+  ],
+  "criterion_match": true,
+  "region": "Sacramento",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 2.5,
+  "failed_fetch": {
+   "nldas_streamflow": "River streamflow, modelled (NLDAS, US only) is only available for points"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "usgs_streamflow",
+    "state": "none",
+    "text": "No detectable trend over 2014\u20132025 or over the full record."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | No detectable trend over 2014\u20132025 or over the full record."
+ },
+ {
+  "n": 31,
+  "question": "Is the ozone layer recovering over Antarctica since 2005?",
+  "expected_criterion": "ozone",
+  "planner": "deterministic",
+  "variable": "omi_ozone_total",
+  "variable_criteria": [
+   "ozone"
+  ],
+  "criterion_match": true,
+  "region": "Antarctica",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.4,
+  "failed_fetch": {
+   "omi_ozone_total": "Could not retrieve Total ozone column (OMI): no route available",
+   "airs_total_ozone": "Harmony needs EARTHDATA_TOKEN or Earthdata username/password"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_ozone_total: Could not retrieve Total ozone column (OMI): no route available; airs_total_ozone: Harmony needs EARTHDATA_TOKEN or Earthdata username/password",
+  "ok": false
+ },
+ {
+  "n": 32,
+  "question": "Is total ozone changing over Europe since 2005?",
+  "expected_criterion": "ozone",
+  "planner": "deterministic",
+  "variable": "omi_ozone_total",
+  "variable_criteria": [
+   "ozone"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 33,
+  "question": "Is ozone over India decreasing?",
+  "expected_criterion": "ozone",
+  "planner": "deterministic",
+  "variable": "omi_ozone_total",
+  "variable_criteria": [
+   "ozone"
+  ],
+  "criterion_match": true,
+  "region": "India",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.4,
+  "failed_fetch": {
+   "omi_ozone_total": "Could not retrieve Total ozone column (OMI): no route available",
+   "airs_total_ozone": "Harmony needs EARTHDATA_TOKEN or Earthdata username/password"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_ozone_total: Could not retrieve Total ozone column (OMI): no route available; airs_total_ozone: Harmony needs EARTHDATA_TOKEN or Earthdata username/password",
+  "ok": false
+ },
+ {
+  "n": 34,
+  "question": "Is ocean chlorophyll changing in the Arabian Sea since 2003?",
+  "expected_criterion": "chlorophyll",
+  "planner": "deterministic",
+  "variable": "ocean_chlorophyll",
+  "variable_criteria": [
+   "chlorophyll"
+  ],
+  "criterion_match": true,
+  "region": "Arabian Sea",
+  "period": [
+   "2003-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 28.0,
+  "failed_fetch": {
+   "ocean_chlorophyll": "Could not retrieve Ocean chlorophyll (NASA Ocean Biogeochemical Model): No CMR concept id for ocean_chlorophyll; cannot run Harmony area average"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "modis_chlorophyll",
+    "state": "none",
+    "text": "No detectable trend over 2016\u20132025 or over the full record."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | No detectable trend over 2016\u20132025 or over the full record."
+ },
+ {
+  "n": 35,
+  "question": "Is phytoplankton declining in the North Pacific?",
+  "expected_criterion": "chlorophyll",
+  "planner": "deterministic",
+  "variable": "ocean_chlorophyll",
+  "variable_criteria": [
+   "chlorophyll"
+  ],
+  "criterion_match": true,
+  "region": "North Salt Lake",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 11.5,
+  "failed_fetch": {
+   "ocean_chlorophyll": "Could not retrieve Ocean chlorophyll (NASA Ocean Biogeochemical Model): No CMR concept id for ocean_chlorophyll; cannot run Harmony area average"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "modis_chlorophyll",
+    "state": "too_short",
+    "text": "Active-trend detection needs at least 15 years of mostly complete monthly data; this record has 43 valid months."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | Active-trend detection needs at least 15 years of mostly complete monthly data; this record has 43 valid months."
+ },
+ {
+  "n": 36,
+  "question": "Is chlorophyll increasing near the Galapagos since 2003?",
+  "expected_criterion": "chlorophyll",
+  "planner": "deterministic",
+  "variable": "ocean_chlorophyll",
+  "variable_criteria": [
+   "chlorophyll"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2003-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 37,
+  "question": "Is chlorophyll changing in the Baltic Sea since 2003?",
+  "expected_criterion": "chlorophyll",
+  "planner": "deterministic",
+  "variable": "ocean_chlorophyll",
+  "variable_criteria": [
+   "chlorophyll"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2003-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 38,
+  "question": "Is surface wind speed changing in the North Sea since 1990?",
+  "expected_criterion": "surface_wind",
+  "planner": "deterministic",
+  "variable": "merra2_wind_speed",
+  "variable_criteria": [
+   "surface_wind"
+  ],
+  "criterion_match": true,
+  "region": "North Salt Lake",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 2.1,
+  "failed_fetch": {
+   "merra2_wind_speed": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "seaice_extent",
+    "state": "stalled",
+    "text": "The full record trends (-0.53 million km\u00b2 per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | The full record trends (-0.53 million km\u00b2 per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+ },
+ {
+  "n": 39,
+  "question": "Are winds getting stronger in Patagonia?",
+  "expected_criterion": "surface_wind",
+  "planner": "deterministic",
+  "variable": "merra2_wind_speed",
+  "variable_criteria": [
+   "surface_wind"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 40,
+  "question": "Is wind speed decreasing in China since 1990?",
+  "expected_criterion": "surface_wind",
+  "planner": "deterministic",
+  "variable": "merra2_wind_speed",
+  "variable_criteria": [
+   "surface_wind"
+  ],
+  "criterion_match": true,
+  "region": "China",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.9,
+  "failed_fetch": {
+   "merra2_wind_speed": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_aod": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_wind_speed: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_aod: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 41,
+  "question": "Is Arctic sea ice shrinking?",
+  "expected_criterion": "sea_ice",
+  "planner": "deterministic",
+  "variable": "seaice_extent",
+  "variable_criteria": [
+   "sea_ice",
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": "North Slope, Alaska",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.9,
+  "failed_fetch": {
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "seaice_extent",
+    "state": "stalled",
+    "text": "The full record trends (-0.468 million km\u00b2 per decade), but no trend is detectable over the last 10 years (2016\u20132025)."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | The full record trends (-0.468 million km\u00b2 per decade), but no trend is detectable over the last 10 years (2016\u20132025)."
+ },
+ {
+  "n": 42,
+  "question": "Is Antarctic sea ice extent changing since 1990?",
+  "expected_criterion": "sea_ice",
+  "planner": "deterministic",
+  "variable": "seaice_extent",
+  "variable_criteria": [
+   "sea_ice",
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": "Antarctica",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.4,
+  "failed_fetch": {
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [
+   {
+    "variable": "seaice_extent",
+    "label": "NOT VERIFIED",
+    "state": "reversed",
+    "text": "Reversed: -1.53 million km\u00b2 per decade over 2014\u20132025, after +0.246 over 1990\u20132013.",
+    "beast": "skipped",
+    "checks": {
+     "integrity": "pass",
+     "chance": "pass",
+     "court": "fail",
+     "stability": "pass",
+     "fdr": "pass"
+    }
+   }
+  ],
+  "not_active": [],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT VERIFIED | Reversed: -1.53 million km\u00b2 per decade over 2014\u20132025, after +0.246 over 1990\u20132013."
+ },
+ {
+  "n": 43,
+  "question": "Is sea ice declining near Svalbard since 1985?",
+  "expected_criterion": "sea_ice",
+  "planner": "deterministic",
+  "variable": "seaice_extent",
+  "variable_criteria": [
+   "sea_ice",
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "1985-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 44,
+  "question": "Is sea ice in the Weddell Sea changing?",
+  "expected_criterion": "sea_ice",
+  "planner": "deterministic",
+  "variable": "seaice_extent",
+  "variable_criteria": [
+   "sea_ice",
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 45,
+  "question": "Is oil pollution increasing in the Gulf of Guinea?",
+  "expected_criterion": "oil_pollution",
+  "planner": "deterministic",
+  "variable": "omi_no2_trop",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": false,
+  "region": "Guinea",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "stage": "not_trendable",
+  "outcome": "not trendable (honest refusal)",
+  "ok": true,
+  "note": "No public monthly oil-slick series exists. Slicks are found one image at a time in radar imagery."
+ },
+ {
+  "n": 46,
+  "question": "Is the water surface elevation of Lake Mead dropping?",
+  "expected_criterion": "water_surface_elevation",
+  "planner": "deterministic",
+  "variable": "swot_lake_wse",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Pantanal",
+  "period": [
+   "2024-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.8,
+  "failed_fetch": {
+   "swot_lake_wse": "Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/).",
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: swot_lake_wse: Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/).; usgs_reservoir_elevation: Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reserv",
+  "ok": false
+ },
+ {
+  "n": 47,
+  "question": "Is the water level of Lake Superior changing since 1990?",
+  "expected_criterion": "lake_water_level",
+  "planner": "deterministic",
+  "variable": "usgs_reservoir_elevation",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Superior",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 24.3,
+  "failed_fetch": {
+   "usgs_gage_height": "Could not retrieve River water level (gage height) at a USGS gauge (US): No USGS gauge with daily river water level (gage height) at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id.",
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: usgs_gage_height: Could not retrieve River water level (gage height) at a USGS gauge (US): No USGS gauge with daily river water level (gage height) at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id.; usgs",
+  "ok": false
+ },
+ {
+  "n": 48,
+  "question": "Is Lake Victoria water level rising?",
+  "expected_criterion": "lake_water_level",
+  "planner": "deterministic",
+  "variable": "swot_lake_wse",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Victoria",
+  "period": [
+   "2024-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 5.8,
+  "failed_fetch": {
+   "swot_lake_wse": "Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/).",
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: swot_lake_wse: Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/).; usgs_reservoir_elevation: Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reserv",
+  "ok": false
+ },
+ {
+  "n": 49,
+  "question": "Is the Great Salt Lake level falling since 1990?",
+  "expected_criterion": "lake_water_level",
+  "planner": "deterministic",
+  "variable": "usgs_reservoir_elevation",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Salt Lake City",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 28.6,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; usgs_reservoir_elevation: Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen",
+  "ok": false
+ },
+ {
+  "n": 50,
+  "question": "Is the river level of the Potomac at Washington changing?",
+  "expected_criterion": "river_water_level",
+  "planner": "deterministic",
+  "variable": "usgs_gage_height",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "river_water_level"
+  ],
+  "criterion_match": true,
+  "region": "Potomac",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 16.7,
+  "failed_fetch": {
+   "swot_river_wse": "River water surface height from the SWOT satellite needs options.feature_id: an 11-digit SWORD river reach id (see https://podaac.github.io/hydrocron/)."
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "usgs_gage_height",
+    "state": "none",
+    "text": "No detectable trend over 2016\u20132025 or over the full record."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | No detectable trend over 2016\u20132025 or over the full record."
+ },
+ {
+  "n": 51,
+  "question": "Is the Mekong River water level falling?",
+  "expected_criterion": "river_water_level",
+  "planner": "deterministic",
+  "variable": "usgs_gage_height",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "river_water_level"
+  ],
+  "criterion_match": true,
+  "region": "Sundarbans (Ganges\u2013Brahmaputra delta)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 16.7,
+  "failed_fetch": {
+   "swot_river_wse": "River water surface height from the SWOT satellite needs options.feature_id: an 11-digit SWORD river reach id (see https://podaac.github.io/hydrocron/).",
+   "usgs_gage_height": "Could not retrieve River water level (gage height) at a USGS gauge (US): No USGS gauge with daily river water level (gage height) at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: swot_river_wse: River water surface height from the SWOT satellite needs options.feature_id: an 11-digit SWORD river reach id (see https://podaac.github.io/hydrocron/).; usgs_gage_height: Could not retrieve River water level (gage height) at a USGS gauge (US): No USGS gauge with daily river water le",
+  "ok": false
+ },
+ {
+  "n": 52,
+  "question": "Is the reservoir level of Lake Lanier changing since 1990?",
+  "expected_criterion": "reservoir_water_level",
+  "planner": "deterministic",
+  "variable": "usgs_reservoir_elevation",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Pantanal",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 14.8,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; usgs_reservoir_elevation: Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen",
+  "ok": false
+ },
+ {
+  "n": 53,
+  "question": "Is the Hoover Dam reservoir level dropping since 1995?",
+  "expected_criterion": "reservoir_water_level",
+  "planner": "deterministic",
+  "variable": "usgs_reservoir_elevation",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Hoover",
+  "period": [
+   "1995-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 29.0,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; usgs_reservoir_elevation: Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen",
+  "ok": false
+ },
+ {
+  "n": 54,
+  "question": "Is sea level rising in New York since 1990?",
+  "expected_criterion": "ocean_surface_elevation",
+  "planner": "deterministic",
+  "variable": "tide_gauge_msl",
+  "variable_criteria": [
+   "ocean_surface_elevation",
+   "coastal_change"
+  ],
+  "criterion_match": true,
+  "region": "New York City",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 17.9,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "usgs_gage_height",
+    "state": "too_short",
+    "text": "Active-trend detection needs at least 15 years of mostly complete monthly data; this record has 88 valid months."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | Active-trend detection needs at least 15 years of mostly complete monthly data; this record has 88 valid months."
+ },
+ {
+  "n": 55,
+  "question": "Is sea level rising in San Francisco since 1980?",
+  "expected_criterion": "ocean_surface_elevation",
+  "planner": "deterministic",
+  "variable": "tide_gauge_msl",
+  "variable_criteria": [
+   "ocean_surface_elevation",
+   "coastal_change"
+  ],
+  "criterion_match": true,
+  "region": "San Francisco",
+  "period": [
+   "1980-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 2.1,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; merra2_skin_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 56,
+  "question": "Is the sea level going up in Honolulu?",
+  "expected_criterion": "ocean_surface_elevation",
+  "planner": "deterministic",
+  "variable": "tide_gauge_msl",
+  "variable_criteria": [
+   "ocean_surface_elevation",
+   "coastal_change"
+  ],
+  "criterion_match": true,
+  "region": "Honolulu",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 2.8,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "swot_lake_wse": "Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; swot_lake_wse: Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/).",
+  "ok": false
+ },
+ {
+  "n": 57,
+  "question": "Is sea level rising in Miami since 1990?",
+  "expected_criterion": "ocean_surface_elevation",
+  "planner": "deterministic",
+  "variable": "tide_gauge_msl",
+  "variable_criteria": [
+   "ocean_surface_elevation",
+   "coastal_change"
+  ],
+  "criterion_match": true,
+  "region": "Miami",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 3.5,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "usgs_gage_height": "need at least 4 valid points for OLS"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; usgs_gage_height: need at least 4 valid points for OLS",
+  "ok": false
+ },
+ {
+  "n": 58,
+  "question": "Is sea level rising in Mumbai?",
+  "expected_criterion": "ocean_surface_elevation",
+  "planner": "deterministic",
+  "variable": "tide_gauge_msl",
+  "variable_criteria": [
+   "ocean_surface_elevation",
+   "coastal_change"
+  ],
+  "criterion_match": true,
+  "region": "Mumbai",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.0,
+  "failed_fetch": {
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+   "swot_lake_wse": "Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points; swot_lake_wse: Lake water surface height from the SWOT satellite needs options.feature_id: a 10-digit PLD prior-lake id (see https://podaac.github.io/hydrocron/).",
+  "ok": false
+ },
+ {
+  "n": 59,
+  "question": "Is nitrogen dioxide pollution changing in Beijing since 2005?",
+  "expected_criterion": "atmospheric_composition",
+  "planner": "deterministic",
+  "variable": "omi_no2_trop",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": true,
+  "region": "Beijing",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.7,
+  "failed_fetch": {
+   "omi_no2_trop": "Could not retrieve Nitrogen dioxide pollution (OMI): no route available",
+   "merra2_aod": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_no2_trop: Could not retrieve Nitrogen dioxide pollution (OMI): no route available; merra2_aod: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 60,
+  "question": "Is air pollution in Los Angeles decreasing since 2005?",
+  "expected_criterion": "atmospheric_composition",
+  "planner": "deterministic",
+  "variable": "omi_no2_trop",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": true,
+  "region": "Los Angeles",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.0,
+  "failed_fetch": {
+   "omi_no2_trop": "Could not retrieve Nitrogen dioxide pollution (OMI): no route available",
+   "merra2_aod": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_no2_trop: Could not retrieve Nitrogen dioxide pollution (OMI): no route available; merra2_aod: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 61,
+  "question": "Is aerosol optical depth increasing over the Indo-Gangetic Plain?",
+  "expected_criterion": "atmospheric_composition",
+  "planner": "deterministic",
+  "variable": "merra2_aod",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": true,
+  "region": "Indo-Gangetic Plain",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.1,
+  "failed_fetch": {
+   "omi_aerosol_index": "Could not retrieve UV aerosol index (smoke and dust): no route available",
+   "merra2_aod": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_aerosol_index: Could not retrieve UV aerosol index (smoke and dust): no route available; merra2_aod: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 62,
+  "question": "Is dust in the air over the Sahara changing since 2005?",
+  "expected_criterion": "atmospheric_composition",
+  "planner": "deterministic",
+  "variable": "merra2_aod",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": true,
+  "region": "Sahara",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.9,
+  "failed_fetch": {
+   "omi_aerosol_index": "Could not retrieve UV aerosol index (smoke and dust): no route available",
+   "merra2_aod": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_aerosol_index: Could not retrieve UV aerosol index (smoke and dust): no route available; merra2_aod: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 63,
+  "question": "Is NO2 in Mexico City falling?",
+  "expected_criterion": "atmospheric_composition",
+  "planner": "deterministic",
+  "variable": "omi_no2_trop",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": true,
+  "region": "Mexico City",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.9,
+  "failed_fetch": {
+   "omi_no2_trop": "Could not retrieve Nitrogen dioxide pollution (OMI): no route available",
+   "modis_lst_day": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: omi_no2_trop: Could not retrieve Nitrogen dioxide pollution (OMI): no route available; modis_lst_day: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 64,
+  "question": "Is carbon dioxide in the air rising over Hawaii since 2015?",
+  "expected_criterion": "atmospheric_composition",
+  "planner": "deterministic",
+  "variable": "oco2_xco2",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "2015-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 65,
+  "question": "Is the upper atmosphere temperature at the tropopause changing over the tropics?",
+  "expected_criterion": "atmospheric_temperature",
+  "planner": "deterministic",
+  "variable": "merra2_tropopause_temp",
+  "variable_criteria": [
+   "atmospheric_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Delhi NCR",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "merra2_tropopause_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_tropopause_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 66,
+  "question": "Is the tropopause temperature over Antarctica changing since 1990?",
+  "expected_criterion": "atmospheric_temperature",
+  "planner": "deterministic",
+  "variable": "merra2_tropopause_temp",
+  "variable_criteria": [
+   "atmospheric_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Antarctica",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "merra2_tropopause_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_tropopause_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 67,
+  "question": "Is land surface temperature rising in Dubai since 2001?",
+  "expected_criterion": "land_surface_conditions",
+  "planner": "deterministic",
+  "variable": "merra2_skin_temp",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": false,
+  "region": "Dubai",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "modis_lst_day": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_lst_day: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; merra2_skin_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 68,
+  "question": "Is the ground getting hotter in the Thar Desert?",
+  "expected_criterion": "land_surface_conditions",
+  "planner": "deterministic",
+  "variable": "modis_lst_day",
+  "variable_criteria": [
+   "land_surface_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Thar Desert",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.0,
+  "failed_fetch": {
+   "modis_lst_day": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "merra2_t2m_daily_max": "Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_lst_day: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; merra2_t2m_daily_max: Could not retrieve Daily maximum air temperature (MERRA-2): No CMR concept id for merra2_t2m_daily_max; cannot run Harmony area average",
+  "ok": false
+ },
+ {
+  "n": 69,
+  "question": "Is nighttime land surface temperature increasing in Paris since 2001?",
+  "expected_criterion": "land_surface_conditions",
+  "planner": "deterministic",
+  "variable": "merra2_skin_temp",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": false,
+  "region": "Paris",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.0,
+  "failed_fetch": {
+   "modis_lst_day": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_lst_day: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; merra2_skin_temp: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 70,
+  "question": "Is vegetation greenness changing in the Congo rainforest since 2001?",
+  "expected_criterion": "vegetation",
+  "planner": "deterministic",
+  "variable": "modis_evi_monthly",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition"
+  ],
+  "criterion_match": true,
+  "region": "Congo Basin",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.9,
+  "failed_fetch": {
+   "modis_ndvi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "modis_evi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_ndvi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; modis_evi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 71,
+  "question": "Is the Sahel getting greener since 2001?",
+  "expected_criterion": "vegetation",
+  "planner": "deterministic",
+  "variable": "modis_ndvi_monthly",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Sahel",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.8,
+  "failed_fetch": {
+   "modis_ndvi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "modis_evi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_ndvi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; modis_evi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 72,
+  "question": "Is NDVI declining in Borneo?",
+  "expected_criterion": "vegetation",
+  "planner": "deterministic",
+  "variable": "modis_ndvi_monthly",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Borneo",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.8,
+  "failed_fetch": {
+   "modis_ndvi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "modis_evi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_ndvi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; modis_evi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 73,
+  "question": "Is plant productivity changing in Siberia since 2001?",
+  "expected_criterion": "vegetation",
+  "planner": "deterministic",
+  "variable": "modis_gpp",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition"
+  ],
+  "criterion_match": true,
+  "region": "Siberia (west)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "modis_gpp": "AppEEARS area requests above ~400 square degrees are too large; draw a smaller box",
+   "modis_ndvi_monthly": "AppEEARS area requests above ~400 square degrees are too large; draw a smaller box"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_gpp: AppEEARS area requests above ~400 square degrees are too large; draw a smaller box; modis_ndvi_monthly: AppEEARS area requests above ~400 square degrees are too large; draw a smaller box",
+  "ok": false
+ },
+ {
+  "n": 74,
+  "question": "Are wetlands drying in the Okavango Delta?",
+  "expected_criterion": "wetland_extent",
+  "planner": "deterministic",
+  "variable": "gldas_soilmoist_0_10",
+  "variable_criteria": [
+   "land_surface_conditions",
+   "wetland_extent",
+   "agricultural_conditions",
+   "soil_moisture"
+  ],
+  "criterion_match": true,
+  "region": "Okavango Delta",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "gldas_soilmoist_0_10": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_soilmoist_0_10: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 75,
+  "question": "Is the Pantanal wetland shrinking since 2001?",
+  "expected_criterion": "wetland_extent",
+  "planner": "deterministic",
+  "variable": "gldas_soilmoist_0_10",
+  "variable_criteria": [
+   "land_surface_conditions",
+   "wetland_extent",
+   "agricultural_conditions",
+   "soil_moisture"
+  ],
+  "criterion_match": true,
+  "region": "Pantanal",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "gldas_soilmoist_0_10": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_soilmoist_0_10: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 76,
+  "question": "Is the forest condition getting worse in the Black Forest, Germany since 2001?",
+  "expected_criterion": "forest_condition",
+  "planner": "deterministic",
+  "variable": "modis_evi_monthly",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition"
+  ],
+  "criterion_match": true,
+  "region": "Forest",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.4,
+  "failed_fetch": {
+   "modis_evi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "modis_gpp": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_evi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; modis_gpp: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 77,
+  "question": "Is the Amazon forest browning since 2001?",
+  "expected_criterion": "forest_condition",
+  "planner": "deterministic",
+  "variable": "modis_ndvi_monthly",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Amazon Basin",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.3,
+  "failed_fetch": {
+   "modis_ndvi_monthly": "AppEEARS area requests above ~400 square degrees are too large; draw a smaller box",
+   "modis_evi_monthly": "AppEEARS area requests above ~400 square degrees are too large; draw a smaller box"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_ndvi_monthly: AppEEARS area requests above ~400 square degrees are too large; draw a smaller box; modis_evi_monthly: AppEEARS area requests above ~400 square degrees are too large; draw a smaller box",
+  "ok": false
+ },
+ {
+  "n": 78,
+  "question": "Is the coastline eroding in Bangladesh?",
+  "expected_criterion": "coastal_change",
+  "planner": null,
+  "stage": "off_topic",
+  "outcome": "refused (off topic)",
+  "ok": false
+ },
+ {
+  "n": 79,
+  "question": "Is coastal flooding risk growing in Charleston since 1990?",
+  "expected_criterion": "coastal_change",
+  "planner": "deterministic",
+  "variable": "station_prcp",
+  "variable_criteria": [
+   "precipitation"
+  ],
+  "criterion_match": false,
+  "region": "Charleston",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.3,
+  "failed_fetch": {
+   "station_prcp": "Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.",
+   "tide_gauge_msl": "Sea level at a tide gauge (NOAA monthly mean) is only available for points"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: station_prcp: Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.; tide_gauge_msl: Sea level at a tide gauge (NOAA monthly mean) is only available for points",
+  "ok": false
+ },
+ {
+  "n": 80,
+  "question": "Are crop growing conditions worsening in Punjab since 2001?",
+  "expected_criterion": "agricultural_conditions",
+  "planner": "deterministic",
+  "variable": "modis_et",
+  "variable_criteria": [
+   "evaporation",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Punjab (India)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.3,
+  "failed_fetch": {
+   "modis_et": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "modis_gpp": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_et: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; modis_gpp: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 81,
+  "question": "Is farmland in Iowa getting greener since 2001?",
+  "expected_criterion": "agricultural_conditions",
+  "planner": "deterministic",
+  "variable": "modis_ndvi_monthly",
+  "variable_criteria": [
+   "vegetation",
+   "forest_condition",
+   "agricultural_conditions"
+  ],
+  "criterion_match": true,
+  "region": "Indo-Gangetic Plain (Punjab)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "modis_ndvi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+   "modis_evi_monthly": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: modis_ndvi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).; modis_evi_monthly: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 82,
+  "question": "Are agricultural conditions changing in the Nile Delta?",
+  "expected_criterion": "agricultural_conditions",
+  "planner": "deterministic",
+  "variable": "ocean_chlorophyll",
+  "variable_criteria": [
+   "chlorophyll"
+  ],
+  "criterion_match": false,
+  "region": "Nile Delta",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "ocean_chlorophyll": "Could not retrieve Ocean chlorophyll (NASA Ocean Biogeochemical Model): No CMR concept id for ocean_chlorophyll; cannot run Harmony area average",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: ocean_chlorophyll: Could not retrieve Ocean chlorophyll (NASA Ocean Biogeochemical Model): No CMR concept id for ocean_chlorophyll; cannot run Harmony area average; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 83,
+  "question": "Is surface water area shrinking in Lake Chad since 2003?",
+  "expected_criterion": "surface_water_extent",
+  "planner": "deterministic",
+  "variable": "usgs_reservoir_elevation",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "lake_water_level",
+   "reservoir_water_level",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "Lake Chad region",
+  "period": [
+   "2003-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "usgs_reservoir_elevation": "Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id.",
+   "gldas_evap": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: usgs_reservoir_elevation: Could not retrieve Lake or reservoir water level at a USGS gauge (US): No USGS gauge with daily lake or reservoir water level at a usgs gauge (us) data inside this box for the chosen period (USGS gauges cover the United States). Move the point/box or give options.site_id.; ",
+  "ok": false
+ },
+ {
+  "n": 84,
+  "question": "Is groundwater declining in California's Central Valley since 2003?",
+  "expected_criterion": "surface_water_extent",
+  "planner": "deterministic",
+  "variable": "grace_groundwater",
+  "variable_criteria": [
+   "wetland_extent",
+   "surface_water_extent"
+  ],
+  "criterion_match": true,
+  "region": "California Central Valley",
+  "period": [
+   "2003-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 1.0,
+  "failed_fetch": {
+   "grace_groundwater": "Could not retrieve Groundwater storage (GRACE data assimilation): No CMR concept id for grace_groundwater; cannot run Harmony area average",
+   "gldas_baseflow": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: grace_groundwater: Could not retrieve Groundwater storage (GRACE data assimilation): No CMR concept id for grace_groundwater; cannot run Harmony area average; gldas_baseflow: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 85,
+  "question": "Is soil moisture decreasing in Ukraine since 2001?",
+  "expected_criterion": "soil_moisture",
+  "planner": "deterministic",
+  "variable": "gldas_soilmoist_0_10",
+  "variable_criteria": [
+   "land_surface_conditions",
+   "wetland_extent",
+   "agricultural_conditions",
+   "soil_moisture"
+  ],
+  "criterion_match": true,
+  "region": "Ukraine",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "gldas_soilmoist_0_10": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_qv2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_soilmoist_0_10: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_qv2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 86,
+  "question": "Is the soil getting drier in Kenya since 2001?",
+  "expected_criterion": "soil_moisture",
+  "planner": "deterministic",
+  "variable": "gldas_soilmoist_0_10",
+  "variable_criteria": [
+   "land_surface_conditions",
+   "wetland_extent",
+   "agricultural_conditions",
+   "soil_moisture"
+  ],
+  "criterion_match": true,
+  "region": "Kenya",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.2,
+  "failed_fetch": {
+   "gldas_soilmoist_0_10": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "gldas_baseflow": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_soilmoist_0_10: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; gldas_baseflow: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 87,
+  "question": "Is soil moisture changing in Australia's wheat belt?",
+  "expected_criterion": "soil_moisture",
+  "planner": "deterministic",
+  "variable": "gldas_soilmoist_0_10",
+  "variable_criteria": [
+   "land_surface_conditions",
+   "wetland_extent",
+   "agricultural_conditions",
+   "soil_moisture"
+  ],
+  "criterion_match": true,
+  "region": "Indo-Gangetic Plain (Punjab)",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.7,
+  "failed_fetch": {
+   "gldas_soilmoist_0_10": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "smap_soil_moisture": "Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc)."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_soilmoist_0_10: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; smap_soil_moisture: Earthdata username/password not configured (EARTHDATA_USERNAME / EARTHDATA_PASSWORD or ~/.netrc).",
+  "ok": false
+ },
+ {
+  "n": 88,
+  "question": "Is snowpack declining in the Alps since 2001?",
+  "expected_criterion": "snow_ice",
+  "planner": "deterministic",
+  "variable": "gldas_swe",
+  "variable_criteria": [
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": "Alps",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "gldas_swe": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "station_prcp": "Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_swe: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; station_prcp: Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.",
+  "ok": false
+ },
+ {
+  "n": 89,
+  "question": "Is snow water equivalent decreasing in the Sierra Nevada since 2001?",
+  "expected_criterion": "snow_ice",
+  "planner": "deterministic",
+  "variable": "gldas_swe",
+  "variable_criteria": [
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": "Western Himalaya",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.5,
+  "failed_fetch": {
+   "gldas_swe": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "gldas_runoff": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_swe: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; gldas_runoff: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 90,
+  "question": "Is snow cover changing in the Himalayas since 2001?",
+  "expected_criterion": "snow_ice",
+  "planner": "deterministic",
+  "variable": "gldas_swe",
+  "variable_criteria": [
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": "Western Himalaya",
+  "period": [
+   "2001-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.0,
+  "failed_fetch": {
+   "gldas_swe": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "station_prcp": "Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region."
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: gldas_swe: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; station_prcp: Give station id(s) in options.stations (e.g. USW00094728), or set NOAA_CDO_TOKEN so the server can find stations in your region.",
+  "ok": false
+ },
+ {
+  "n": 91,
+  "question": "Is radar backscatter changing over Greenland?",
+  "expected_criterion": "radar_backscatter",
+  "planner": "deterministic",
+  "variable": "swot_river_wse",
+  "variable_criteria": [
+   "water_surface_elevation",
+   "river_water_level"
+  ],
+  "criterion_match": false,
+  "region": "Greenland",
+  "period": [
+   "2024-01",
+   "2025-12"
+  ],
+  "stage": "not_trendable",
+  "outcome": "not trendable (honest refusal)",
+  "ok": true,
+  "note": "Radar backscatter comes as images that must be calibrated and processed scene by scene; no public monthly series exists."
+ },
+ {
+  "n": 92,
+  "question": "Is ship traffic increasing in the Strait of Malacca?",
+  "expected_criterion": "maritime_activity",
+  "planner": "deterministic",
+  "variable": "omi_no2_trop",
+  "variable_criteria": [
+   "atmospheric_composition"
+  ],
+  "criterion_match": false,
+  "region": "Malacca",
+  "period": [
+   "2005-01",
+   "2025-12"
+  ],
+  "stage": "not_trendable",
+  "outcome": "not trendable (honest refusal)",
+  "ok": true,
+  "note": "Ships are detected one radar image at a time; no open global monthly ship-count series exists."
+ },
+ {
+  "n": 93,
+  "question": "Is humidity rising in Singapore since 1990?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_qv2m",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Singapore",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "merra2_qv2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "airs_surface_air_temp": "Could not retrieve Surface air temperature from the AIRS satellite (daytime): No CMR concept id for airs_surface_air_temp; cannot run Harmony area average"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_qv2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; airs_surface_air_temp: Could not retrieve Surface air temperature from the AIRS satellite (daytime): No CMR concept id for airs_surface_air_temp; cannot run Harmony area average",
+  "ok": false
+ },
+ {
+  "n": 94,
+  "question": "Is it getting warmer in Antarctica since 1985?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_qv2m",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Antarctica",
+  "period": [
+   "1985-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "merra2_qv2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: merra2_qv2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; merra2_t2m: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 95,
+  "question": "Is temperature increasing in Greenland since 1990?",
+  "expected_criterion": "temperature",
+  "planner": "deterministic",
+  "variable": "merra2_t2m",
+  "variable_criteria": [
+   "temperature",
+   "atmospheric_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Greenland",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 35.4,
+  "failed_fetch": {
+   "merra2_t2m": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "sst",
+    "state": "stalled",
+    "text": "The full record trends (+0.256 degree_C per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | The full record trends (+0.256 degree_C per decade), but no trend is detectable over the last 12 years (2014\u20132025)."
+ },
+ {
+  "n": 96,
+  "question": "Is rainfall decreasing in Chile since 2000?",
+  "expected_criterion": "precipitation",
+  "planner": "deterministic",
+  "variable": "imerg_precip_daily",
+  "variable_criteria": [],
+  "criterion_match": false,
+  "region": "Chile",
+  "period": [
+   "2000-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 0.1,
+  "failed_fetch": {
+   "imerg_precip_daily": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+   "imerg_precip_monthly": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [],
+  "not_active": [],
+  "stage": "fetch",
+  "outcome": "no data: imerg_precip_daily: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc; imerg_precip_monthly: Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc",
+  "ok": false
+ },
+ {
+  "n": 97,
+  "question": "Is sea surface temperature changing near Japan since 1990?",
+  "expected_criterion": "sea_surface_temperature",
+  "planner": "deterministic",
+  "variable": "sst",
+  "variable_criteria": [
+   "sea_surface_temperature"
+  ],
+  "criterion_match": true,
+  "region": "Japan",
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 6.7,
+  "failed_fetch": {
+   "merra2_skin_temp": "Cloud OPeNDAP needs EARTHDATA_TOKEN, EARTHDATA_USERNAME/PASSWORD or ~/.netrc"
+  },
+  "trends": [
+   {
+    "variable": "sst",
+    "label": "PROBABLE",
+    "state": "emerging",
+    "text": "Rising now: +0.951 degree_C per decade over 2014\u20132025; no trend was detectable over 1990\u20132013.",
+    "beast": "agrees",
+    "checks": {
+     "integrity": "warn",
+     "chance": "pass",
+     "court": "pass",
+     "stability": "pass",
+     "fdr": "pass"
+    }
+   }
+  ],
+  "not_active": [],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "PROBABLE | Rising now: +0.951 degree_C per decade over 2014\u20132025; no trend was detectable over 1990\u20132013."
+ },
+ {
+  "n": 98,
+  "question": "Is chlorophyll declining off the coast of California since 2003?",
+  "expected_criterion": "chlorophyll",
+  "planner": "deterministic",
+  "variable": "ocean_chlorophyll",
+  "variable_criteria": [
+   "chlorophyll"
+  ],
+  "criterion_match": true,
+  "region": "Sundarbans (Ganges\u2013Brahmaputra delta)",
+  "period": [
+   "2003-01",
+   "2025-12"
+  ],
+  "skipped": [],
+  "seconds": 10.9,
+  "failed_fetch": {
+   "ocean_chlorophyll": "Could not retrieve Ocean chlorophyll (NASA Ocean Biogeochemical Model): No CMR concept id for ocean_chlorophyll; cannot run Harmony area average"
+  },
+  "trends": [],
+  "not_active": [
+   {
+    "variable": "modis_chlorophyll",
+    "state": "too_short",
+    "text": "Active-trend detection needs at least 15 years of mostly complete monthly data; this record has 108 valid months."
+   }
+  ],
+  "stage": "analysed",
+  "ok": true,
+  "outcome": "NOT ACTIVE | Active-trend detection needs at least 15 years of mostly complete monthly data; this record has 108 valid months."
+ },
+ {
+  "n": 99,
+  "question": "Is the Ross Sea ice changing since 1990?",
+  "expected_criterion": "sea_ice",
+  "planner": "deterministic",
+  "variable": "seaice_extent",
+  "variable_criteria": [
+   "sea_ice",
+   "snow_ice"
+  ],
+  "criterion_match": true,
+  "region": null,
+  "period": [
+   "1990-01",
+   "2025-12"
+  ],
+  "stage": "plan",
+  "outcome": "planner found no place",
+  "ok": false
+ },
+ {
+  "n": 100,
+  "question": "What is the trend in the stock market?",
+  "expected_criterion": "off_topic",
+  "planner": null,
+  "stage": "off_topic",
+  "outcome": "refused (off topic)",
+  "ok": true
+ }
+]

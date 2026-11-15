@@ -1,0 +1,67 @@
+/* Site-wide polish: one motion curve, softer depth, unified accent, tactile buttons. Layout is untouched. */
+:root{
+  --ease-spring:cubic-bezier(.32,.72,0,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --blue:#086bdc;
+  --shell:0 0 0 1px #24332f0d,0 0 0 6px #ffffff73,0 0 0 7px #24332f0d,0 30px 70px -28px #253b4c38,inset 0 1px 0 #ffffffd9;
+  --shell-hover:0 0 0 1px #086bdc1f,0 0 0 6px #ffffff8c,0 0 0 7px #086bdc1a,0 38px 80px -26px #253b4c47,inset 0 1px 0 #fff;
+}
+::selection{background:#086bdc;color:#fff8f1}
+
+/* Fine paper grain over everything (fixed layer, never repainted on scroll). */
+body::after{content:"";position:fixed;inset:0;z-index:150;pointer-events:none;opacity:.035;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+body:has(.experience[data-world=twin])::after{mix-blend-mode:screen;opacity:.025}
+
+/* Scroll reveal with CSS scroll-driven animation: no JavaScript, and browsers without support simply
+   show everything (nothing can get stuck hidden). */
+@supports (animation-timeline: view()){@media (prefers-reduced-motion:no-preference){
+  .story-lead>*,.method-line,.question-index>*,.flow3d li,.report-head,.report-step,.rep-summary,.rep-grid>*,.rep-method,.rep-detail,.twin-how>*,.discovery-card,.guide-panel,.guide-stage,.guide-steps>li,.air-facts>div,.site-footer>*{
+    animation:rv-in linear backwards;animation-timeline:view();animation-range:entry 0% entry 38%}
+}}
+@keyframes rv-in{from{opacity:0;transform:translateY(28px);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+
+/* Colour depth: soft light washes instead of flat fields, one blue accent on observed Earth. */
+.atlas-story{background:radial-gradient(60% 50% at 8% 0%,#d9e6f3 0%,transparent 70%),radial-gradient(45% 40% at 100% 30%,#e3ead9 0%,transparent 70%),linear-gradient(var(--paper,#eeeae1),#e4e5d9)!important}
+.question-index>button{transition:transform .5s var(--ease-spring),color .3s}
+.question-index>button:hover{color:var(--blue)}
+.question-index>button>svg{transition:transform .5s var(--ease-spring)}
+.question-index>button:hover>svg{transform:translate(3px,-3px)}
+.method-line h3{transition:color .3s}.method-line:hover h3{color:var(--blue)}
+.text-link{background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .5s var(--ease-spring),gap .4s var(--ease-spring)}
+.text-link:hover{background-size:100% 1px}
+
+/* Hero command box: glass with a lit edge, lifts when focused. */
+.command-glass{transition:background-color 1s,border-color .3s,box-shadow .6s var(--ease-spring),transform .6s var(--ease-spring)!important;box-shadow:0 18px 44px #0003,inset 0 1px 0 #ffffff26}
+.command-glass:focus-within{transform:translateY(-2px);box-shadow:0 26px 60px #0004,0 0 0 4px #c2e9d31f,inset 0 1px 0 #ffffff33}
+.experience[data-world=twin] .command-glass:focus-within{box-shadow:0 26px 60px #0005,0 0 0 4px #f0c29e24,inset 0 1px 0 #ffffff2e}
+
+/* Tactile buttons: lift on hover, press on click, trailing icon nudges up-right. */
+.command-send,.chat-send,.guide-action,.guide-download,.guide-outline-action,.report-button,.rep-button,.dh-try,.world-switch,.chat-choice button,.chat-text-action,.chat-new,.chat-exit{transition:transform .5s var(--ease-spring),background-color .3s,color .3s,box-shadow .5s var(--ease-spring),border-color .3s!important}
+.command-send:not(:disabled):hover,.chat-send:not(:disabled):hover,.guide-action:hover,.rep-button:not(:disabled):hover,.dh-try:hover,.report-button:hover{transform:translateY(-2px);box-shadow:0 12px 26px -10px #253b4c66}
+.command-send:not(:disabled):active,.chat-send:not(:disabled):active,.guide-action:active,.rep-button:active,.dh-try:active,.report-button:active,.chat-choice button:active,.world-switch:active{transform:scale(.97)}
+.command-send svg,.chat-send svg,.guide-action svg,.guide-download svg,.guide-inline-link svg,.chat-text-action svg,.dh-try svg{transition:transform .5s var(--ease-spring)}
+.command-send:not(:disabled):hover svg,.chat-send:not(:disabled):hover svg{transform:translateY(-2px)}
+.guide-action:hover svg,.guide-download:hover svg,.guide-inline-link:hover svg,.chat-text-action:hover svg,.dh-try:hover svg{transform:translate(3px,-2px)}
+.command-send:not(:disabled){background:linear-gradient(160deg,#d6f3e2,#a9dcc0)}
+.experience[data-world=twin] .command-send:not(:disabled){background:linear-gradient(160deg,#f7d4b5,#e9a17f)}
+.guide-action{background:linear-gradient(160deg,#1a7ff0,#0062c9)!important}
+
+/* Machined cards: a thin outer shell around the main surfaces (box-shadow only, no layout change). */
+.chat-page .report,.chat-choice button,.chat-composer,.rep-summary,.rep-detail,.discovery-card,.guide-panel,.air-demo,.guide-mechanism,.chat-report-folded{box-shadow:var(--shell);transition:box-shadow .6s var(--ease-spring),transform .6s var(--ease-spring),border-color .3s}
+.chat-choice button:hover:not(:disabled),.discovery-card:hover,.rep-detail:hover{box-shadow:var(--shell-hover);transform:translateY(-3px)}
+.guide-panel:hover,.air-demo:hover{box-shadow:var(--shell-hover)}
+.chat-composer:focus-within{box-shadow:var(--shell-hover)}
+.chat-user-message{box-shadow:0 10px 26px -14px #253b4c40,inset 0 1px 0 #ffffffa6}
+.experience[data-world=twin] .discovery-card,.experience[data-world=twin] .dh-example{box-shadow:0 0 0 1px #ffffff12,0 0 0 6px #ffffff08,0 0 0 7px #ffffff10,0 30px 70px -28px #000a,inset 0 1px 0 #ffffff1f}
+
+/* Chat: answers arrive with a gentle rise, the key number gets the accent. */
+.chat-turn{animation-timing-function:var(--ease-out)!important}
+.chat-answer-mark{box-shadow:0 0 0 4px #086bdc1f}
+.chat-key b{background:linear-gradient(120deg,#086bdc,#3f8ff0);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+
+/* Report: section numbers in accent, figures sit on a soft card. */
+.report-step header .report-number{transition:color .3s}
+.report-step:hover header .report-number{color:var(--blue)}
+
+@media (max-width:700px){:root{--shell:0 0 0 1px #24332f0f,0 20px 50px -26px #253b4c40,inset 0 1px 0 #ffffffd9}}

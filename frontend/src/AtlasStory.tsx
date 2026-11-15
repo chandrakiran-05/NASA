@@ -1,13 +1,22 @@
-import { ArrowUpRight, Upload, ArrowDown } from 'lucide-react';
+import type React from 'react';
+import { ArrowUpRight, ArrowDown } from 'lucide-react';
+import './flow3d.css';
+
+/** The project's structure, top to bottom: each layer feeds the next. */
+const FLOW = [
+  { title: 'Your question, in plain words', tags: ['Planner', 'Everyday words → variables', 'Memory'] },
+  { title: 'NASA + NOAA data', tags: ['Giovanni', 'Cloud OPeNDAP', 'ERDDAP', 'NSIDC', 'USGS', 'SWOT'] },
+  { title: 'Trend engine', tags: ['Seasons removed', 'Mann-Kendall', 'BEAST + PELT', 'Chance test'] },
+  { title: 'Local AI, number-checked', tags: ['Qwen on your GPU', 'Every number verified'] },
+  { title: 'Answers you can trust', tags: ['Short answer', 'Full report', 'DigiTwin', 'Discovery'] },
+];
 
 type Props = {
   onQuestion: (question: string) => void;
-  onUpload: (file: File) => void;
-  busy: boolean;
   onAir?: () => void;
 };
 
-export default function AtlasStory({ onQuestion, onUpload, busy, onAir }: Props) {
+export default function AtlasStory({ onQuestion, onAir }: Props) {
   return (
     <section id="features" className="atlas-story">
       <div className="story-lead">
@@ -15,6 +24,20 @@ export default function AtlasStory({ onQuestion, onUpload, busy, onAir }: Props)
         <h2>Find the change.<br /><em>Understand the evidence.</em></h2>
         <p>Explore NASA and NOAA records with statistical tests and a local AI assistant. Every finding stays connected to its data.</p>
         <a href="#question-index" className="text-link">Find a starting point <ArrowDown size={15} /></a>
+        <figure className="flow3d" aria-labelledby="flow3d-caption">
+          <figcaption id="flow3d-caption" className="story-running">HOW IT FITS TOGETHER</figcaption>
+          <ol>
+            {FLOW.map((step, i) => (
+              <li key={step.title} style={{ '--i': i } as React.CSSProperties}>
+                <span className="flow3d-plate" aria-hidden="true"><i>{String(i + 1).padStart(2, '0')}</i></span>
+                <div>
+                  <b>{step.title}</b>
+                  <p>{step.tags.map(t => <span key={t}>{t}</span>)}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </figure>
       </div>
       <div className="story-method">
         <div className="method-line">
@@ -38,7 +61,6 @@ export default function AtlasStory({ onQuestion, onUpload, busy, onAir }: Props)
         <div><h3>Begin somewhere.</h3><p>These questions focus the globe. You decide when to investigate.</p></div>
         <button onClick={() => onQuestion('How has temperature changed in Chennai since 2001?')}><span>Chennai, India</span><b>Temperature over time</b><ArrowUpRight size={18} /></button>
         <button onClick={() => onQuestion('How has vegetation changed in the Amazon since 2001?')}><span>The Amazon</span><b>Vegetation over time</b><ArrowUpRight size={18} /></button>
-        <label className="upload-control"><span>Your own record</span><b><Upload size={14} /> Upload monthly CSV</b><input type="file" accept=".csv,text/csv" aria-label="Upload your monthly observations" disabled={busy} onChange={event => { if (event.target.files?.[0]) onUpload(event.target.files[0]); event.target.value = ''; }} /></label>
       </div>
     </section>
   );

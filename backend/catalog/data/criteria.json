@@ -26,7 +26,8 @@
    "variables": [
     "imerg_precip_monthly",
     "station_prcp",
-    "global_precip"
+    "global_precip",
+    "global_precip_chirps"
    ]
   },
   {

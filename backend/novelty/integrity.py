@@ -23,7 +23,15 @@ import pandas as pd
 from scipy import stats
 
 from ..analysis.trend import effective_n, lag1_autocorr
+from ..core.wording import TEST_NOTE, data_note
 from ..timeseries.model import MonthlySeries
+
+BADGE_PLAIN = {
+    "OK": "Ready for a trend test: no data problems found.",
+    "CAUTION": "Ready for a trend test, with notes to read first.",
+    "NOT_FIT": "Not ready for a trend test yet: too few months or a known processing problem. "
+               "This is about the test, not about whether the data are real.",
+}
 
 EVENTS = json.loads((Path(__file__).resolve().parents[1] / "catalog" / "data" / "events.json").read_text(encoding="utf-8"))["events"]
 
@@ -208,11 +216,14 @@ def integrity_audit(ms: MonthlySeries, deseasonalized: np.ndarray) -> dict:
     cov = coverage(ms)
     if comp["n_valid"] < 24 or comp["missing_pct"] > 50:
         level = 2
-        reasons.append(f"Only {comp['n_valid']} valid months ({comp['missing_pct']}% missing).")
+        reasons.append(f"Only {comp['n_valid']} of {comp['n_months']} months have a value ({comp['missing_pct']}% "
+                       "missing, left blank and never filled in). That is too few months for a clear trend test; "
+                       "the values that are there are still real.")
     for f in flags:
         if f["type"] == "zero_run" and f["months"] >= 6:
             level = max(level, 2)
-            reasons.append(f"Suspicious block of zeros {f['start']}–{f['end']} (cf. NASA's Cloud Giovanni zero-block bug).")
+            reasons.append(f"A block of exact zeros {f['start']}–{f['end']} looks like a known processing problem "
+                           "(cf. NASA's Cloud Giovanni zero-block bug), so a trend test here would not be reliable.")
         elif f["type"] == "retrieved_before_fix":
             level = max(level, 2)
             reasons.append(f["message"])
@@ -221,7 +232,8 @@ def integrity_audit(ms: MonthlySeries, deseasonalized: np.ndarray) -> dict:
             reasons.append(f["message"] + f" ({f['start']}–{f['end']}).")
     if cov["low_coverage_pct"] > 10:
         level = max(level, 1)
-        reasons.append(f"{cov['low_coverage_pct']}% of months have low coverage.")
+        reasons.append(f"{cov['low_coverage_pct']}% of months are based on fewer observations than usual (low "
+                       "coverage); they are real but less certain.")
     seams = []
     for ev in events_for(ms):
         st = step_test(t, deseasonalized, ms.time, ev["date"])
@@ -242,8 +254,12 @@ def integrity_audit(ms: MonthlySeries, deseasonalized: np.ndarray) -> dict:
         reasons.append(note)
     badge = ["OK", "CAUTION", "NOT_FIT"][level]
     if not reasons:
-        reasons.append("No integrity problems, instrument seams or jumps detected.")
-    return {"badge": badge, "badge_icon": ["✅", "⚠️", "❌"][level], "reasons": reasons, "flags": flags,
+        reasons.append("No missing-data problems, instrument seams or jumps detected.")
+    prov = ms.provenance
+    note = data_note(getattr(prov, "source_api", None), comp["n_months"], comp["n_valid"],
+                     getattr(prov, "dataset_short_name", None))
+    return {"badge": badge, "badge_icon": ["✅", "⚠️", "❌"][level], "badge_plain": BADGE_PLAIN[badge],
+            "reasons": reasons, "data_note": note, "test_note": TEST_NOTE, "flags": flags,
             "coverage": cov, "seams": seams, "trend_or_jump": toj,
             "limits": ["A step can be a real climate shift, not only an instrument effect.",
                        "The event list is incomplete.", "Short segments have low statistical power."]}

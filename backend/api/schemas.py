@@ -124,6 +124,9 @@ class InvestigateRequest(BaseModel):
 
 class TextRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
+    conversation_id: str | None = Field(None, max_length=64, pattern=r"^[A-Za-z0-9_-]{1,64}$",
+                                        description="Follow-up memory: send the id returned by an earlier "
+                                                    "/ai/plan, /ai/ask or /report call; omit to start a new one")
 
 
 class ExplainRequest(BaseModel):

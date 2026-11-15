@@ -68,3 +68,11 @@ def test_planner_bank(tmp_path):
         print("VARIABLE:", f)
     assert n_place - len(place_fail) >= 95
     assert n_var - len(var_fail) >= 90
+
+
+
+def test_everyday_words_reach_the_scientific_criterion():
+    from backend.catalog.catalog import expand_everyday
+    assert "temperature" in expand_everyday("is chennai getting hotter?")
+    assert "precipitation" in expand_everyday("india rains")
+    assert expand_everyday("NDVI in Kenya") == "NDVI in Kenya"

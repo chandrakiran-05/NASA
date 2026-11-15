@@ -1,8 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "earth-trend-detective"
 version = "1.0.0"
 description = "Backend for the NASA Space Apps 2026 'Be An Earth System Trend Detective' challenge"
 requires-python = ">=3.11"
+dynamic = ["dependencies"]
+
+[project.scripts]
+trend-harness = "backend.harness.cli:main"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.csv", "*.txt", "*.gz"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

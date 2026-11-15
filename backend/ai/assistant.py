@@ -18,9 +18,10 @@ from ..core.config import Settings
 from ..core.geometry import Region
 from . import gazetteer
 from .bm25 import BM25
-from .factcheck import fact_check
+from ..core.wording import TEST_NOTE, data_note, data_real_sentence
 from .guard import REFUSAL, check_topic
 from .llm import LocalLLM
+from .memory import ConversationMemory, merge_followup, summary_of
 from .prompts import (ASK_INSTRUCTIONS, EXPLAIN_INSTRUCTIONS, PLAN_INSTRUCTIONS, PLAN_SCHEMA, SYSTEM_BASE)
 
 LAST_FULL_YEAR = date.today().year - 1
@@ -73,6 +74,7 @@ class AIService:
         self.s = settings
         self.catalog = catalog
         self.llm = llm
+        self.memory = ConversationMemory()
         self.glossary = json.loads(GLOSSARY.read_text(encoding="utf-8"))["terms"]
         self._gidx = BM25([f"{g['term']} {g['term']} {g['id'].replace('_', ' ')} {g['text']}" for g in self.glossary],
                           drop_question_words=False)
@@ -152,9 +154,9 @@ class AIService:
             "planner": "deterministic",
         }
 
-    async def plan(self, question: str) -> dict:
+    async def plan(self, question: str, conversation_id: str | None = None) -> dict:
         t0 = time.perf_counter()
-        g = self.guard(question)
+        g = self.guard_followup(question, conversation_id)
         if not g["on_topic"]:
             return {"on_topic": False, "message": REFUSAL, "guard": g}
         plan = self._deterministic_plan(question)
@@ -166,10 +168,109 @@ class AIService:
         out = await self.llm.chat_json(msgs, PLAN_SCHEMA, max_tokens=300)
         if out:
             plan = self._merge_llm_plan(plan, out)
+        if conversation_id:
+            plan = self.apply_memory(plan, question, conversation_id)
         plan["on_topic"] = True
         plan["guard"] = g
         plan["latency_ms"] = round((time.perf_counter() - t0) * 1000, 1)
         return plan
+
+    # ------------------------------------------------------------------ conversation memory
+    def guard_followup(self, question: str, conversation_id: str | None) -> dict:
+        """Topic guard; a short follow-up ("why?", "what about Kerala?") is judged together with the
+        remembered topic of the conversation. Explicitly blocked text stays blocked."""
+        g = self.guard(question)
+        if g["on_topic"] or not conversation_id:
+            return g
+        if any(r.startswith("off-topic") for r in g.get("reasons", [])):
+            return g
+        remembered = self.memory.get_plan(conversation_id)
+        if not remembered:
+            return g
+        topic = " ".join(filter(None, [(remembered.get("variable") or {}).get("name"),
+                                       (remembered.get("region") or {}).get("name")]))
+        g2 = self.guard(f"{question} {topic}")
+        if g2["on_topic"]:
+            g2["reasons"] = list(g2.get("reasons", [])) + ["follow-up of the earlier question in this conversation"]
+            return g2
+        return g
+
+    def explicit_parts(self, question: str, plan: dict) -> dict:
+        """Which parts the question itself names (these override the remembered plan)."""
+        idx_best = max(self.catalog.index.scores(question) or [0.0])
+        var = bool(self.catalog.match_criteria(question)) or idx_best >= 2.0
+        reg = any(r.get("kind") != "example" for r in plan.get("regions") or [])
+        per = (plan.get("period") or {}).get("parsed_from") not in (None, "local AI", "conversation")
+        return {"variable": var, "region": reg, "period": per}
+
+    def apply_memory(self, plan: dict, question: str, conversation_id: str, remember: bool = True) -> dict:
+        """Deterministic follow-up merge: explicit parts of the new question win, missing parts are
+        inherited from the remembered plan of this conversation."""
+        remembered = self.memory.get_plan(conversation_id)
+        per = plan.get("period") or {}
+        new = {"variable": plan["variables"][0] if plan.get("variables") else None,
+               "region": plan["regions"][0] if plan.get("regions") else None,
+               "period": {"start": per.get("start"), "end": per.get("end")} if per.get("start") else None}
+        explicit = self.explicit_parts(question, plan)
+        merged, inherited = merge_followup(new, remembered, explicit)
+        if "variable" in inherited:
+            v = merged["variable"]
+            plan["variables"] = [v] + [x for x in plan.get("variables") or [] if x.get("id") != v.get("id")][:2]
+        if "region" in inherited:
+            plan["regions"] = [merged["region"]]
+        if "period" in inherited:
+            plan["period"] = {**per, "start": merged["period"]["start"], "end": merged["period"]["end"],
+                              "parsed_from": "conversation", "note": None}
+        # keep the period inside the (possibly inherited) variable's record
+        v0 = plan["variables"][0] if plan.get("variables") else None
+        cs = (v0 or {}).get("coverage_start")
+        st = (plan.get("period") or {}).get("start")
+        if cs and st and cs[:7] > st[:7]:
+            plan["period"]["start"] = cs[:7]
+            plan["period"]["note"] = f"{v0['name']} starts in {cs[:7]}; the period was shortened to begin then."
+        plan["needs_user_input"] = [k for k, ok in (("region", bool(plan.get("regions"))),
+                                                    ("variable", bool(plan.get("variables")))) if not ok]
+        pp = plan.get("period") or {}
+        resolved = {"variable": v0, "region": plan["regions"][0] if plan.get("regions") else None,
+                    "period": {"start": pp["start"], "end": pp.get("end")} if pp.get("start") else None}
+        using = summary_of(resolved)
+        names = {"variable": "variable", "region": "place", "period": "years"}
+        msg = f"Using: {using}." if using else ""
+        if inherited:
+            msg += " Kept from earlier in this conversation: " + ", ".join(names[k] for k in inherited) + "."
+        plan["conversation_id"] = conversation_id
+        plan["context"] = {"variable": (v0 or {}).get("name"), "variable_id": (v0 or {}).get("id"),
+                           "region": (resolved["region"] or {}).get("name"), "period": resolved["period"],
+                           "inherited": inherited, "explicit": [k for k, ok in explicit.items() if ok],
+                           "summary": using}
+        if msg:
+            plan["message"] = msg.strip()
+        if remember:
+            self.memory.remember_plan(conversation_id, resolved)
+            self.memory.add_turn(conversation_id, "user", question)
+        return plan
+
+    def remember_report(self, conversation_id: str, question: str, result: dict) -> None:
+        """Store what a finished report actually used (variable, region, period, ids)."""
+        p = (result or {}).get("plan") or {}
+        vid = p.get("variable_id")
+        var = None
+        if vid:
+            var = (self.catalog.summary(self.catalog.variables[vid]) if vid in self.catalog.variables
+                   else {"id": vid, "name": p.get("variable_name") or vid, "units": p.get("units")})
+        region = ({"name": p.get("region_name"), "kind": "report", "geometry": p.get("geometry"),
+                   "source": "earlier report in this conversation"} if p.get("geometry") else None)
+        period = {"start": p.get("start"), "end": p.get("end")} if p.get("start") else None
+        prov = (result or {}).get("provenance") or {}
+        self.memory.remember_plan(conversation_id, {"variable": var, "region": region, "period": period,
+                                                    "series_id": prov.get("series_id"),
+                                                    "report_id": (result or {}).get("report_id")})
+        self.memory.add_turn(conversation_id, "user", question)
+        h = (result or {}).get("headline")
+        if isinstance(h, dict):
+            h = h.get("text") or h.get("plain_language") or h.get("title")
+        if isinstance(h, str) and h:
+            self.memory.add_turn(conversation_id, "assistant", h)
 
     def _merge_llm_plan(self, plan: dict, out: dict) -> dict:
         notes = []
@@ -209,33 +310,71 @@ class AIService:
         return plan
 
     # ------------------------------------------------------------------ ask
-    async def ask(self, question: str) -> dict:
-        g = self.guard(question)
+    async def ask(self, question: str, conversation_id: str | None = None) -> dict:
+        from .verify import verify_text
+        g = self.guard_followup(question, conversation_id)
         if not g["on_topic"]:
-            return {"on_topic": False, "answer": REFUSAL, "guard": g, "source": "guardrail"}
+            return {"on_topic": False, "answer": REFUSAL, "guard": g, "source": "guardrail",
+                    **({"conversation_id": conversation_id} if conversation_id else {})}
+        conv = None
+        history = self.memory.turns(conversation_id, 4) if conversation_id else []
+        if conversation_id and self.memory.get_plan(conversation_id):
+            conv = self.apply_memory(self._deterministic_plan(question), question, conversation_id)["context"]
+        elif conversation_id:
+            self.memory.add_turn(conversation_id, "user", question)
         archs = self.catalog.match_archetypes(question, k=1)
-        vars_ = self.catalog.search(q=question, region_type=archs[0]["id"] if archs else None, limit=4)
+        search_q = question
+        if conv and "variable" in conv["inherited"] and conv.get("variable"):
+            search_q = f"{question} {conv['variable']}"
+        vars_ = self.catalog.search(q=search_q, region_type=archs[0]["id"] if archs else None, limit=4)
+        if conv and conv.get("variable_id") and conv["variable_id"] in self.catalog.variables:
+            v0 = self.catalog.summary(self.catalog.variables[conv["variable_id"]])
+            vars_ = [v0] + [v for v in vars_ if v["id"] != v0["id"]][:3]
         terms = self.glossary_hits(question)
         ctx = {"methods": [{"term": g["term"], "explanation": g["text"]} for g in terms],
                "variables": [{"id": v["id"], "name": v["name"], "definition": self.catalog.get(v["id"]).get("definition"),
                               "units": v["units"], "coverage_start": v["coverage_start"], "source": v["source"]}
                              for v in vars_],
                "region_suggestion": ({"type": archs[0]["name"], "why": archs[0]["variables"]} if archs else None)}
+        if conv:
+            ctx["conversation"] = {"variable": conv.get("variable"), "region": conv.get("region"),
+                                   "period": conv.get("period"), "kept_from_earlier": conv.get("inherited")}
         fallback = self._fallback_answer(vars_, archs[0] if archs else None, terms)
-        msgs = [{"role": "system", "content": SYSTEM_BASE + "\n" + ASK_INSTRUCTIONS},
-                {"role": "user", "content": f"CONTEXT:\n{json.dumps(ctx, ensure_ascii=False)}\n\nQUESTION: {question}"}]
+        if conv and conv.get("summary"):
+            fallback = f"Using: {conv['summary']}.\n\n" + fallback
+        msgs = [{"role": "system", "content": SYSTEM_BASE + "\n" + ASK_INSTRUCTIONS
+                 + ("\nEarlier turns of this conversation come next; use them only to understand what the "
+                    "student refers to. They are not new observations." if history else "")}]
+        msgs += [{"role": "user" if t["role"] == "user" else "assistant", "content": t["text"]} for t in history]
+        msgs.append({"role": "user",
+                     "content": f"CONTEXT:\n{json.dumps(ctx, ensure_ascii=False)}\n\nQUESTION: {question}"})
         txt = await self.llm.chat(msgs, max_tokens=320)
+        extra = {"context_variables": vars_}
+        if conversation_id:
+            extra["conversation_id"] = conversation_id
+        if conv:
+            extra["context"] = conv
+            if conv.get("summary"):
+                extra["message"] = f"Using: {conv['summary']}."
+
+        def done(out: dict) -> dict:
+            if conversation_id and out.get("answer"):
+                self.memory.add_turn(conversation_id, "assistant", out["answer"])
+            return out
+
         if txt and "OFF_TOPIC" not in txt:
-            fc = fact_check(txt, ctx)
-            if fc["passed"]:
-                return {"on_topic": True, "answer": txt.strip(), "source": "local_llm", "fact_check": fc,
-                        "context_variables": vars_}
-            return {"on_topic": True, "answer": fallback, "source": "deterministic", "fact_check": fc,
-                    "note": "Local AI answer rejected: it contained numbers not found in the tool's data.",
-                    "context_variables": vars_}
+            v = verify_text(txt, ctx)
+            if v["passed"]:
+                return done({"on_topic": True, "answer": txt.strip(), "source": "local_llm",
+                             "fact_check": v["fact_check"], "verification": v, **extra})
+            return done({"on_topic": True, "answer": fallback, "source": "deterministic",
+                         "fact_check": v["fact_check"], "verification": v,
+                         "note": "Local AI answer rejected by the checker (numbers not in the tool's data, or "
+                                 "wording it does not allow).", **extra})
         if txt and "OFF_TOPIC" in txt:
-            return {"on_topic": False, "answer": REFUSAL, "source": "local_llm", "guard": g}
-        return {"on_topic": True, "answer": fallback, "source": "deterministic", "context_variables": vars_}
+            return {"on_topic": False, "answer": REFUSAL, "source": "local_llm", "guard": g,
+                    **({"conversation_id": conversation_id} if conversation_id else {})}
+        return done({"on_topic": True, "answer": fallback, "source": "deterministic", **extra})
 
     @staticmethod
     def _fallback_answer(vars_: list[dict], arch: dict | None, terms: list[dict] | None = None) -> str:
@@ -276,6 +415,10 @@ class AIService:
             "tests_agree": v.get("tests_agree"), "caveats": v.get("caveats"),
             "plain_language": v.get("plain_language"),
         }
+        per, prov = analysis.get("period") or {}, analysis.get("provenance") or {}
+        f["data_note"] = data_note(prov.get("source_api"), per.get("n_months"), per.get("n_valid"),
+                                   prov.get("dataset_short_name"))
+        f["test_note"] = TEST_NOTE
         if catalog_entry:
             f["variable_definition"] = catalog_entry.get("short_definition")
         if insights:
@@ -289,7 +432,17 @@ class AIService:
 
     @staticmethod
     def deterministic_explanation(facts: dict) -> str:
-        parts = [facts.get("plain_language") or ""]
+        """Three ideas kept apart: (1) the data are real, (2) missing months are left blank, (3) the test
+        result is about whether the trend is clear enough, not whether the data are real."""
+        parts = [facts.get("data_note") or data_real_sentence(None)]
+        parts.append(facts.get("plain_language") or "")
+        sig = facts.get("significant")
+        if sig is True:
+            parts.append("Test result: SIGNIFICANT, the trend is clear enough to stand out from normal ups and downs.")
+        elif sig is False:
+            parts.append("Test result: NOT PROVEN, the trend is not clear enough yet to stand out from normal ups "
+                         "and downs.")
+        parts.append(facts.get("test_note") or TEST_NOTE)
         for k in ("breaks", "emergence", "detectability", "triangle"):
             if facts.get(k):
                 parts.append(facts[k])
@@ -297,7 +450,7 @@ class AIService:
             t = facts["trend_evidence_index"]
             parts.append(f"Trend Evidence Index: {t['score']:.0f}/100 ({t['label']}).")
         if facts.get("caveats"):
-            parts.append("Caveat: " + facts["caveats"][0])
+            parts.append("Note: " + facts["caveats"][0])
         return " ".join(p for p in parts if p)
 
     async def explain(self, analysis: dict, insights: dict | None = None, catalog_entry: dict | None = None,
@@ -322,11 +475,13 @@ class AIService:
             last = v
             if v["passed"] and "OFF_TOPIC" not in txt:
                 return {"explanation": txt.strip(), "source": "local_llm", "fact_check": v["fact_check"],
-                        "verification": v, "facts": facts}
+                        "verification": v, "facts": facts, "data_note": facts["data_note"],
+                        "test_note": facts["test_note"]}
             msgs.append({"role": "assistant", "content": txt})
             msgs.append({"role": "user", "content": "Your text failed verification: " + failure_feedback(v)
                          + ". Rewrite using only FACTS, no causal words, and the correct direction."})
-        out = {"explanation": base, "source": "deterministic", "facts": facts}
+        out = {"explanation": base, "source": "deterministic", "facts": facts, "data_note": facts["data_note"],
+               "test_note": facts["test_note"]}
         if last:
             out["verification"] = last
             out["note"] = "Local AI text rejected by the verifier; deterministic text shown."

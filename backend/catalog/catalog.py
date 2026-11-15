@@ -12,6 +12,23 @@ from ..core.errors import NotFound
 
 DATA = Path(__file__).parent / "data"
 
+# Everyday words students type -> the scientific terms the catalog and criteria are indexed by.
+EVERYDAY = {
+    ("temp", "temps", "temperatures", "hotter", "warmer", "warming", "heat", "heatwave", "heatwaves", "hot", "colder", "cooler", "cold"): "temperature",
+    ("rain", "rains", "rainy", "raining", "monsoon", "flood", "floods", "flooding", "wetter", "downpour"): "rainfall precipitation",
+    ("dry", "drier", "dryer", "drought", "droughts", "parched"): "soil moisture rainfall drought",
+    ("greener", "greening", "browning", "forest", "forests", "trees", "crops", "plants", "deforestation"): "vegetation",
+    ("pollution", "polluted", "smog", "haze", "dirty"): "air pollution",
+    ("ice", "glacier", "glaciers", "melting", "snow", "snowfall"): "snow ice",
+}
+_EVERYDAY = {w: terms for words, terms in EVERYDAY.items() for w in words}
+
+
+def expand_everyday(q: str) -> str:
+    """Append scientific terms for everyday words ("is Chennai getting hotter" -> + "temperature")."""
+    extra = dict.fromkeys(_EVERYDAY[w] for w in q.lower().replace("?", " ").replace(",", " ").split() if w in _EVERYDAY)
+    return f"{q} {' '.join(extra)}" if extra else q
+
 
 @dataclass
 class Catalog:
@@ -56,6 +73,7 @@ class Catalog:
 
     def match_criteria(self, text: str, rel: float = 0.6) -> list[tuple[dict, float]]:
         """Criteria the text is about: the best match plus any within `rel` of it, as (criterion, score/best)."""
+        text = expand_everyday(text)
         sc = self._crit_index.scores(text)
         # naming the domain ("ocean warming", "coastal flooding", "land surface") outweighs generic words
         words = text.lower().split()
@@ -70,6 +88,7 @@ class Catalog:
                source: str | None = None, limit: int = 20) -> list[dict]:
         ids = self._ids
         scores = dict.fromkeys(ids, 0.0)
+        q = expand_everyday(q) if q else q
         if q:
             for i, s in zip(ids, self._index.scores(q)):
                 # small prior for the canonical variable of each family (only if it already matches)

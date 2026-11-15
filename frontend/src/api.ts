@@ -35,6 +35,20 @@ export interface PlanResponse {
   wishes?: Record<string, boolean>;
   needs_user_input?: string[];
   planner?: string;
+  conversation_id?: string;
+  context?: ConversationContext;
+}
+
+/** What a follow-up used: parts the new question named plus parts kept from the conversation. */
+export interface ConversationContext {
+  variable?: string | null;
+  variable_id?: string | null;
+  region?: string | null;
+  period?: { start: string | null; end?: string | null } | null;
+  inherited?: string[];
+  explicit?: string[];
+  summary?: string;
+  message?: string | null;
 }
 
 export interface AIStatus {
@@ -51,6 +65,11 @@ export interface AIAnswer {
   explanation?: string;
   source?: "local_llm" | "deterministic" | "guardrail" | string;
   note?: string;
+  message?: string;
+  data_note?: string;
+  test_note?: string;
+  conversation_id?: string;
+  context?: ConversationContext;
   fact_check?: { passed?: boolean; [key: string]: unknown };
 }
 
@@ -225,7 +244,7 @@ export interface JobOptions {
 const configuredBase = (
   import.meta as ImportMeta & { env?: Record<string, string> }
 ).env?.VITE_API_URL?.trim();
-function apiBase(): string {
+export function apiBase(): string {
   if (!configuredBase) return "/api";
   const url = new URL(configuredBase, window.location.origin);
   if (
@@ -334,10 +353,19 @@ const idPath = (id: string) => encodeURIComponent(id);
 export const exportURL = (id: string, format: "csv" | "json" = "csv") =>
   `${apiBase()}/export/${idPath(id)}?format=${format}`;
 
-export const planQuestion = (question: string, signal?: AbortSignal) =>
-  request<PlanResponse>("/ai/plan", questionBody(question), signal);
-export const askQuestion = (question: string, signal?: AbortSignal) =>
-  request<AIAnswer>("/ai/ask", questionBody(question), signal);
+const withConversation = (question: string, conversationId?: string | null) =>
+  conversationId ? { ...questionBody(question), conversation_id: conversationId } : questionBody(question);
+export const planQuestion = (question: string, signal?: AbortSignal, conversationId?: string | null) =>
+  request<PlanResponse>("/ai/plan", withConversation(question, conversationId), signal);
+export const askQuestion = (question: string, signal?: AbortSignal, conversationId?: string | null) =>
+  request<AIAnswer>("/ai/ask", withConversation(question, conversationId), signal);
+/** A client-side conversation id (letters, digits, _) for follow-up memory on /report. */
+export function newConversationId(): string {
+  const raw = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+  return `c_${raw.replace(/[^A-Za-z0-9]/g, "").slice(0, 24)}`;
+}
 export const getAIStatus = (signal?: AbortSignal) =>
   request<AIStatus>("/ai/status", undefined, signal);
 export const getHealth = (signal?: AbortSignal) =>
@@ -460,6 +488,66 @@ export async function investigate(
   );
   if (!("job_id" in started)) return started;
   return pollJob<InvestigationReport>(started.job_id, options);
+}
+
+// ===================================================================== report story
+export interface ReportRequest {
+  question: string;
+  start?: string;
+  end?: string;
+  variable_id?: string;
+  geometry?: Geometry;
+  /** Follow-up memory: the backend fills a missing variable / place / years from this conversation. */
+  conversation_id?: string;
+}
+/** POST /api/report → 202 {job_id} → poll /api/jobs/{id}?wait=10. The raw result is normalised by report.ts. */
+export interface ReportPartial {
+  status: string;
+  progress: number;
+  message: string;
+  ready: boolean;
+  report: unknown;
+}
+/** With `onPartial`, GET /api/report/{id}/partial is polled alongside the job: the deterministic report arrives
+ * within seconds, then AI-written sections replace the template text one by one. */
+export async function runReport(
+  input: ReportRequest,
+  options: {
+    signal?: AbortSignal;
+    onProgress?: (job: Job<unknown>) => void;
+    onPartial?: (report: unknown, partial: ReportPartial) => void;
+    partialEveryMs?: number;
+  } = {},
+): Promise<unknown> {
+  const body = { ...input, ...questionBody(input.question) };
+  const started = await request<{ job_id?: string } & Record<string, unknown>>("/report", body, options.signal);
+  if (typeof started.job_id !== "string") return started;
+  const id = started.job_id;
+  if (!options.onPartial) return pollJob<unknown>(id, options);
+  let finished = false;
+  const every = options.partialEveryMs ?? 1200;
+  const partials = (async () => {
+    let last = "";
+    while (!finished && !options.signal?.aborted) {
+      try {
+        const p = await request<ReportPartial>(`/report/${idPath(id)}/partial`, undefined, options.signal);
+        if (p.ready && p.report && !finished) {
+          const key = JSON.stringify([p.status, (p.report as { ai?: unknown } | null)?.ai]);
+          if (key !== last) { last = key; options.onPartial?.(p.report, p); }
+        }
+        if (p.status === "done" || p.status === "error") return;
+      } catch {
+        // partial results are a convenience; the job poll below reports real errors
+      }
+      await new Promise((r) => setTimeout(r, every));
+    }
+  })();
+  try {
+    return await pollJob<unknown>(id, options);
+  } finally {
+    finished = true;
+    void partials;
+  }
 }
 
 // ===================================================================== active trends (live, verified)
@@ -658,7 +746,76 @@ export const cardURL = (seriesId: string) => `${apiBase()}/view/${idPath(seriesI
 export const getResearchMethods = (signal?: AbortSignal) =>
   request<MethodsLiterature>("/research/methods", undefined, signal);
 
+/** Local model + harness (GET /ai/hardware, /sources/status, /harness; POST /harness/probe). */
+export interface LLMTierStatus {
+  provider: string;
+  available: boolean;
+  model?: string | null;
+  reason?: string;
+  hint?: string;
+  installed_models?: string[];
+  note?: string;
+  last_error?: string | null;
+}
+export interface ModelPick { provider?: string; model: string; weights_gb?: number; why?: string; [key: string]: unknown }
+export interface HardwareInfo {
+  profile: {
+    os?: string;
+    gpu_name?: string | null;
+    gpu_note?: string | null;
+    vram_total_gb?: number;
+    vram_free_gb?: number;
+    ram_total_gb?: number;
+    ram_available_gb?: number;
+    disk_free_gb?: number;
+    packages?: Record<string, boolean>;
+  };
+  recommendation: { live: ModelPick; deep: ModelPick | null; notes: string[] };
+  live: LLMTierStatus;
+  deep: LLMTierStatus;
+}
+export interface SourcesStatus {
+  credentials: Record<string, boolean>;
+  llm: LLMTierStatus;
+}
+export interface HarnessStage { id: string; name: string; component: string; model: string }
+export interface HarnessInfo {
+  config: {
+    model: { provider: string; base_url: string; name: string; timeout_s: number; max_tokens: number; temperature: number };
+    deep: { provider: string; model: string; max_new_tokens: number };
+    pipeline: { alpha: number; min_years: number; verify: string; rewrite: boolean; rewrite_sections: string[] };
+    data: { credentials: Record<string, { env: string; set: boolean }> };
+  };
+  source: string;
+  model_status: { live: LLMTierStatus; deep: LLMTierStatus };
+  stages: HarnessStage[];
+  prompts: string[];
+  rewrite_sections_active: string[];
+  limit: string;
+}
+export interface ProbeResult {
+  tier: string;
+  provider: string;
+  model?: string | null;
+  available?: boolean;
+  verdict: "pass" | "fail" | "unavailable";
+  reason?: string;
+  latency_s?: number;
+  approx_tokens_per_s?: number | null;
+  answer?: string;
+  verify?: { passed: boolean; badge: string; unsupported_numbers: unknown[] };
+}
+export const getHardware = (signal?: AbortSignal) =>
+  request<HardwareInfo>("/ai/hardware", undefined, signal);
+export const getSourcesStatus = (signal?: AbortSignal) =>
+  request<SourcesStatus>("/sources/status", undefined, signal);
+export const getHarness = (signal?: AbortSignal) =>
+  request<HarnessInfo>("/harness", undefined, signal);
+export const probeModel = (signal?: AbortSignal) =>
+  request<ProbeResult>("/harness/probe", { tier: "live", timeout_s: 90 }, signal);
+
 export const api = {
+  report: runReport,
   activeTrends: runActiveTrends,
   criteria: getCriteria,
   view: getView,
