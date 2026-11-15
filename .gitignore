@@ -9,3 +9,6 @@ node_modules/
 frontend/dist/
 
 *.egg-info/
+
+# downloaded tools (cloudflared.exe)
+tools/
