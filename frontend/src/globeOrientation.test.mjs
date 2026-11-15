@@ -39,4 +39,5 @@ test('a supplied polygon boundary is tessellated on the Earth surface and a poin
   }
   assert.deepEqual(boundaryRibbon({type:'Point',coordinates:[78,20]}, .0014), []);
   assert.deepEqual(boundaryRibbon({type:'Polygon',coordinates:null}, .0014), []);
+  assert.ok(boundaryRibbon({type:'BBox',bbox:[80,12.8,80.5,13.4]},.0014).length>0,'backend city search extent is outlined as its labeled approximate area');
 });

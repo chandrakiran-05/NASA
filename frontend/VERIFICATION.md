@@ -54,3 +54,14 @@ The globe now crosses the hero bottom; translucent title alpha is0.24. Twin roll
 - Native shared-composer transition invoked once. Real backend initial answer and follow-up produced four transcript turns, correctly labeled deterministic. The globe stopped rendering behind chat. A temporary browser-only503 injection exposed retry; restoring the original fetch completed the answer. A temporary pending request was canceled and produced the stopped state. Production request behavior was restored.
 - Reduced motion immediately returned roll to0 and disabled ambient animation. Settled rendering count was unchanged over500ms. Desktop browser also confirmed scene scroll offset and changing ambient transforms.
 - Source detector reported no deterministic design findings. Existing lazy chart bundle size advisory remains. No backend endpoint or source changes. Actual local-model inference and fresh upstream NASA/NOAA acquisition were not exercised.
+
+## Additional state and city focus audit
+
+- Rechecked current region responses: California had no backend search result; Tamil Nadu and the cities Chennai/Sydney supplied BBox search extents.
+- Added lazy public-domain Natural Earth administrative outlines and source label points for 294 states/provinces. California and Tamil Nadu now navigate independently of backend typing-search availability. Acquisition still validates locations on the backend.
+- Browser checks in DigiTwin: California 804 outline vertices; Tamil Nadu 684; Chennai/Sydney 24 extent vertices each. All four locations settled at screen x=0.500, y=0.413, above the prompt. City extent labels explicitly say Approximate area.
+- Added cache/center tests for states and approximate BBox ribbon coverage. 26 frontend tests pass.
+- Preserved current editorial number markers and footer copy. Restored the visible mobile prompt glyph, compact 320px dock spacing and the accessible label for the icon-only new-chat control.
+
+
+The full current browser suite passed again after this extension: same canvas, cinematic intermediate/end states, headline separation at390px, no320px overflow, native shared-composer transition, two actual backend chat turns, retry/cancellation and reduced-motion/static-render behavior. Current production build passed; the existing lazy chart bundle advisory remains. Backend sources unchanged.

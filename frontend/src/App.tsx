@@ -18,7 +18,7 @@ import { api } from "./api";
 import AirLLM from "./AirLLM";
 import ObservedEvidence from "./ObservedEvidence";
 import ChatPage from "./ChatPage";
-import { loadNavigationGeometry } from "./navigationGeometry";
+import { loadNavigationGeometry, navigationStateFocus } from "./navigationGeometry";
 import type { GlobeGeometry } from "./Globe";
 import AtlasStory from "./AtlasStory";
 import TwinLab from "./TwinLab";
@@ -151,20 +151,18 @@ export default function App() {
     const controller = new AbortController();
     let stale = false;
     const timer = setTimeout(async () => {
-      if (context.navigationFocus) {
-        setFocus(context.navigationFocus);
-        setPlace(context.navigationFocus.name);
+      const navigationFocus = context.navigationFocus || navigationStateFocus(context.placeQuery || "");
+      if (navigationFocus) {
+        setFocus(navigationFocus);
+        setPlace(navigationFocus.name);
         setLocationNote("Navigation view · not a data boundary");
         try {
-          const outline = await loadNavigationGeometry(context.navigationFocus.name, controller.signal);
+          const outline = await loadNavigationGeometry(navigationFocus.name, controller.signal);
           if (!stale) setGeometry(outline);
         } catch { if (!stale) setGeometry(null); }
         return;
       }
-      if (!context.placeQuery) {
-        setFocus(null); setPlace(""); setGeometry(null); setLocationNote("");
-        return;
-      }
+      if (!context.placeQuery) return;
       try {
         const regions = await api.regions(
           context.placeQuery,
@@ -172,7 +170,6 @@ export default function App() {
         );
         if (stale) return;
         const region = regions.results?.[0];
-        if (!region) { setFocus(null); setPlace(""); setGeometry(null); setLocationNote(""); }
         if (region) {
           const target = geometryCenter(region.geometry);
           if (target) {
@@ -669,7 +666,7 @@ export default function App() {
           </a>
           <p>
             Independent NASA Space Apps project. Earth textures: Three.js
-            examples. Navigation outlines: Natural Earth. NASA insignia does not imply endorsement.
+            examples. NASA insignia does not imply endorsement.
           </p>
         </footer>
       </main>

@@ -24,6 +24,10 @@ export function focusedPose(latitude: number, longitude: number, parentRoll: num
 
 /** Surface ribbons follow supplied geographic boundaries, never estimated shapes. */
 export function boundaryRibbon(geometry: GlobeGeometry | null | undefined, halfWidth: number): number[] {
+  if (geometry?.type === "BBox" && geometry.bbox?.length === 4 && geometry.bbox.every(Number.isFinite)) {
+    const [w,s,e,n] = geometry.bbox;
+    return boundaryRibbon({type:"Polygon",coordinates:[[[w,s],[e,s],[e,n],[w,n],[w,s]]]},halfWidth);
+  }
   if (!geometry?.coordinates || !Array.isArray(geometry.coordinates)) return [];
   const coordinates = geometry.coordinates as number[][][][];
   const rings: number[][][] = geometry.type === "Polygon"
