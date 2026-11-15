@@ -1,0 +1,97 @@
+/* Geographic focus and conversation: a quieter, clearer control system. */
+.experience { transition: background-color 2.8s cubic-bezier(.45,0,.2,1), color 2.2s; }
+.experience svg { stroke-width: 1.6; }
+.experience h2,.experience h3 { text-wrap: balance; }
+.site-header .nav-air { border-radius: 28px; min-height: 44px; padding: 11px 19px; }
+.main-nav { gap: 24px; }
+.identity>span:last-child,.identity b { font-size: 8px; letter-spacing: 1.1px; }
+.hero-intro p { font-size: 13px; line-height: 1.75; max-width: 250px; }
+.hero .hero-globe { top: 13%; transform: translate3d(-50%,var(--earth-scroll,0px),0); }
+.hero .hero-title-layer h1 { letter-spacing: -.04em; }
+.hero .hero-title-layer h1 .hero-subtitle { font-size: clamp(34px,3.4vw,52px); max-width: 320px; top: 330px; line-height: 1.04; text-wrap: balance; }
+.experience[data-world=twin] .hero .hero-title-layer h1 { font-size: clamp(86px,14vw,205px); }
+.experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle { left: var(--page); right: auto; top: 310px; max-width: 290px; font-size: clamp(36px,3.3vw,49px); text-align: left; }
+.hero .command-dock { width: min(550px,calc(100% - 2 * var(--page))); }
+.hero .command-glass { gap: 6px; min-height: 66px; padding: 8px; background: linear-gradient(120deg,#ffffff9c,#ffffff5e); border-color: #ffffffe0; }
+.hero .command-input { font-size: 14px; color: #18334b; letter-spacing: -.01em; }
+.hero .command-input::placeholder { font-size: 13px; color: #263e4f; opacity: .8; }
+.hero .command-mode { width: 40px; height: 44px; color: #214766; background: #ffffff26; }
+.hero .command-send { width: 46px; height: 46px; }
+.hero .command-label { font-size: 12px; font-weight: 400; background: #eeeae1ed; padding: 6px 14px; }
+.prompt-location { display: flex; align-items: center; justify-content: center; gap: 8px; width: fit-content; min-height: 38px; margin: 0 auto 12px; padding: 8px 14px; border-radius: 30px; background: #f4f7f0e8; color: #123a5b; box-shadow: 0 4px 18px #17375612; }
+.prompt-location strong { font-size: 12px; font-weight: 500; }
+.prompt-location>span { font-size: 10px; color: #476079; padding-left: 8px; border-left: 1px solid #183b5926; }
+.hero .world-switch { font-size: 11px; gap: 8px; min-height: 40px; padding: 8px 13px; }
+.hero .connection { font-size: 9px; padding: 7px 11px; }
+.hero .connection i { background: #086bdc; }
+.experience[data-world=twin] .prompt-location { background: #332d37ef; color: #ffddc8; }
+.experience[data-world=twin] .prompt-location>span { color: #e1b8a6; border-color: #e1b8a640; }
+.experience[data-world=twin] .hero .command-glass { background: linear-gradient(120deg,#755e718f,#3b304ba8); }
+.experience[data-world=twin] .hero .command-mode { color: #ffe2cd; }
+.experience[data-world=twin] .hero .command-input,.experience[data-world=twin] .hero .command-input::placeholder { color: #fff0e7; }
+.is-changing .hero-title-layer { animation: cinematic-copy 2.8s cubic-bezier(.22,1,.36,1) both; }
+.is-changing .command-dock { transition: opacity .8s; }
+@keyframes cinematic-copy { 0%,18% {opacity:.25;filter:blur(7px);transform:translateY(6px)} 75%,100% {opacity:1;filter:blur(0);transform:translateY(0)} }
+.ambient-field { position: fixed; inset: 0; z-index: 20; overflow: hidden; pointer-events: none; opacity: .35; }
+.ambient-field i { position: absolute; width: 70vmax; height: 70vmax; left: -45vmax; top: 15vh; border-radius: 50%; background: radial-gradient(circle,#5ca7f523,transparent 65%); animation: ambient-drift 24s ease-in-out infinite alternate; will-change: transform; }
+.ambient-field i+i { left: auto; right: -45vmax; top: 60vh; background: radial-gradient(circle,#e7c1961c,transparent 65%); animation-delay: -10s; animation-direction: alternate-reverse; }
+@keyframes ambient-drift { to { transform: translate3d(18vw,-12vh,0); } }
+.experience[data-world=twin] .ambient-field i { background: radial-gradient(circle,#e7a5b92b,transparent 65%); }
+.experience[data-motion-paused=true] .ambient-field i { animation-play-state: paused; }
+.experience button:hover:not(:disabled)>svg,.experience a:hover>svg { animation: icon-answer .42s ease-out; }
+@keyframes icon-answer { 0%,100% {rotate:0deg} 35% {rotate:-7deg} 68% {rotate:4deg} }
+.story-lead h2 { font-size: clamp(42px,4vw,60px); letter-spacing: -.035em; }
+.story-lead p { max-width: 420px; font-size: 14px; line-height: 1.85; }
+.story-running { display: none; }
+.story-lead h2 { margin-top: 0; }
+.method-line h3 { font-size: 29px; }
+.method-line p { line-height: 1.8; }
+.method-line>.text-link { min-height: 44px; padding: 12px 0; color: #086bdc; font-size: 12px; }
+.question-index>button { transition: color .25s,transform .25s; }
+.site-footer .motion-control { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 10px; color: var(--muted); }
+::view-transition-group(earth-composer) { animation-duration: .8s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+::view-transition-old(root) { animation-duration: .45s; }
+::view-transition-new(root) { animation-duration: .65s; }
+@media(min-width:701px) and (max-height:780px) {
+  .hero .hero-title-layer h1 .hero-subtitle { top: 300px; font-size: 40px; max-width: 260px; }
+  .experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle { top: 290px; font-size: 39px; max-width: 250px; }
+}
+@media(max-width:1000px) and (min-width:701px) {
+  .hero .hero-title-layer h1 .hero-subtitle { max-width: 230px; font-size: 38px; }
+  .experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle { max-width: 220px; font-size: 38px; top: 340px; }
+}
+@media(max-width:700px) {
+  .hero .hero-globe { top: 17%; }
+  .hero .hero-title-layer { z-index: auto; }
+  .hero .hero-title-layer h1>span:first-child { position: relative; z-index: 1; }
+  .hero-intro p { max-width: 300px; font-size: 12px; }
+  .hero .hero-title-layer h1 .hero-subtitle { top: 148px; left: 0; right: 0; max-width: none; font-size: 33px; line-height: 1.05; z-index: 4; text-shadow: 0 1px 8px #eeeae1b3; }
+  .experience[data-world=twin] .hero .hero-title-layer h1 { font-size: 17.5vw; }
+  .experience[data-world=twin] .hero .hero-title-layer h1>span:first-child { font-size: 14vw; white-space: nowrap; }
+  .experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle { top: 78px; left: 24px; right: 24px; max-width: none; text-align: center; font-size: 31px; text-shadow: 0 1px 8px #25232b; }
+  .hero .command-input { font-size: 16px; }
+  .hero .command-input::placeholder { font-size: 12px; }
+  .hero .command-glass { min-height: 64px; gap: 3px; padding: 7px; }
+  .hero .world-switch { font-size: 10px; gap: 6px; min-height: 44px; padding: 8px 10px; }
+  .hero .connection { font-size: 8px; padding: 8px; }
+  .prompt-location { min-height: 36px; margin-bottom: 10px; }
+  .prompt-location strong { font-size: 11px; }
+  .prompt-location>span { font-size: 9px; }
+  .hero .command-mode { width: 34px; }
+  .hero .command-mode svg:last-child { display: block; }
+  .story-lead h2 { font-size: 44px; }
+  .method-line h3 { font-size: 28px; }
+}
+@media(max-width:380px) {
+  .hero .hero-title-layer h1 .hero-subtitle { top: 130px; font-size: 30px; }
+  .experience[data-world=twin] .hero .hero-title-layer h1 .hero-subtitle { top: 65px; font-size: 29px; }
+  .hero .connection { max-width: 100px; font-size: 8px; line-height: 1.4; }
+  .hero .dock-under { gap: 6px; }
+  .hero .world-switch { font-size: 9px; gap: 4px; padding: 8px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .ambient-field i,.is-changing .hero-title-layer,.experience button>svg,.experience a>svg { animation: none!important; }
+  .hero .hero-globe { transform: translateX(-50%); }
+  .experience { transition: none; }
+  ::view-transition-group(*) { animation-duration: 0s!important; }
+}
